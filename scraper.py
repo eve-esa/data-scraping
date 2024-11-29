@@ -51,6 +51,7 @@ class BaseScraper(ABC):
         driver = webdriver.Chrome(
             service=Service(ChromeDriverManager().install()), options=chrome_options
         )
+        #driver = webdriver.Chrome(service=Service())
         return driver
 
     def _scroll_page(self, pause_time: int = 2):
@@ -86,63 +87,13 @@ class BaseScraper(ABC):
     def get_url_list() -> list:
         pass
 
-
-class JournalScraper(BaseScraper):
-    def __init__(self) -> None:
-        super().__init__()
-        self.cookie_handled = False
-
-    def get_url_list() -> list:
-        pass
-
-    @abstractmethod
-    def get_url_list_from_journal(self, journal_url: str) -> list:
-        # input: complete url with only journal
-        # output: list omplete url with journal and volume
-        pass
-
-    @abstractmethod
-    def get_url_list_from_volume(
-        self,
-        journal_url: str,
-        volume_num: int,
-        start_issue: int = 0,
-        end_issue: int = 30,
-    ) -> list:
-        # input: complete url with only journa and volume
-        # output: list of urls with journal and volume and issue
-        for issue_num in range(start_issue, end_issue + 1):
-            issue_url = f"{journal_url}/{volume_num}/{issue_num}"
-            print(f"  Processing Issue URL: {issue_url}")
-
-            try:
-                # Get all PDF links using Selenium to scroll and handle cookie popup once
-                pdf_links, cookie_handled = self.get_url_list()
-
-                # If no PDF links are found, skip to the next volume
-                if not pdf_links:
-                    print(
-                        f"  No PDF links found for Issue {issue_num} in Volume {volume_num}. Skipping to the next volume."
-                    )
-                    break  # Skip to the next volume
-
-                # Download the PDFs
-                download_pdfs(volume_num, issue_num, pdf_links)
-
-            except Exception as e:
-                print(
-                    f"  Failed to process Issue {issue_num} in Volume {volume_num}. Error: {e}"
-                )
-
-
 class MDPIScraper(BaseScraper):
-
     def __init__(self) -> None:
         super().__init__()
         self.cookie_handled = False
 
     # get paper url list from issue
-    def get_url_papers(self, issue_url: str) -> list:
+    def get_url_list(self, issue_url: str) -> list:
         """_summary_
 
         Args:
@@ -172,12 +123,91 @@ class MDPIScraper(BaseScraper):
 
         return pdf_links
 
-    def get_url_list() -> list:
-        pass
+    def get_url_list_from_journal(
+        self, 
+        #issue_url: str,
+        start_volume: int,
+        end_volume: int,
+        start_issue: int,
+        end_issue: int) -> list:
+        # input: complete url with only journal
+        # output: list omplete url with journal and volume
+        # TODO Append pdf links of each volume/issue in a key value dict/nested list
+        links = []
+        for volume_num in range(start_volume, end_volume + 1):
+            print(f"\nProcessing Volume {volume_num}...")
 
+            start_issue = 1
+            end_issue = 30  # Adjust based on the number of issues per volume
+
+            for issue_num in range(start_issue, end_issue + 1):
+                issue_url = f"https://www.mdpi.com/2072-4292/{volume_num}/{issue_num}"
+                print(f"  Processing Issue URL: {issue_url}")
+
+                try:
+                    # Get all PDF links using Selenium to scroll and handle cookie popup once
+                    pdf_links = self.get_url_list(issue_url)
+                    print(pdf_links)
+                    links.append(pdf_links)
+                    # If no PDF links are found, skip to the next volume
+                    if not pdf_links:
+                        print(f"  No PDF links found for Issue {issue_num} in Volume {volume_num}. Skipping to the next volume.")
+                        break  # Skip to the next volume
+
+                except Exception as e:
+                    print(f"  Failed to process Issue {issue_num} in Volume {volume_num}. Error: {e}")
+        self.driver.quit()
+        return 
+    
+class IOPScraper(BaseScraper):
+    def __init__(self) -> None:
+        super().__init__()
+        self.cookie_handled = False
+
+    # get paper url list from issue
+    def get_url_list(self, issue_url: str) -> list:
+        """_summary_
+
+        Args:
+            issue_url (str): url contains volume and issue number. Eg:https://www.mdpi.com/2072-4292/1/3
+        Returns:
+            list: list of markup urls referencing actual papers
+        """
+
+        self.driver.get(issue_url)
+        time.sleep(2)  # Give the page time to load
+
+        # Handle cookie popup only once, for the first request
+        if not self.cookie_handled:
+            self._handle_cookie_popup()
+            self.cookie_handled = True
+
+        # Scroll through the page to load all articles
+        self._scroll_page()
+
+        # Get the fully rendered HTML and pass it to BeautifulSoup
+        html = self.driver.page_source
+        soup = BeautifulSoup(html, "html.parser")
+
+        # Find all PDF links using appropriate class or tag
+        pdf_links = soup.find_all("a", href=lambda href: href and "/article/" in href)
+        print(f"PDF links found: {len(pdf_links)}")
+
+        return pdf_links
+
+class SpringerScraper(BaseScraper):
+    #TODO
+    def __init__(self) -> None:
+        super().__init__()
+        self.cookie_handled = False
+    pass
 
 if __name__ == "__main__":
     mdpi_scaper = MDPIScraper()
-    issue_url = "https://www.mdpi.com/2072-4292/1/3"
-    urls = mdpi_scaper.get_url_list(issue_url=issue_url)
-    print(urls)
+    #issue_url = "https://www.mdpi.com/2072-4292/1/3"
+    #urls = mdpi_scaper.get_url_list(issue_url=issue_url)
+    #paper_urls = mdpi_scaper.get_url_list_from_journal(start_volume=1, end_volume=2, start_issue=1, end_issue=30)
+    iop_scraper = IOPScraper()
+    iop_url = "https://iopscience.iop.org/issue/1755-1315/37/1"
+    iop_urls = iop_scraper.get_url_list(iop_url)
+    print(iop_urls)
