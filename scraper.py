@@ -1,5 +1,7 @@
 import time
 import logging
+import os
+import json
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -14,6 +16,8 @@ setup_logging()
 
 
 class BaseScraper(ABC):
+    _output_file = "configs/scraper_config.yaml"
+
     def __init__(self, config_file: str = "configs/scraper_config.yaml") -> None:
         self.driver = self._setup_selenium()
 
@@ -66,6 +70,7 @@ class BaseScraper(ABC):
         pass
 
 
+# TODO: save links in external file
 class MDPIScraper(BaseScraper):
     def __init__(self) -> None:
         super().__init__()
@@ -98,8 +103,13 @@ class MDPIScraper(BaseScraper):
 
         # Now find all PDF links using the class_="UD_Listings_ArticlePDF"
         pdf_links = soup.find_all("a", class_="UD_Listings_ArticlePDF")
-        logging.info(f"  PDF links found: {len(pdf_links)}")
+        pdf_links = [tag.get("href") for tag in pdf_links if tag.get("href")]
+        base_url = "https://www.mdpi.com"
+        pdf_links = [
+            base_url + href if href.startswith("/") else href for href in pdf_links
+        ]
 
+        logging.info(f"  PDF links found: {len(pdf_links)}")
         return pdf_links
 
     def __call__(
@@ -124,7 +134,7 @@ class MDPIScraper(BaseScraper):
                 try:
                     # Get all PDF links using Selenium to scroll and handle cookie popup once
                     pdf_links = self.get_url_list(issue_url)
-                    links.append(pdf_links)
+                    links.extend(pdf_links)
                     # If no PDF links are found, skip to the next volume
                     if not pdf_links:
                         logging.info(
@@ -137,6 +147,7 @@ class MDPIScraper(BaseScraper):
                         f"  Failed to process Issue {issue_num} in Volume {volume_num}. Error: {e}"
                     )
         self.driver.quit()
+        self._save_scraped_list(links)
         return links
 
 

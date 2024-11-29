@@ -1,21 +1,3 @@
-publishers:
-  mdpi:
-    journals:
-      - name: Remote Sensing
-        url: https://www.mdpi.com/journal/remotesensing
-        ISSN: 2072-4292
-        volume_range:
-          start: 1
-          end: 16
-        issue_range:
-          start: 1
-          end: 30
-      - name: Geosciences
-        url: https://www.mdpi.com/journal/geosciences
-        ISSN: 2076-3263
-        volume_range:
-          start: 3
-          end: 5
-        issue_range:
-          start: 2
-          end: 3
+{
+    "MDPIScraper": []
+}
