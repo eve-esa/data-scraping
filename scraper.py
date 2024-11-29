@@ -1,12 +1,5 @@
-"""
-    utils:
-    retry_request
-    download_pdfs
-"""
-
 import time
 import logging
-import os
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -15,28 +8,13 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from abc import ABC, abstractmethod
 
+from utils import setup_logging, read_yaml_file
+
+setup_logging()
+
 
 class BaseScraper(ABC):
-    """
-    input:
-    output: list of links to download
-
-    steps:
-    0) setup_selenium
-    1) scroll_page
-    2) handle_coockie
-
-    override
-    4) get_all_pdf_links_selenium
-
-    Inherit:
-    - MDPIPdfScraperCategory2
-    - ArxivPdfScraperCategory3
-    - SourceHTMLScraperCategory2
-    -
-    """
-
-    def __init__(self) -> None:
+    def __init__(self, config_file: str = "configs/scraper_config.yaml") -> None:
         self.driver = self._setup_selenium()
 
     def _setup_selenium(self):
@@ -51,7 +29,7 @@ class BaseScraper(ABC):
         driver = webdriver.Chrome(
             service=Service(ChromeDriverManager().install()), options=chrome_options
         )
-        #driver = webdriver.Chrome(service=Service())
+        # driver = webdriver.Chrome(service=Service())
         return driver
 
     def _scroll_page(self, pause_time: int = 2):
@@ -87,6 +65,7 @@ class BaseScraper(ABC):
     def get_url_list() -> list:
         pass
 
+
 class MDPIScraper(BaseScraper):
     def __init__(self) -> None:
         super().__init__()
@@ -94,7 +73,7 @@ class MDPIScraper(BaseScraper):
 
     # get paper url list from issue
     def get_url_list(self, issue_url: str) -> list:
-        """_summary_
+        """return list of urls ready to download
 
         Args:
             issue_url (str): url contains volume and issue number. Eg:https://www.mdpi.com/2072-4292/1/3
@@ -123,50 +102,58 @@ class MDPIScraper(BaseScraper):
 
         return pdf_links
 
-    def get_url_list_from_journal(
-        self, 
-        #issue_url: str,
-        start_volume: int,
-        end_volume: int,
-        start_issue: int,
-        end_issue: int) -> list:
+    def __call__(
+        self,
+        journal_url: str,
+        start_volume: int = 1,
+        end_volume: int = 16,
+        start_issue: int = 1,
+        end_issue: int = 30,
+    ) -> list:
         # input: complete url with only journal
         # output: list omplete url with journal and volume
         # TODO Append pdf links of each volume/issue in a key value dict/nested list
         links = []
         for volume_num in range(start_volume, end_volume + 1):
-            print(f"\nProcessing Volume {volume_num}...")
-
-            start_issue = 1
-            end_issue = 30  # Adjust based on the number of issues per volume
+            logging.info(f"\nProcessing Volume {volume_num}...")
 
             for issue_num in range(start_issue, end_issue + 1):
-                issue_url = f"https://www.mdpi.com/2072-4292/{volume_num}/{issue_num}"
-                print(f"  Processing Issue URL: {issue_url}")
+                issue_url = f"{journal_url}/{volume_num}/{issue_num}"
+                logging.info(f"  Processing Issue URL: {issue_url}")
 
                 try:
                     # Get all PDF links using Selenium to scroll and handle cookie popup once
                     pdf_links = self.get_url_list(issue_url)
-                    print(pdf_links)
                     links.append(pdf_links)
                     # If no PDF links are found, skip to the next volume
                     if not pdf_links:
-                        print(f"  No PDF links found for Issue {issue_num} in Volume {volume_num}. Skipping to the next volume.")
+                        logging.info(
+                            f"  No PDF links found for Issue {issue_num} in Volume {volume_num}. Skipping to the next volume."
+                        )
                         break  # Skip to the next volume
 
                 except Exception as e:
-                    print(f"  Failed to process Issue {issue_num} in Volume {volume_num}. Error: {e}")
+                    logging.error(
+                        f"  Failed to process Issue {issue_num} in Volume {volume_num}. Error: {e}"
+                    )
         self.driver.quit()
-        return 
-    
+        return links
+
+
+# TODO: popoup automation not working
 class IOPScraper(BaseScraper):
+    """This class acts only on issues urls, because those are the only once identified in the data_collection gsheet"""
+
     def __init__(self) -> None:
         super().__init__()
         self.cookie_handled = False
 
+    def __call__(self, issue_url: str) -> list:
+        return self.get_url_list(issue_url)
+
     # get paper url list from issue
     def get_url_list(self, issue_url: str) -> list:
-        """_summary_
+        """get a list of url
 
         Args:
             issue_url (str): url contains volume and issue number. Eg:https://www.mdpi.com/2072-4292/1/3
@@ -191,23 +178,27 @@ class IOPScraper(BaseScraper):
 
         # Find all PDF links using appropriate class or tag
         pdf_links = soup.find_all("a", href=lambda href: href and "/article/" in href)
-        print(f"PDF links found: {len(pdf_links)}")
+        logging.info(f"PDF links found: {len(pdf_links)}")
 
         return pdf_links
 
+
 class SpringerScraper(BaseScraper):
-    #TODO
+    # TODO
     def __init__(self) -> None:
         super().__init__()
         self.cookie_handled = False
+
     pass
+
 
 if __name__ == "__main__":
     mdpi_scaper = MDPIScraper()
-    #issue_url = "https://www.mdpi.com/2072-4292/1/3"
-    #urls = mdpi_scaper.get_url_list(issue_url=issue_url)
-    #paper_urls = mdpi_scaper.get_url_list_from_journal(start_volume=1, end_volume=2, start_issue=1, end_issue=30)
     iop_scraper = IOPScraper()
-    iop_url = "https://iopscience.iop.org/issue/1755-1315/37/1"
-    iop_urls = iop_scraper.get_url_list(iop_url)
-    print(iop_urls)
+
+    # get these urls from data collection gsheet
+    # iop_url = "https://iopscience.iop.org/issue/1755-1315/540/1"
+    mdpi_url = "https://www.mdpi.com/2072-4292"
+
+    # print(iop_scraper(iop_url))
+    print(mdpi_scaper(mdpi_url))
