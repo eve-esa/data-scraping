@@ -1,0 +1,8 @@
+structures of publisher:
+
+-->journal 
+-->-->volume
+-->-->-->issue
+-->-->-->-->paper
+
+E.g in MDPI: Acoustics, Volume 1, Issue 1 (March 2019) – 18 articles
