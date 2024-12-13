@@ -7,12 +7,17 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 from abc import ABC, abstractmethod
 
 from utils import setup_logging, read_yaml_file
 
-setup_logging()
+#setup_logging()
+
+# Logging setup
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class BaseScraper(ABC):
@@ -53,17 +58,22 @@ class BaseScraper(ABC):
             last_height = new_height
 
     def _handle_cookie_popup(self):
+        """Handle the cookie popup by interacting with the 'Accept All' button using JavaScript."""
         try:
-            # Locate and click the "Allow All" button on the cookie popup
-            cookie_button = self.driver.find_element(
-                By.XPATH,
-                '//*[@id="CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll"]',
-            )
-            cookie_button.click()
-            logging.info("Cookie popup accepted.")
+            # Wait for the page to fully load
+            WebDriverWait(self.driver, 15).until(lambda d: d.execute_script("return document.readyState") == "complete")
+            logger.info("Page fully loaded. Attempting to locate the 'Accept All' button using JavaScript.")
+
+            # Execute JavaScript to find and click the "Accept All" button
+            self.driver.execute_script("""
+                let acceptButton = document.querySelector("body > div.cky-consent-container.cky-classic-bottom > div.cky-consent-bar > div > div > div.cky-notice-btn-wrapper > button.cky-btn.cky-btn-accept");
+                if (acceptButton) {
+                    acceptButton.click();
+                }
+            """)
+            logger.info("'Accept All' button clicked successfully using JavaScript.")
         except Exception as e:
-            logging.error("No cookie popup found or unable to click. Skipping...")
-            pass
+            logger.error(f"Failed to handle cookie popup using JavaScript. Error: {e}")
 
     @abstractmethod
     def get_url_list() -> list:
