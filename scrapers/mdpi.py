@@ -1,37 +1,65 @@
+import time
 from typing import Dict, List, Type
 from bs4 import BeautifulSoup
 
 from scrapers.base import BaseScraper, BaseModelScraper
+from storage import PDFName
 
 
-class MDPIModel(BaseModelScraper):
-    journal_url: str
+class MDPIJournal(BaseModelScraper):
+    url: str
     start_volume: int | None = 1
     end_volume: int | None = 16
     start_issue: int | None = 1
     end_issue: int | None = 30
 
 
+class MDPIModel(BaseModelScraper):
+    journals: List[MDPIJournal]
+
+
 class MDPIScraper(BaseScraper):
-    def scrape(self, model: MDPIModel, scraper: BeautifulSoup) -> List:
-        start_volume = model.start_volume
-        end_volume = model.end_volume
+    @property
+    def model_class(self) -> Type[BaseModelScraper]:
+        return MDPIModel
 
-        start_issue = model.start_issue
-        end_issue = model.end_issue
+    def scrape(self, model: MDPIModel, scraper: BeautifulSoup) -> Dict[str, Dict[int, Dict[int, List[str]]]]:
+        links = {}
 
-        journal_url = model.journal_url
+        for journal in model.journals:
+            links[journal.name] = self.__scrape_journal(scraper, journal)
 
-        # input: complete url with only journal
-        # output: list complete url with journal and volume
-        links = {
+        self._driver.quit()
+
+        return links
+
+    def post_process(self, links: Dict[str, Dict[int, Dict[int, List[str]]]]) -> List[str]:
+        return [link for journal in links.values() for volume in journal.values() for issue in volume.values() for link in issue]
+
+    def upload_to_s3(self, links: Dict[str, Dict[int, Dict[int, List[str]]]]):
+        for journal, volumes in links.items():
+            for volume_num, issues in volumes.items():
+                for issue_num, issue_links in issues.items():
+                    for link in issue_links:
+                        self._s3_client.upload(
+                            "mdpi", link, PDFName(journal=journal, volume=str(volume_num), issue=str(issue_num))
+                        )
+                        # Sleep after each successful download to avoid overwhelming the server
+                        time.sleep(5)
+
+    def __scrape_journal(self, scraper: BeautifulSoup, journal: MDPIJournal):
+        start_volume = journal.start_volume
+        end_volume = journal.end_volume
+
+        start_issue = journal.start_issue
+        end_issue = journal.end_issue
+
+        journal_url = journal.url
+
+        return {
             volume_num: self.__scrape_volume(scraper, journal_url, start_issue, end_issue, volume_num)
             for volume_num in range(start_volume, end_volume + 1)
         }
-
-        self.driver.quit()
-
-        return [link for volume in links.values() for link in volume.values()]
 
     def __scrape_volume(
         self,
@@ -41,7 +69,7 @@ class MDPIScraper(BaseScraper):
         end_issue: int,
         volume_num: int
     ) -> Dict[int, List]:
-        self.logger.info(f"Processing Volume {volume_num}...")
+        self._logger.info(f"Processing Volume {volume_num}...")
         return {
             issue_num: sir
             for issue_num in range(start_issue, end_issue + 1)
@@ -57,7 +85,7 @@ class MDPIScraper(BaseScraper):
     ) -> List | None:
         issue_url = f"{journal_url}/{volume_num}/{issue_num}"
 
-        self.logger.info(f"Processing Issue URL: {issue_url}")
+        self._logger.info(f"Processing Issue URL: {issue_url}")
         try:
             # Get all PDF links using Selenium to scroll and handle cookie popup once
             # Now find all PDF links using the class_="UD_Listings_ArticlePDF"
@@ -68,22 +96,18 @@ class MDPIScraper(BaseScraper):
                 base_url + href if href.startswith("/") else href for href in pdf_links
             ]
 
-            self.logger.info(f"PDF links found: {len(pdf_links)}")
+            self._logger.info(f"PDF links found: {len(pdf_links)}")
 
             # If no PDF links are found, skip to the next volume
             if not pdf_links:
-                self.logger.info(
+                self._logger.info(
                     f"No PDF links found for Issue {issue_num} in Volume {volume_num}. Skipping to the next volume."
                 )
                 return None
 
             return pdf_links
         except Exception as e:
-            self.logger.error(
+            self._logger.error(
                 f"Failed to process Issue {issue_num} in Volume {volume_num}. Error: {e}"
             )
             return None
-
-    @property
-    def model_class(self) -> Type[BaseModelScraper]:
-        return MDPIModel

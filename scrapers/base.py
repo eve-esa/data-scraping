@@ -1,4 +1,4 @@
-from typing import List, Type
+from typing import List, Type, Any
 from bs4 import BeautifulSoup
 from pydantic import BaseModel
 from selenium import webdriver
@@ -9,6 +9,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 from abc import ABC, abstractmethod
 import time
 import logging
+
+from storage import S3Storage
 
 logging.basicConfig(level=logging.INFO)
 
@@ -29,13 +31,15 @@ class BaseScraper(ABC):
         chrome_options.add_argument("--no-sandbox")
 
         # Create a new Chrome browser instance
-        self.driver = webdriver.Chrome(
+        self._driver = webdriver.Chrome(
             service=Service(ChromeDriverManager().install()), options=chrome_options
         )
         # driver = webdriver.Chrome(service=Service())
 
-        self.logger = logging.getLogger(__name__)
-        self.cookie_handled = False
+        self._logger = logging.getLogger(__name__)
+        self._cookie_handled = False
+
+        self._s3_client = S3Storage()
 
     def __call__(self, model: BaseModelScraper) -> List:
         scraper = self.__setup_scraper(model.issue_url)
@@ -44,20 +48,22 @@ class BaseScraper(ABC):
         # TODO: save links in external file
         # self._save_scraped_list(links)
 
-        return links
+        self.upload_to_s3(links)
+
+        return self.post_process(links)
 
     def __scroll_page(self, pause_time: int = 2):
-        last_height = self.driver.execute_script("return document.body.scrollHeight")
+        last_height = self._driver.execute_script("return document.body.scrollHeight")
 
         while True:
             # Scroll down to the bottom
-            self.driver.execute_script(
+            self._driver.execute_script(
                 "window.scrollTo(0, document.body.scrollHeight);"
             )
             time.sleep(pause_time)
 
             # Calculate new scroll height and compare with the last height
-            new_height = self.driver.execute_script("return document.body.scrollHeight")
+            new_height = self._driver.execute_script("return document.body.scrollHeight")
             if new_height == last_height:
                 break
             last_height = new_height
@@ -68,19 +74,19 @@ class BaseScraper(ABC):
         """
         try:
             # Wait for the page to fully load
-            WebDriverWait(self.driver, 15).until(lambda d: d.execute_script("return document.readyState") == "complete")
-            self.logger.info("Page fully loaded. Attempting to locate the 'Accept All' button using JavaScript.")
+            WebDriverWait(self._driver, 15).until(lambda d: d.execute_script("return document.readyState") == "complete")
+            self._logger.info("Page fully loaded. Attempting to locate the 'Accept All' button using JavaScript.")
 
             # Execute JavaScript to find and click the "Accept All" button
-            self.driver.execute_script("""
+            self._driver.execute_script("""
                 let acceptButton = document.querySelector("body > div.cky-consent-container.cky-classic-bottom > div.cky-consent-bar > div > div > div.cky-notice-btn-wrapper > button.cky-btn.cky-btn-accept");
                 if (acceptButton) {
                     acceptButton.click();
                 }
             """)
-            self.logger.info("'Accept All' button clicked successfully using JavaScript.")
+            self._logger.info("'Accept All' button clicked successfully using JavaScript.")
         except Exception as e:
-            self.logger.error(f"Failed to handle cookie popup using JavaScript. Error: {e}")
+            self._logger.error(f"Failed to handle cookie popup using JavaScript. Error: {e}")
 
     def __setup_scraper(self, issue_url: str) -> BeautifulSoup:
         """
@@ -93,27 +99,37 @@ class BaseScraper(ABC):
             BeautifulSoup: A BeautifulSoup object containing the fully rendered HTML of the URL.
         """
 
-        self.driver.get(issue_url)
+        self._driver.get(issue_url)
         time.sleep(2)  # Give the page time to load
 
         # Handle cookie popup only once, for the first request
-        if not self.cookie_handled:
+        if not self._cookie_handled:
             self.__handle_cookie_popup()
-            self.cookie_handled = True
+            self._cookie_handled = True
 
         # Scroll through the page to load all articles
         self.__scroll_page()
 
         # Get the fully rendered HTML and pass it to BeautifulSoup
-        html = self.driver.page_source
+        html = self._driver.page_source
 
         return BeautifulSoup(html, "html.parser")
 
     @abstractmethod
-    def scrape(self, model: BaseModelScraper, scraper: BeautifulSoup) -> List:
+    def scrape(self, model: BaseModelScraper, scraper: BeautifulSoup) -> Any:
+        pass
+
+    @abstractmethod
+    def post_process(self, links: Any) -> List[str]:
         pass
 
     @property
     @abstractmethod
     def model_class(self) -> Type[BaseModelScraper]:
         pass
+
+    @abstractmethod
+    def upload_to_s3(self, links: Any):
+        pass
+
+
