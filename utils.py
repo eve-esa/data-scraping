@@ -51,12 +51,15 @@ def run_scrapers(discovered_scrapers: Dict, config: Dict | None = None):
 
     threads = []
     for name, scraper in discovered_scrapers.items():
-        thread = threading.Thread(
-            target=run_scraper,
-            args=(scraper, getattr(scraper, "model_class", None), config.get(name, {}) if config else {})
-        )
-        thread.start()
-        threads.append(thread)
+        try:
+            thread = threading.Thread(
+                target=run_scraper,
+                args=(scraper, getattr(scraper, "model_class", None), config.get(name, {}) if config else {})
+            )
+            thread.start()
+            threads.append(thread)
+        except Exception as e:
+            logger.error(f"Error running scraper {name}: {e}")
 
     for thread in threads:
         thread.join()
