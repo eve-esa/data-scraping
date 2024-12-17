@@ -1,3 +1,5 @@
+from typing import List
+from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -7,12 +9,15 @@ from abc import ABC, abstractmethod
 import time
 import logging
 
+logging.basicConfig(level=logging.INFO)
+
 
 class BaseScraper(ABC):
     _output_file = "configs/scraper_config.yaml"
 
-    def __init__(self, config_file: str = "configs/scraper_config.yaml") -> None:
+    def __init__(self) -> None:
         self.driver = self._setup_selenium()
+
         self.logger = logging.getLogger(__name__)
         self.cookie_handled = False
 
@@ -48,7 +53,9 @@ class BaseScraper(ABC):
             last_height = new_height
 
     def _handle_cookie_popup(self):
-        """Handle the cookie popup by interacting with the 'Accept All' button using JavaScript."""
+        """
+        Handle the cookie popup by interacting with the 'Accept All' button using JavaScript.
+        """
         try:
             # Wait for the page to fully load
             WebDriverWait(self.driver, 15).until(lambda d: d.execute_script("return document.readyState") == "complete")
@@ -65,13 +72,35 @@ class BaseScraper(ABC):
         except Exception as e:
             self.logger.error(f"Failed to handle cookie popup using JavaScript. Error: {e}")
 
-    @abstractmethod
-    def scrape(self, issue_url: str) -> list:
-        pass
+    def _setup_scraper(self, issue_url: str) -> BeautifulSoup:
+        """
+        Get a URL.
 
-    @property
+        Args:
+            issue_url (str): url contains volume and issue number. Eg:https://www.mdpi.com/2072-4292/1/3
+
+        Returns:
+            BeautifulSoup: A BeautifulSoup object containing the fully rendered HTML of the URL.
+        """
+
+        self.driver.get(issue_url)
+        time.sleep(2)  # Give the page time to load
+
+        # Handle cookie popup only once, for the first request
+        if not self.cookie_handled:
+            self._handle_cookie_popup()
+            self.cookie_handled = True
+
+        # Scroll through the page to load all articles
+        self._scroll_page()
+
+        # Get the fully rendered HTML and pass it to BeautifulSoup
+        html = self.driver.page_source
+
+        return BeautifulSoup(html, "html.parser")
+
     @abstractmethod
-    def name(self) -> str:
+    def __call__(self, *args, **kwargs) -> List:
         pass
 
     @property

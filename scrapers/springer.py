@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Type, List
 from pydantic import BaseModel
 
 from scrapers.base import BaseScraper
@@ -9,12 +9,8 @@ class SpringerModel(BaseModel):
 
 
 class SpringerScraper(BaseScraper):
-    def scrape(self, model: SpringerModel) -> list:
+    def __call__(self, model: SpringerModel) -> List:
         pass
-
-    @property
-    def name(self) -> str:
-        return "springer"
 
     @property
     def model_class(self) -> Type[BaseModel]:
