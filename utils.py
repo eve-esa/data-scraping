@@ -2,9 +2,10 @@ import importlib
 import inspect
 import pkgutil
 import threading
-from typing import Dict, List
+from typing import Dict
 import yaml
 import logging
+from pydantic import ValidationError
 
 from scrapers.base import BaseScraper
 
@@ -45,20 +46,20 @@ def run_scrapers(discovered_scrapers: Dict, config: Dict | None = None):
     Find all scraper classes in the specified package and run them in separate threads.
     """
 
-    def run_scraper(scraper_instance, model_class, scraper_config):
+    def run_scraper(model_class, scraper_config):
         model_instance = model_class(**scraper_config) if model_class else None
-        scraper_instance(model_instance)
+        scraper(model_instance)
 
     threads = []
     for name, scraper in discovered_scrapers.items():
         try:
             thread = threading.Thread(
                 target=run_scraper,
-                args=(scraper, getattr(scraper, "model_class", None), config.get(name, {}) if config else {})
+                args=(getattr(scraper, "model_class", None), config.get(name, {}) if config else {})
             )
             thread.start()
             threads.append(thread)
-        except Exception as e:
+        except ValidationError as e:
             logger.error(f"Error running scraper {name}: {e}")
 
     for thread in threads:
