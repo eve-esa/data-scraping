@@ -1,17 +1,17 @@
 from typing import Type, List
-from pydantic import BaseModel
+from bs4 import BeautifulSoup
 
-from scrapers.base import BaseScraper
+from scrapers.base import BaseScraper, BaseModelScraper
 
 
-class SpringerModel(BaseModel):
-    issue_url: str  # url contains volume and issue number. Eg: https://www.mdpi.com/2072-4292/1/3
+class SpringerModel(BaseModelScraper):
+    pass
 
 
 class SpringerScraper(BaseScraper):
-    def __call__(self, model: SpringerModel) -> List:
+    def scrape(self, model: SpringerModel, scraper: BeautifulSoup) -> List:
         pass
 
     @property
-    def model_class(self) -> Type[BaseModel]:
+    def model_class(self) -> Type[BaseModelScraper]:
         return SpringerModel

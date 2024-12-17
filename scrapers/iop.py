@@ -1,20 +1,20 @@
 from typing import Type, List
-from pydantic import BaseModel
+from bs4 import BeautifulSoup
 
-from scrapers.base import BaseScraper
+from scrapers.base import BaseScraper, BaseModelScraper
 
 
-class IOPModel(BaseModel):
-    issue_url: str  # url contains volume and issue number. Eg: https://www.mdpi.com/2072-4292/1/3
+class IOPModel(BaseModelScraper):
+    pass
 
 
 # TODO: popup automation not working
 class IOPScraper(BaseScraper):
-    """This class acts only on issues urls, because those are the only once identified in the data_collection gsheet"""
+    """
+    This class acts only on issues urls, because those are the only once identified in the data_collection gsheet
+    """
 
-    def __call__(self, model: IOPModel) -> List:
-        scraper = self._setup_scraper(model.issue_url)
-
+    def scrape(self, model: IOPModel, scraper: BeautifulSoup) -> List:
         # Find all PDF links using appropriate class or tag
         pdf_links = scraper.find_all("a", href=lambda href: href and "/article/" in href)
         self.logger.info(f"PDF links found: {len(pdf_links)}")
@@ -24,5 +24,5 @@ class IOPScraper(BaseScraper):
         return pdf_links
 
     @property
-    def model_class(self) -> Type[BaseModel]:
+    def model_class(self) -> Type[BaseModelScraper]:
         return IOPModel

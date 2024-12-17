@@ -1,10 +1,10 @@
 from typing import Dict, List, Type
-from pydantic import BaseModel
+from bs4 import BeautifulSoup
 
-from scrapers.base import BaseScraper
+from scrapers.base import BaseScraper, BaseModelScraper
 
 
-class MDPIModel(BaseModel):
+class MDPIModel(BaseModelScraper):
     journal_url: str
     start_volume: int | None = 1
     end_volume: int | None = 16
@@ -13,7 +13,7 @@ class MDPIModel(BaseModel):
 
 
 class MDPIScraper(BaseScraper):
-    def __call__(self, model: MDPIModel) -> List:
+    def scrape(self, model: MDPIModel, scraper: BeautifulSoup) -> List:
         start_volume = model.start_volume
         end_volume = model.end_volume
 
@@ -25,27 +25,37 @@ class MDPIScraper(BaseScraper):
         # input: complete url with only journal
         # output: list complete url with journal and volume
         links = {
-            volume_num: self.__scrape_volume(journal_url, start_issue, end_issue, volume_num)
+            volume_num: self.__scrape_volume(scraper, journal_url, start_issue, end_issue, volume_num)
             for volume_num in range(start_volume, end_volume + 1)
         }
 
         self.driver.quit()
 
-        # TODO: save links in external file
-        # self._save_scraped_list(links)
         return [link for volume in links.values() for link in volume.values()]
 
-    def __scrape_volume(self, journal_url: str, start_issue: int, end_issue: int, volume_num: int) -> Dict[int, List]:
+    def __scrape_volume(
+        self,
+        scraper: BeautifulSoup,
+        journal_url: str,
+        start_issue: int,
+        end_issue: int,
+        volume_num: int
+    ) -> Dict[int, List]:
         self.logger.info(f"Processing Volume {volume_num}...")
         return {
             issue_num: sir
             for issue_num in range(start_issue, end_issue + 1)
-            if (sir := self.__scrape_issue(journal_url, volume_num, issue_num))
+            if (sir := self.__scrape_issue(scraper, journal_url, volume_num, issue_num))
         }
 
-    def __scrape_issue(self, journal_url: str, volume_num: int, issue_num: int) -> List | None:
+    def __scrape_issue(
+        self,
+        scraper: BeautifulSoup,
+        journal_url: str,
+        volume_num: int,
+        issue_num: int
+    ) -> List | None:
         issue_url = f"{journal_url}/{volume_num}/{issue_num}"
-        scraper = self._setup_scraper(issue_url)
 
         self.logger.info(f"Processing Issue URL: {issue_url}")
         try:
@@ -75,5 +85,5 @@ class MDPIScraper(BaseScraper):
             return None
 
     @property
-    def model_class(self) -> Type[BaseModel]:
+    def model_class(self) -> Type[BaseModelScraper]:
         return MDPIModel
