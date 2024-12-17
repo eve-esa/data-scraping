@@ -1,27 +1,18 @@
-import time
 from typing import Type, List
-from bs4 import BeautifulSoup
 
-from scrapers.base import BaseScraper, BaseModelScraper
-
-
-class SpringerModel(BaseModelScraper):
-    pass
+from scrapers.base import BaseConfigScraper
+from scrapers.iop import IOPJournal, IOPConfig, IOPScraper
 
 
-class SpringerScraper(BaseScraper):
+class SpringerJournal(IOPJournal):
+    issue_url: str  # url contains volume and issue number. Eg: https://www.mdpi.com/2072-4292/1/3
+
+
+class SpringerConfig(IOPConfig):
+    journals: List[SpringerJournal]
+
+
+class SpringerScraper(IOPScraper):
     @property
-    def model_class(self) -> Type[BaseModelScraper]:
-        return SpringerModel
-
-    def scrape(self, model: SpringerModel, scraper: BeautifulSoup) -> List:
-        pass
-
-    def post_process(self, links: List) -> List:
-        return links
-
-    def upload_to_s3(self, links: List):
-        for link in links:
-            self._s3_client.upload("iop", link)
-            # Sleep after each successful download to avoid overwhelming the server
-            time.sleep(5)
+    def model_class(self) -> Type[BaseConfigScraper]:
+        return SpringerConfig

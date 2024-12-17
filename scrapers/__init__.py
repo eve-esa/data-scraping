@@ -1,3 +1,3 @@
-from .iop import IOPScraper, IOPModel
-from .mdpi import MDPIScraper, MDPIModel
-from .springer import SpringerScraper, SpringerModel
+from .iop import IOPScraper, IOPConfig
+from .mdpi import MDPIScraper, MDPIConfig
+from .springer import SpringerScraper, SpringerConfig

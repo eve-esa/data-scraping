@@ -15,13 +15,11 @@ from storage import S3Storage
 logging.basicConfig(level=logging.INFO)
 
 
-class BaseModelScraper(BaseModel):
-    issue_url: str  # url contains volume and issue number. Eg: https://www.mdpi.com/2072-4292/1/3
+class BaseConfigScraper(ABC, BaseModel):
+    pass
 
 
 class BaseScraper(ABC):
-    _output_file = "configs/scraper_config.yaml"
-
     def __init__(self) -> None:
         chrome_options = Options()
         chrome_options.add_argument(
@@ -41,9 +39,8 @@ class BaseScraper(ABC):
 
         self._s3_client = S3Storage()
 
-    def __call__(self, model: BaseModelScraper) -> List:
-        scraper = self.__setup_scraper(model.issue_url)
-        links = self.scrape(model, scraper)
+    def __call__(self, model: BaseConfigScraper) -> List[str]:
+        links = self.scrape(model)
 
         # TODO: save links in external file
         # self._save_scraped_list(links)
@@ -68,7 +65,7 @@ class BaseScraper(ABC):
                 break
             last_height = new_height
 
-    def __handle_cookie_popup(self):
+    def _handle_cookie_popup(self):
         """
         Handle the cookie popup by interacting with the 'Accept All' button using JavaScript.
         """
@@ -88,7 +85,7 @@ class BaseScraper(ABC):
         except Exception as e:
             self._logger.error(f"Failed to handle cookie popup using JavaScript. Error: {e}")
 
-    def __setup_scraper(self, issue_url: str) -> BeautifulSoup:
+    def _setup_scraper(self, issue_url: str) -> BeautifulSoup:
         """
         Get a URL.
 
@@ -104,7 +101,7 @@ class BaseScraper(ABC):
 
         # Handle cookie popup only once, for the first request
         if not self._cookie_handled:
-            self.__handle_cookie_popup()
+            self._handle_cookie_popup()
             self._cookie_handled = True
 
         # Scroll through the page to load all articles
@@ -116,7 +113,7 @@ class BaseScraper(ABC):
         return BeautifulSoup(html, "html.parser")
 
     @abstractmethod
-    def scrape(self, model: BaseModelScraper, scraper: BeautifulSoup) -> Any:
+    def scrape(self, model: BaseConfigScraper) -> Any:
         pass
 
     @abstractmethod
@@ -125,7 +122,7 @@ class BaseScraper(ABC):
 
     @property
     @abstractmethod
-    def model_class(self) -> Type[BaseModelScraper]:
+    def model_class(self) -> Type[BaseConfigScraper]:
         pass
 
     @abstractmethod

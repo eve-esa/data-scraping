@@ -1,33 +1,33 @@
 import time
 from typing import Dict, List, Type
-from bs4 import BeautifulSoup
 
-from scrapers.base import BaseScraper, BaseModelScraper
+from scrapers.base import BaseScraper, BaseConfigScraper
 from storage import PDFName
 
 
-class MDPIJournal(BaseModelScraper):
+class MDPIJournal(BaseConfigScraper):
     url: str
+    name: str
     start_volume: int | None = 1
     end_volume: int | None = 16
     start_issue: int | None = 1
     end_issue: int | None = 30
 
 
-class MDPIModel(BaseModelScraper):
+class MDPIConfig(BaseConfigScraper):
     journals: List[MDPIJournal]
 
 
 class MDPIScraper(BaseScraper):
     @property
-    def model_class(self) -> Type[BaseModelScraper]:
-        return MDPIModel
+    def model_class(self) -> Type[BaseConfigScraper]:
+        return MDPIConfig
 
-    def scrape(self, model: MDPIModel, scraper: BeautifulSoup) -> Dict[str, Dict[int, Dict[int, List[str]]]]:
+    def scrape(self, model: MDPIConfig) -> Dict[str, Dict[int, Dict[int, List[str]]]]:
         links = {}
 
         for journal in model.journals:
-            links[journal.name] = self.__scrape_journal(scraper, journal)
+            links[journal.name] = self.__scrape_journal(journal)
 
         self._driver.quit()
 
@@ -47,7 +47,7 @@ class MDPIScraper(BaseScraper):
                         # Sleep after each successful download to avoid overwhelming the server
                         time.sleep(5)
 
-    def __scrape_journal(self, scraper: BeautifulSoup, journal: MDPIJournal):
+    def __scrape_journal(self, journal: MDPIJournal):
         start_volume = journal.start_volume
         end_volume = journal.end_volume
 
@@ -57,13 +57,12 @@ class MDPIScraper(BaseScraper):
         journal_url = journal.url
 
         return {
-            volume_num: self.__scrape_volume(scraper, journal_url, start_issue, end_issue, volume_num)
+            volume_num: self.__scrape_volume(journal_url, start_issue, end_issue, volume_num)
             for volume_num in range(start_volume, end_volume + 1)
         }
 
     def __scrape_volume(
         self,
-        scraper: BeautifulSoup,
         journal_url: str,
         start_issue: int,
         end_issue: int,
@@ -73,17 +72,17 @@ class MDPIScraper(BaseScraper):
         return {
             issue_num: sir
             for issue_num in range(start_issue, end_issue + 1)
-            if (sir := self.__scrape_issue(scraper, journal_url, volume_num, issue_num))
+            if (sir := self.__scrape_issue(journal_url, volume_num, issue_num))
         }
 
     def __scrape_issue(
         self,
-        scraper: BeautifulSoup,
         journal_url: str,
         volume_num: int,
         issue_num: int
     ) -> List | None:
         issue_url = f"{journal_url}/{volume_num}/{issue_num}"
+        scraper = self._setup_scraper(issue_url)
 
         self._logger.info(f"Processing Issue URL: {issue_url}")
         try:

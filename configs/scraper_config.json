@@ -1,0 +1,36 @@
+{
+    "IOPScraper": {
+        "journals": [
+            {
+                "issue_url": "https://iopscience.iop.org/issue/0022-3727/"
+            }
+        ]
+    },
+    "MDPIScraper": {
+        "journals": [
+            {
+                "url": "https://www.mdpi.com/journal/materials",
+                "name": "materials",
+                "start_volume": 1,
+                "end_volume": 16,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/journal/polymers",
+                "name": "polymers",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            }
+        ]
+    },
+    "SpringerScraper": {
+        "journals": [
+            {
+                "issue_url": "https://link.springer.com/journal/10853"
+            }
+        ]
+    }
+}

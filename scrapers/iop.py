@@ -1,12 +1,16 @@
 import time
 from typing import Type, List
-from bs4 import BeautifulSoup, ResultSet
+from bs4 import ResultSet
 
-from scrapers.base import BaseScraper, BaseModelScraper
+from scrapers.base import BaseScraper, BaseConfigScraper
 
 
-class IOPModel(BaseModelScraper):
-    pass
+class IOPJournal(BaseConfigScraper):
+    issue_url: str  # url contains volume and issue number. Eg: https://www.mdpi.com/2072-4292/1/3
+
+
+class IOPConfig(BaseConfigScraper):
+    journals: List[IOPJournal]
 
 
 # TODO: popup automation not working
@@ -16,15 +20,13 @@ class IOPScraper(BaseScraper):
     """
 
     @property
-    def model_class(self) -> Type[BaseModelScraper]:
-        return IOPModel
+    def model_class(self) -> Type[BaseConfigScraper]:
+        return IOPConfig
 
-    def scrape(self, model: IOPModel, scraper: BeautifulSoup) -> ResultSet:
-        # Find all PDF links using appropriate class or tag
-        pdf_links = scraper.find_all("a", href=lambda href: href and "/article/" in href)
-        self._logger.info(f"PDF links found: {len(pdf_links)}")
-
-        self._driver.quit()
+    def scrape(self, model: IOPConfig) -> List[ResultSet]:
+        pdf_links = []
+        for journal in model.journals:
+            pdf_links.extend(self.__scrape_journal(journal))
 
         return pdf_links
 
@@ -36,3 +38,14 @@ class IOPScraper(BaseScraper):
             self._s3_client.upload("iop", link.get("href"))
             # Sleep after each successful download to avoid overwhelming the server
             time.sleep(5)
+
+    def __scrape_journal(self, journal: IOPJournal) -> List[ResultSet]:
+        scraper = self._setup_scraper(journal.issue_url)
+
+        # Find all PDF links using appropriate class or tag
+        pdf_links = scraper.find_all("a", href=lambda href: href and "/article/" in href)
+        self._logger.info(f"PDF links found: {len(pdf_links)}")
+
+        self._driver.quit()
+
+        return pdf_links
