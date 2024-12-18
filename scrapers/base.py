@@ -1,3 +1,4 @@
+import json
 from typing import List, Type, Any
 from bs4 import BeautifulSoup
 from pydantic import BaseModel
@@ -10,13 +11,14 @@ from abc import ABC, abstractmethod
 import time
 import logging
 
+from constants import config_path
 from storage import S3Storage
 
 logging.basicConfig(level=logging.INFO)
 
 
 class BaseConfigScraper(ABC, BaseModel):
-    pass
+    done: bool = False
 
 
 class BaseScraper(ABC):
@@ -47,9 +49,43 @@ class BaseScraper(ABC):
 
         self.upload_to_s3(links)
 
-        return self.post_process(links)
+        result = self.post_process(links)
 
-    def __scroll_page(self, pause_time: int = 2):
+        model.done = True
+        self._update_json_config(self.__class__.__name__)
+
+        return result
+
+    def _update_json_config(self, scraper_name: str):
+        """
+        Update the JSON file by setting 'done' to True for a given scraper.
+
+        Args:
+            scraper_name (str): The name of the scraper to update.
+        """
+
+        try:
+            with open(config_path, "r") as file:
+                config = json.load(file)
+
+            if scraper_name not in config:
+                self._logger.error(f"Scraper {scraper_name} not found in the configuration file.")
+                return
+
+            config[scraper_name]["done"] = True
+
+            with open(config_path, "w") as file:
+                json.dump(config, file, indent=4)
+
+            self._logger.info(f"Configuration for {scraper_name} successfully updated.")
+        except FileNotFoundError:
+            self._logger.error(f"Error: File {config_path} not found.")
+        except json.JSONDecodeError:
+            self._logger.error(f"Error: the file {config_path} is not a valid JSON.")
+        except Exception as e:
+            self._logger.error(f"An error occurred while updating the configuration: {e}")
+
+    def _scroll_page(self, pause_time: int = 2):
         last_height = self._driver.execute_script("return document.body.scrollHeight")
 
         while True:
@@ -105,7 +141,7 @@ class BaseScraper(ABC):
             self._cookie_handled = True
 
         # Scroll through the page to load all articles
-        self.__scroll_page()
+        self._scroll_page()
 
         # Get the fully rendered HTML and pass it to BeautifulSoup
         html = self._driver.page_source

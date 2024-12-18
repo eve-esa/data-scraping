@@ -49,7 +49,7 @@ def discover_scrapers(base_package: str) -> Dict[str, BaseScraper]:
     return discovered_scrapers
 
 
-def run_scrapers(discovered_scrapers: Dict[str, BaseScraper], config: Dict | None = None):
+def run_scrapers(discovered_scrapers: Dict[str, BaseScraper], config: Dict):
     """
     Find all scraper classes in the specified package and run them in separate threads.
     """
@@ -59,11 +59,21 @@ def run_scrapers(discovered_scrapers: Dict[str, BaseScraper], config: Dict | Non
         class_scraper(model_instance)
 
     threads = []
-    for name_scraper, class_scraper in discovered_scrapers.items():
+    for name_scraper, config_scraper in config.items():
+        is_done = config_scraper.get("done", False)
+        if is_done:
+            logger.info(f"Scraper {name_scraper} already done")
+            continue
+
+        if name_scraper not in discovered_scrapers:
+            logger.error(f"Scraper {name_scraper} not found in discovered scrapers")
+            continue
+
+        class_scraper = discovered_scrapers[name_scraper]
         try:
             thread = threading.Thread(
                 target=run_scraper,
-                args=(getattr(class_scraper, "model_class", None), config.get(name_scraper, {}) if config else {})
+                args=(getattr(class_scraper, "model_class", None), config_scraper)
             )
             thread.start()
             threads.append(thread)

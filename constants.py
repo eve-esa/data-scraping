@@ -1,0 +1,1 @@
+config_path = "configs/scraper_config.json"

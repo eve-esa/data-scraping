@@ -1,10 +1,14 @@
+import logging
 import os
+from typing import Final
+
 import boto3
 import requests
 from botocore.exceptions import ClientError
 from pydantic import BaseModel
 
 from singleton import singleton
+
 
 class PDFName(BaseModel):
     journal: str
@@ -16,14 +20,20 @@ class PDFName(BaseModel):
 class S3Storage:
     def __init__(self):
         self.client = boto3.client(
-            's3',
+            "s3",
+            region_name=os.getenv("AWS_REGION"),
+            endpoint_url=os.getenv("AWS_URL"),
             aws_access_key_id=os.getenv("AWS_ACCESS_KEY"),
             aws_secret_access_key=os.getenv("AWS_SECRET_KEY")
         )
-        self.bucket_name = os.getenv("AWS_BUCKET_NAME")
+        self.bucket_name: Final[str] = os.getenv("AWS_BUCKET_NAME")
+        self.logger: Final = logging.getLogger(__name__)
 
     def __str__(self):
         return f"S3Storage: {self.bucket_name}"
+
+    def __repr__(self):
+        return self.__str__()
 
     def upload(self, root_key: str, pdf_url: str, schema_name: PDFName | None = None):
         pdf_name = os.path.basename(pdf_url)
@@ -35,7 +45,7 @@ class S3Storage:
         # Check if the file already exists in S3
         try:
             self.client.head_object(Bucket=self.bucket_name, Key=s3_key)
-            print(f"{pdf_name} already exists in S3, skipping upload.")
+            self.logger.warning(f"{pdf_name} already exists in S3, skipping upload.")
             return  # Exit the function if the file exists
         except ClientError as e:
             if e.response["Error"]["Code"] == "404":
@@ -43,7 +53,7 @@ class S3Storage:
                 pass
             else:
                 # Handle other exceptions, e.g. permissions
-                print(f"Error checking if {pdf_name} exists in S3: {e}")
+                self.logger.error(f"Error checking if {pdf_name} exists in S3: {e}")
                 return
 
         try:
@@ -53,6 +63,6 @@ class S3Storage:
 
             # Upload to S3
             self.client.put_object(Bucket=self.bucket_name, Key=s3_key, Body=response.content)
-            print(f"Successfully uploaded to S3: {s3_key}")
+            self.logger.info(f"Successfully uploaded to S3: {s3_key}")
         except Exception as e:
-            print(f"Failed to upload PDF: {pdf_url}. Error: {e}")
+            self.logger.error(f"Failed to upload PDF: {pdf_url}. Error: {e}")
