@@ -6,8 +6,8 @@ services:
       - "9100:9100"
       - "9101:9101"
     environment:
-      MINIO_ROOT_USER: ${AWS_KEY}
-      MINIO_ROOT_PASSWORD: ${AWS_SECRET}
+      MINIO_ROOT_USER: ${AWS_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${AWS_SECRET_KEY}
       CONSOLE_DEV_MODE: on
     command: ["minio", "server", "/data", "--console-address", ":9101","--address", ":9100"]
 
@@ -19,7 +19,7 @@ services:
       /bin/sh -c "
       sleep 5 &&
       mc alias set local http://minio:9100 minio minio1234 &&
-      mc mb local/$(echo $AWS_BUCKET) || true
+      mc mb local/$(echo $AWS_BUCKET_NAME) || true
       "
     environment:
       AWS_BUCKET: ${AWS_BUCKET}

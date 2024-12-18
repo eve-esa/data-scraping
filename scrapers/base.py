@@ -42,6 +42,8 @@ class BaseScraper(ABC):
         self._s3_client = S3Storage()
 
     def __call__(self, model: BaseConfigScraper) -> List[str]:
+        self._logger.info(f"Running scraper {self.__class__.__name__}...")
+
         links = self.scrape(model)
 
         # TODO: save links in external file
@@ -53,6 +55,8 @@ class BaseScraper(ABC):
 
         model.done = True
         self._update_json_config(self.__class__.__name__)
+
+        self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")
 
         return result
 
