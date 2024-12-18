@@ -24,9 +24,16 @@ class BaseConfigScraper(ABC, BaseModel):
 class BaseScraper(ABC):
     def __init__(self) -> None:
         chrome_options = Options()
+
+        chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+        chrome_options.add_argument("--disable-infobars")
+        chrome_options.add_argument("--start-maximized")
+
         chrome_options.add_argument(
-            "--headless"
-        )  # Run in headless mode (no browser UI)
+            "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        )
+
+        chrome_options.add_argument("--headless")  # Run in headless mode (no browser UI)
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
 
@@ -36,15 +43,26 @@ class BaseScraper(ABC):
         )
         # driver = webdriver.Chrome(service=Service())
 
+        self._driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+            "source": """
+            Object.defineProperty(navigator, 'webdriver', {
+              get: () => undefined
+            })
+          """
+        })
+
         self._logger = logging.getLogger(__name__)
         self._cookie_handled = False
 
         self._s3_client = S3Storage()
+        self._done = True
 
     def __call__(self, model: BaseConfigScraper) -> List[str]:
-        self._logger.info(f"Running scraper {self.__class__.__name__}...")
+        self._logger.info(f"Running scraper {self.__class__.__name__}")
 
         links = self.scrape(model)
+
+        self._driver.quit()
 
         # TODO: save links in external file
         # self._save_scraped_list(links)
@@ -53,7 +71,7 @@ class BaseScraper(ABC):
 
         result = self.post_process(links)
 
-        model.done = True
+        model.done = self._done
         self._update_json_config(self.__class__.__name__)
 
         self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")
@@ -76,7 +94,7 @@ class BaseScraper(ABC):
                 self._logger.error(f"Scraper {scraper_name} not found in the configuration file.")
                 return
 
-            config[scraper_name]["done"] = True
+            config[scraper_name]["done"] = self._done
 
             with open(config_path, "w") as file:
                 json.dump(config, file, indent=4)
@@ -115,11 +133,11 @@ class BaseScraper(ABC):
             self._logger.info("Page fully loaded. Attempting to locate the 'Accept All' button using JavaScript.")
 
             # Execute JavaScript to find and click the "Accept All" button
-            self._driver.execute_script("""
-                let acceptButton = document.querySelector("body > div.cky-consent-container.cky-classic-bottom > div.cky-consent-bar > div > div > div.cky-notice-btn-wrapper > button.cky-btn.cky-btn-accept");
-                if (acceptButton) {
+            self._driver.execute_script(f"""
+                let acceptButton = document.querySelector("{self.cookie_selector}");
+                if (acceptButton) {{
                     acceptButton.click();
-                }
+                }}
             """)
             self._logger.info("'Accept All' button clicked successfully using JavaScript.")
         except Exception as e:
@@ -137,10 +155,10 @@ class BaseScraper(ABC):
         """
 
         self._driver.get(issue_url)
-        time.sleep(2)  # Give the page time to load
+        time.sleep(5)  # Give the page time to load
 
         # Handle cookie popup only once, for the first request
-        if not self._cookie_handled:
+        if not self._cookie_handled and self.cookie_selector:
             self._handle_cookie_popup()
             self._cookie_handled = True
 
@@ -163,6 +181,11 @@ class BaseScraper(ABC):
     @property
     @abstractmethod
     def model_class(self) -> Type[BaseConfigScraper]:
+        pass
+
+    @property
+    @abstractmethod
+    def cookie_selector(self) -> str:
         pass
 
     @abstractmethod

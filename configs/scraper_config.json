@@ -60,7 +60,7 @@
     "MDPIScraper": {
         "journals": [
             {
-                "url": "https://www.mdpi.com/journal/remotesensing",
+                "url": "https://www.mdpi.com/2072-4292",
                 "name": "remotesensing",
                 "start_volume": 1,
                 "end_volume": 16,
@@ -68,7 +68,7 @@
                 "end_issue": 30
             },
             {
-                "url": "https://www.mdpi.com/journal/geosciences",
+                "url": "https://www.mdpi.com/2076-3263",
                 "name": "geosciences",
                 "start_volume": 1,
                 "end_volume": 12,
@@ -76,7 +76,7 @@
                 "end_issue": 30
             },
             {
-                "url": "https://www.mdpi.com/journal/atmosphere",
+                "url": "https://www.mdpi.com/2073-4433",
                 "name": "atmosphere",
                 "start_volume": 1,
                 "end_volume": 12,
@@ -84,7 +84,7 @@
                 "end_issue": 30
             },
             {
-                "url": "https://www.mdpi.com/journal/ijgi",
+                "url": "https://www.mdpi.com/2220-9964",
                 "name": "ijgi",
                 "start_volume": 1,
                 "end_volume": 12,
@@ -92,7 +92,7 @@
                 "end_issue": 30
             },
             {
-                "url": "https://www.mdpi.com/journal/sustainability",
+                "url": "https://www.mdpi.com/2071-1050",
                 "name": "sustainability",
                 "start_volume": 1,
                 "end_volume": 12,
@@ -100,7 +100,7 @@
                 "end_issue": 30
             },
             {
-                "url": "https://www.mdpi.com/journal/data",
+                "url": "https://www.mdpi.com/2306-5729",
                 "name": "data",
                 "start_volume": 1,
                 "end_volume": 12,
@@ -108,7 +108,7 @@
                 "end_issue": 30
             },
             {
-                "url": "https://www.mdpi.com/journal/coasts",
+                "url": "https://www.mdpi.com/2673-964X",
                 "name": "coasts",
                 "start_volume": 1,
                 "end_volume": 12,
@@ -116,7 +116,7 @@
                 "end_issue": 30
             },
             {
-                "url": "https://www.mdpi.com/journal/earth",
+                "url": "https://www.mdpi.com/2673-4834",
                 "name": "earth",
                 "start_volume": 1,
                 "end_volume": 12,
@@ -124,7 +124,7 @@
                 "end_issue": 30
             },
             {
-                "url": "https://www.mdpi.com/journal/geohazards",
+                "url": "https://www.mdpi.com/2624-795X",
                 "name": "geohazards",
                 "start_volume": 1,
                 "end_volume": 12,
@@ -132,7 +132,7 @@
                 "end_issue": 30
             },
             {
-                "url": "https://www.mdpi.com/journal/environsciproc",
+                "url": "https://www.mdpi.com/2673-4931",
                 "name": "environsciproc",
                 "start_volume": 1,
                 "end_volume": 12,
@@ -140,7 +140,7 @@
                 "end_issue": 30
             },
             {
-                "url": "https://www.mdpi.com/journal/land",
+                "url": "https://www.mdpi.com/2073-445X",
                 "name": "land",
                 "start_volume": 1,
                 "end_volume": 12,
@@ -148,7 +148,7 @@
                 "end_issue": 30
             },
             {
-                "url": "https://www.mdpi.com/journal/oceans",
+                "url": "https://www.mdpi.com/2673-1924",
                 "name": "oceans",
                 "start_volume": 1,
                 "end_volume": 12,
@@ -156,7 +156,7 @@
                 "end_issue": 30
             },
             {
-                "url": "https://www.mdpi.com/journal/water",
+                "url": "https://www.mdpi.com/2073-4441",
                 "name": "water",
                 "start_volume": 1,
                 "end_volume": 12,

@@ -30,98 +30,151 @@ class SpringerConfig(BaseConfigScraper):
 class SpringerScraper(BaseScraper):
     @property
     def model_class(self) -> Type[BaseConfigScraper]:
+        """
+        Return the configuration model class.
+
+        Returns:
+            Type[BaseConfigScraper]: The configuration model class.
+        """
         return SpringerConfig
 
+    @property
+    def cookie_selector(self) -> str:
+        return "button.cc-banner__button-accept"
+
     def scrape(self, model: SpringerConfig) -> List[ResultSet]:
+        """
+        Scrape the Springer issue / journal / article URLs of for PDF links.
+
+        Args:
+            model (SpringerConfig): The configuration model.
+
+        Returns:
+            List[ResultSet]: A list of ResultSet objects containing the PDF links
+        """
         pdf_links = []
-        for journal in model.elements:
-            if journal.issue_url:
-                pdf_links.extend(self.__scrape_issue(journal))
-            elif journal.journal_url:
-                pdf_links.extend(self.__scrape_journal(journal))
+        for element in model.elements:
+            if element.issue_url:
+                pdf_links.extend(self.__scrape_issue(element))
+            elif element.journal_url:
+                pdf_links.extend(self.__scrape_journal(element))
             else:
-                pdf_links.append(self.__scrape_article(journal))
+                pdf_links.append(self.__scrape_article(element))
 
         return pdf_links
 
     def post_process(self, links: ResultSet) -> List[str]:
+        """
+        Extract the href attribute from the links.
+
+        Args:
+            links (ResultSet): A ResultSet object containing the PDF links.
+
+        Returns:
+            List[str]: A list of strings containing the PDF links
+        """
         return [link.get("href") for link in links]
 
     def upload_to_s3(self, links: ResultSet):
+        """
+        Upload the PDF files to S3.
+
+        Args:
+            links (ResultSet): A ResultSet object containing the PDF links.
+        """
+        self._logger.info("Uploading files to S3")
+
         for link in links:
-            self._s3_client.upload("iop", link.get("href"))
+            result = self._s3_client.upload("iop", link.get("href"))
+            if not result:
+                self._done = False
+
             # Sleep after each successful download to avoid overwhelming the server
             time.sleep(5)
 
-    def __scrape_issue(self, journal: SpringerElement) -> List[ResultSet]:
+    def __scrape_issue(self, element: SpringerElement) -> List[ResultSet]:
         """
         Scrape a single issue of a journal. This method is called when the issue_url is provided in the config.
 
         Args:
-            journal (SpringerElement): The journal to scrape.
+            element (SpringerElement): The journal to scrape.
 
         Returns:
             List[ResultSet]: A list of PDF links found in the issue.
         """
-        scraper = self._setup_scraper(journal.issue_url)
+        self._logger.info(f"Processing Issue {element.issue_url}")
 
-        # Find all PDF links using appropriate class or tag
-        pdf_links = scraper.find_all("a", href=lambda href: href and "/article/" in href)
-        self._logger.info(f"PDF links found: {len(pdf_links)}")
-
-        self._driver.quit()
+        scraper = self._setup_scraper(element.issue_url)
+        pdf_links = []
+        try:
+            # Find all PDF links using appropriate class or tag
+            pdf_links = scraper.find_all("a", href=lambda href: href and "/article/" in href)
+            self._logger.info(f"PDF links found: {len(pdf_links)}")
+        except Exception as e:
+            self._logger.error(f"Failed to process Issue {element.issue_url}. Error: {e}")
+            self._done = False
 
         return pdf_links
 
-    def __scrape_journal(self, journal: SpringerElement) -> List[ResultSet]:
+    def __scrape_journal(self, element: SpringerElement) -> List[ResultSet]:
         """
         Scrape all articles of a journal. This method is called when the journal_url is provided in the config.
 
         Args:
-            journal (SpringerElement): The journal to scrape.
+            element (SpringerElement): The journal to scrape.
 
         Returns:
             List[ResultSet]: A list of PDF links found in the journal.
         """
+        self._logger.info(f"Processing Journal {element.journal_url}")
+
         next_page = True
+        pdf_links = []
 
-        counter = 1
-        article_links = []
-        while next_page:
-            scraper = self._setup_scraper(f"{journal.journal}?filterOpenAccess=false&page={counter}")
+        try:
+            counter = 1
+            article_links = []
+            while next_page:
+                scraper = self._setup_scraper(f"{element.journal_url}?filterOpenAccess=false&page={counter}")
 
-            # Find all article links using appropriate class or tag
-            article_links.extend(scraper.find_all("a", href=lambda href: href and "/article/" in href))
+                # Find all article links using appropriate class or tag
+                article_links.extend(scraper.find_all("a", href=lambda href: href and "/article/" in href))
 
-            next_page = len(article_links) > 0
+                next_page = len(article_links) > 0
+                counter += 1
 
-        pdf_links = [self.__scrape_article(SpringerElement(article_url=link.get("href")), True) for link in article_links]
-        pdf_links = [link for link in pdf_links if link]
+            pdf_links = [self.__scrape_article(SpringerElement(article_url=link.get("href"))) for link in article_links]
+            pdf_links = [link for link in pdf_links if link]
 
-        self._logger.info(f"PDF links found: {pdf_links}")
-
-        self._driver.quit()
+            self._logger.info(f"PDF links found: {pdf_links}")
+        except Exception as e:
+            self._logger.error(f"Failed to process Journal {element.journal_url}. Error: {e}")
+            self._done = False
 
         return pdf_links
 
-    def __scrape_article(self, article: SpringerElement, from_journal: bool = False) -> ResultSet | None:
+    def __scrape_article(self, element: SpringerElement) -> ResultSet | None:
         """
         Scrape a single article.
 
         Args:
-            article (SpringerElement): The article to scrape.
-            from_journal (bool): Whether the article is being scraped from a journal page.
+            element (SpringerElement): The article to scrape.
 
         Returns:
             ResultSet: The PDF link found in the article, or None if no link is found.
         """
-        scraper = self._setup_scraper(article.issue_url)
+        self._logger.info(f"Processing Article {element.article_url}")
 
-        # Find the PDF link using appropriate class or tag
-        pdf_links = scraper.find_all("a", href=lambda href: href and "/pdf/" in href)
-        self._logger.info(f"PDF links found: {pdf_links}")
+        scraper = self._setup_scraper(element.article_url)
+        pdf_link = None
+        try:
+            # Find the PDF link using appropriate class or tag
+            pdf_links = scraper.find_all("a", href=lambda href: href and "/pdf/" in href)
+            self._logger.info(f"PDF links found: {pdf_links}")
 
-        if not from_journal:
-            self._driver.quit()
+            pdf_link = pdf_links[0] if pdf_links else None
+        except Exception as e:
+            self._logger.error(f"Failed to process Article {element.article_url}. Error: {e}")
+            self._done = False
 
-        return pdf_links[0] if pdf_links else None
+        return pdf_link

@@ -35,7 +35,9 @@ class S3Storage:
     def __repr__(self):
         return self.__str__()
 
-    def upload(self, root_key: str, pdf_url: str, schema_name: PDFName | None = None):
+    def upload(self, root_key: str, pdf_url: str, schema_name: PDFName | None = None) -> bool:
+        self.logger.info(f"Uploading PDF: {pdf_url}")
+
         pdf_name = os.path.basename(pdf_url)
         if schema_name:
             pdf_name = f"{schema_name.journal}/volume_{schema_name.volume}/issue_{schema_name.issue}/{os.path.basename(pdf_url)}"
@@ -46,7 +48,7 @@ class S3Storage:
         try:
             self.client.head_object(Bucket=self.bucket_name, Key=s3_key)
             self.logger.warning(f"{pdf_name} already exists in S3, skipping upload.")
-            return  # Exit the function if the file exists
+            return True  # Exit the function if the file exists
         except ClientError as e:
             if e.response["Error"]["Code"] == "404":
                 # The object does not exist, proceed to upload
@@ -54,7 +56,7 @@ class S3Storage:
             else:
                 # Handle other exceptions, e.g. permissions
                 self.logger.error(f"Error checking if {pdf_name} exists in S3: {e}")
-                return
+                return False
 
         try:
             # Download PDF content from the URL
@@ -64,5 +66,9 @@ class S3Storage:
             # Upload to S3
             self.client.put_object(Bucket=self.bucket_name, Key=s3_key, Body=response.content)
             self.logger.info(f"Successfully uploaded to S3: {s3_key}")
+
+            return True
         except Exception as e:
             self.logger.error(f"Failed to upload PDF: {pdf_url}. Error: {e}")
+
+            return False

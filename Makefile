@@ -27,5 +27,4 @@ sync-requirements: ## Update the local virtual environment with the latest requi
 	$(PYTHON) -m pip install -r requirements.txt
 
 run:  ## Run the application
-	$(MAKE) up
 	$(PYTHON) -m main
