@@ -13,7 +13,6 @@ class IOPConfig(BaseConfigScraper):
     issues: List[IOPJournal]
 
 
-# TODO: popup automation not working
 class IOPScraper(BaseScraper):
     """
     This class acts only on issues urls, because those are the only once identified in the data_collection gsheet

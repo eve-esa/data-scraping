@@ -191,5 +191,3 @@ class BaseScraper(ABC):
     @abstractmethod
     def upload_to_s3(self, links: Any):
         pass
-
-
