@@ -1,0 +1,202 @@
+{
+    "IOPScraper": {
+        "issues": [
+            {
+                "issue_url": "https://iopscience.iop.org/issue/1755-1315/169/1"
+            },
+            {
+                "issue_url": "https://iopscience.iop.org/issue/1755-1315/540/1"
+            },
+            {
+                "issue_url": "https://iopscience.iop.org/issue/1755-1315/18/1"
+            },
+            {
+                "issue_url": "https://iopscience.iop.org/issue/1755-1315/500/1"
+            },
+            {
+                "issue_url": "https://iopscience.iop.org/issue/1755-1315/37/1"
+            },
+            {
+                "issue_url": "https://iopscience.iop.org/issue/1755-1315/17/1"
+            },
+            {
+                "issue_url": "https://iopscience.iop.org/issue/1755-1315/20/1"
+            },
+            {
+                "issue_url": "https://iopscience.iop.org/issue/1755-1315/1/1"
+            },
+            {
+                "issue_url": "https://iopscience.iop.org/issue/1755-1315/57/1"
+            },
+            {
+                "issue_url": "https://iopscience.iop.org/issue/1755-1315/1064/1"
+            },
+            {
+                "issue_url": "https://iopscience.iop.org/issue/1755-1315/34/1"
+            },
+            {
+                "issue_url": "https://iopscience.iop.org/issue/1755-1315/280/1"
+            },
+            {
+                "issue_url": "https://iopscience.iop.org/issue/1755-1315/165/1"
+            },
+            {
+                "issue_url": "https://iopscience.iop.org/issue/1755-1315/1170/1"
+            },
+            {
+                "issue_url": "https://iopscience.iop.org/issue/1755-1315/74/1"
+            },
+            {
+                "issue_url": "https://iopscience.iop.org/issue/1755-1315/1164/1"
+            },
+            {
+                "issue_url": "https://iopscience.iop.org/issue/1755-1315/932/1"
+            },
+            {
+                "issue_url": "https://iopscience.iop.org/issue/1755-1315/13/1"
+            }
+        ]
+    },
+    "MDPIScraper": {
+        "journals": [
+            {
+                "url": "https://www.mdpi.com/2072-4292",
+                "name": "remotesensing",
+                "start_volume": 1,
+                "end_volume": 16,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/2076-3263",
+                "name": "geosciences",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/2073-4433",
+                "name": "atmosphere",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/2220-9964",
+                "name": "ijgi",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/2071-1050",
+                "name": "sustainability",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/2306-5729",
+                "name": "data",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/2673-964X",
+                "name": "coasts",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/2673-4834",
+                "name": "earth",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/2624-795X",
+                "name": "geohazards",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/2673-4931",
+                "name": "environsciproc",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/2073-445X",
+                "name": "land",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/2673-1924",
+                "name": "oceans",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/2073-4441",
+                "name": "water",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            }
+        ]
+    },
+    "SpringerScraper": {
+        "elements": [
+            {
+                "journal_url": "https://link.springer.com/journal/44288/articles"
+            },
+            {
+                "issue_url": "https://link.springer.com/book/10.1007/978-3-319-65633-5"
+            },
+            {
+                "issue_url": "https://link.springer.com/book/10.1007/978-3-030-33157-3"
+            },
+            {
+                "issue_url": "https://link.springer.com/book/10.1007/978-3-030-90998-7"
+            },
+            {
+                "issue_url": "https://link.springer.com/book/10.1007/978-3-031-15988-6"
+            },
+            {
+                "issue_url": "https://link.springer.com/book/10.1007/978-3-030-80767-2"
+            },
+            {
+                "issue_url": "https://link.springer.com/book/10.1007/978-981-15-8983-6"
+            },
+            {
+                "issue_url": "https://link.springer.com/book/10.1007/978-981-99-9375-8"
+            },
+            {
+                "issue_url": "https://link.springer.com/book/10.1007/978-981-10-3713-9"
+            },
+            {
+                "issue_url": "https://link.springer.com/book/10.1007/978-3-642-25643-1"
+            }
+        ]
+    }
+}
