@@ -10,7 +10,7 @@ class IOPJournal(BaseConfigScraper):
 
 
 class IOPConfig(BaseConfigScraper):
-    journals: List[IOPJournal]
+    issues: List[IOPJournal]
 
 
 # TODO: popup automation not working
@@ -25,8 +25,8 @@ class IOPScraper(BaseScraper):
 
     def scrape(self, model: IOPConfig) -> List[ResultSet]:
         pdf_links = []
-        for journal in model.journals:
-            pdf_links.extend(self.__scrape_journal(journal))
+        for journal in model.issues:
+            pdf_links.extend(self.__scrape_issue(journal))
 
         return pdf_links
 
@@ -39,7 +39,7 @@ class IOPScraper(BaseScraper):
             # Sleep after each successful download to avoid overwhelming the server
             time.sleep(5)
 
-    def __scrape_journal(self, journal: IOPJournal) -> List[ResultSet]:
+    def __scrape_issue(self, journal: IOPJournal) -> List[ResultSet]:
         scraper = self._setup_scraper(journal.issue_url)
 
         # Find all PDF links using appropriate class or tag
