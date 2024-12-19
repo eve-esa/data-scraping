@@ -14,10 +14,9 @@ import logging
 from constants import config_path
 from storage import S3Storage
 
-logging.basicConfig(level=logging.INFO)
-
 
 class BaseConfigScraper(ABC, BaseModel):
+    bucket_key: str
     done: bool = False
 
 
@@ -51,7 +50,7 @@ class BaseScraper(ABC):
           """
         })
 
-        self._logger = logging.getLogger(__name__)
+        self._logger = logging.getLogger(self.__class__.__name__)
         self._cookie_handled = False
 
         self._s3_client = S3Storage()
@@ -67,7 +66,7 @@ class BaseScraper(ABC):
         # TODO: save links in external file
         # self._save_scraped_list(links)
 
-        self.upload_to_s3(links)
+        self.upload_to_s3(links, model)
 
         result = self.post_process(links)
 
@@ -189,5 +188,5 @@ class BaseScraper(ABC):
         pass
 
     @abstractmethod
-    def upload_to_s3(self, links: Any):
+    def upload_to_s3(self, links: Any, model: BaseConfigScraper):
         pass

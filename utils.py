@@ -8,7 +8,8 @@ import yaml
 import logging
 from pydantic import ValidationError
 
-from scrapers.base import BaseScraper
+from scrapers.base_publisher_scraper import BasePublisherScraper
+from scrapers.base_scraper import BaseScraper
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -41,7 +42,10 @@ def discover_scrapers(base_package: str) -> Dict[str, BaseScraper]:
         discovered_scrapers |= {
             name: obj()
             for name, obj in inspect.getmembers(module)
-            if inspect.isclass(obj) and issubclass(obj, BaseScraper) and obj is not BaseScraper and hasattr(obj, "scrape")
+            if inspect.isclass(obj)
+               and issubclass(obj, BaseScraper)
+               and not inspect.isabstract(obj)
+               and hasattr(obj, "scrape")
         }
 
     logger.info(f"Discovered and started scrapers: {list(discovered_scrapers.keys())}")

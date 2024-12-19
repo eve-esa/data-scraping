@@ -1,11 +1,12 @@
 import time
 from typing import Dict, List, Type
+from pydantic import BaseModel
 
-from scrapers.base import BaseScraper, BaseConfigScraper
+from scrapers.base_scraper import BaseScraper, BaseConfigScraper
 from storage import PDFName
 
 
-class MDPIJournal(BaseConfigScraper):
+class MDPIJournal(BaseModel):
     url: str
     name: str
     start_volume: int | None = 1
@@ -62,12 +63,13 @@ class MDPIScraper(BaseScraper):
         """
         return [link for journal in links.values() for volume in journal.values() for issue in volume.values() for link in issue]
 
-    def upload_to_s3(self, links: Dict[str, Dict[int, Dict[int, List[str]]]]):
+    def upload_to_s3(self, links: Dict[str, Dict[int, Dict[int, List[str]]]], model: MDPIConfig):
         """
         Upload the PDF files to S3.
 
         Args:
             links (Dict[str, Dict[int, Dict[int, List[str]]]): A dictionary containing the PDF links.
+            model (MDPIConfig): The configuration model.
         """
         self._logger.info("Uploading files to S3")
 
@@ -76,7 +78,7 @@ class MDPIScraper(BaseScraper):
                 for issue_num, issue_links in issues.items():
                     for link in issue_links:
                         result = self._s3_client.upload(
-                            "mdpi", link, PDFName(journal=journal, volume=str(volume_num), issue=str(issue_num))
+                            model.bucket_key, link, PDFName(journal=journal, volume=str(volume_num), issue=str(issue_num))
                         )
 
                         if not result:

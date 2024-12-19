@@ -1,63 +1,83 @@
 {
     "IOPScraper": {
-        "issues": [
+        "bucket_key": "iopscience",
+        "sources": [
             {
-                "issue_url": "https://iopscience.iop.org/issue/1755-1315/169/1"
+                "url": "https://iopscience.iop.org/issue/1755-1315/169/1",
+                "type": "issue"
             },
             {
-                "issue_url": "https://iopscience.iop.org/issue/1755-1315/540/1"
+                "url": "https://iopscience.iop.org/issue/1755-1315/540/1",
+                "type": "issue"
             },
             {
-                "issue_url": "https://iopscience.iop.org/issue/1755-1315/18/1"
+                "url": "https://iopscience.iop.org/issue/1755-1315/18/1",
+                "type": "issue"
             },
             {
-                "issue_url": "https://iopscience.iop.org/issue/1755-1315/500/1"
+                "url": "https://iopscience.iop.org/issue/1755-1315/500/1",
+                "type": "issue"
             },
             {
-                "issue_url": "https://iopscience.iop.org/issue/1755-1315/37/1"
+                "url": "https://iopscience.iop.org/issue/1755-1315/37/1",
+                "type": "issue"
             },
             {
-                "issue_url": "https://iopscience.iop.org/issue/1755-1315/17/1"
+                "url": "https://iopscience.iop.org/issue/1755-1315/17/1",
+                "type": "issue"
             },
             {
-                "issue_url": "https://iopscience.iop.org/issue/1755-1315/20/1"
+                "url": "https://iopscience.iop.org/issue/1755-1315/20/1",
+                "type": "issue"
             },
             {
-                "issue_url": "https://iopscience.iop.org/issue/1755-1315/1/1"
+                "url": "https://iopscience.iop.org/issue/1755-1315/1/1",
+                "type": "issue"
             },
             {
-                "issue_url": "https://iopscience.iop.org/issue/1755-1315/57/1"
+                "url": "https://iopscience.iop.org/issue/1755-1315/57/1",
+                "type": "issue"
             },
             {
-                "issue_url": "https://iopscience.iop.org/issue/1755-1315/1064/1"
+                "url": "https://iopscience.iop.org/issue/1755-1315/1064/1",
+                "type": "issue"
             },
             {
-                "issue_url": "https://iopscience.iop.org/issue/1755-1315/34/1"
+                "url": "https://iopscience.iop.org/issue/1755-1315/34/1",
+                "type": "issue"
             },
             {
-                "issue_url": "https://iopscience.iop.org/issue/1755-1315/280/1"
+                "url": "https://iopscience.iop.org/issue/1755-1315/280/1",
+                "type": "issue"
             },
             {
-                "issue_url": "https://iopscience.iop.org/issue/1755-1315/165/1"
+                "url": "https://iopscience.iop.org/issue/1755-1315/165/1",
+                "type": "issue"
             },
             {
-                "issue_url": "https://iopscience.iop.org/issue/1755-1315/1170/1"
+                "url": "https://iopscience.iop.org/issue/1755-1315/1170/1",
+                "type": "issue"
             },
             {
-                "issue_url": "https://iopscience.iop.org/issue/1755-1315/74/1"
+                "url": "https://iopscience.iop.org/issue/1755-1315/74/1",
+                "type": "issue"
             },
             {
-                "issue_url": "https://iopscience.iop.org/issue/1755-1315/1164/1"
+                "url": "https://iopscience.iop.org/issue/1755-1315/1164/1",
+                "type": "issue"
             },
             {
-                "issue_url": "https://iopscience.iop.org/issue/1755-1315/932/1"
+                "url": "https://iopscience.iop.org/issue/1755-1315/932/1",
+                "type": "issue"
             },
             {
-                "issue_url": "https://iopscience.iop.org/issue/1755-1315/13/1"
+                "url": "https://iopscience.iop.org/issue/1755-1315/13/1",
+                "type": "issue"
             }
         ]
     },
     "MDPIScraper": {
+        "bucket_key": "mdpi",
         "journals": [
             {
                 "url": "https://www.mdpi.com/2072-4292",
@@ -166,36 +186,47 @@
         ]
     },
     "SpringerScraper": {
-        "elements": [
+        "bucket_key": "springer",
+        "sources": [
             {
-                "journal_url": "https://link.springer.com/journal/44288/articles"
+                "url": "https://link.springer.com/journal/44288/articles",
+                "type": "journal"
             },
             {
-                "issue_url": "https://link.springer.com/book/10.1007/978-3-319-65633-5"
+                "url": "https://link.springer.com/book/10.1007/978-3-319-65633-5",
+                "type": "issue"
             },
             {
-                "issue_url": "https://link.springer.com/book/10.1007/978-3-030-33157-3"
+                "url": "https://link.springer.com/book/10.1007/978-3-030-33157-3",
+                "type": "issue"
             },
             {
-                "issue_url": "https://link.springer.com/book/10.1007/978-3-030-90998-7"
+                "url": "https://link.springer.com/book/10.1007/978-3-030-90998-7",
+                "type": "issue"
             },
             {
-                "issue_url": "https://link.springer.com/book/10.1007/978-3-031-15988-6"
+                "url": "https://link.springer.com/book/10.1007/978-3-031-15988-6",
+                "type": "issue"
             },
             {
-                "issue_url": "https://link.springer.com/book/10.1007/978-3-030-80767-2"
+                "url": "https://link.springer.com/book/10.1007/978-3-030-80767-2",
+                "type": "issue"
             },
             {
-                "issue_url": "https://link.springer.com/book/10.1007/978-981-15-8983-6"
+                "url": "https://link.springer.com/book/10.1007/978-981-15-8983-6",
+                "type": "issue"
             },
             {
-                "issue_url": "https://link.springer.com/book/10.1007/978-981-99-9375-8"
+                "url": "https://link.springer.com/book/10.1007/978-981-99-9375-8",
+                "type": "issue"
             },
             {
-                "issue_url": "https://link.springer.com/book/10.1007/978-981-10-3713-9"
+                "url": "https://link.springer.com/book/10.1007/978-981-10-3713-9",
+                "type": "issue"
             },
             {
-                "issue_url": "https://link.springer.com/book/10.1007/978-3-642-25643-1"
+                "url": "https://link.springer.com/book/10.1007/978-3-642-25643-1",
+                "type": "issue"
             }
         ]
     }
