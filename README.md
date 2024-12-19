@@ -24,7 +24,7 @@ to be used in the ETL pipeline. Each main key of the JSON file represents the co
 The name of the key is the name of the scraper and the value is a dictionary containing the Pydantic model of the scraper configuration. For more examples, please take a look to the already implemented scrapers and their configurations.
 
 ## Usage
-1. Run the following command to execute the ETL pipeline:
+Run the following command to execute the ETL pipeline:
 ```bash
 make up
 make run
