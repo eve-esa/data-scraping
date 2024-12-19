@@ -47,7 +47,7 @@ so that the other team members can run the ETL pipeline with the updated configu
 In order to add a new scraper, the following steps are required:
 1. Create a new file in the `scrapers` folder with the name of the scraper. E.g.: `new_editor_scraper.py`
 2. Implement a new Pydantic model, representing the configuration of the new scraper, in the Python file previously created by extending the `BaseConfigScraper` class. If you need enumerators, please extend `Enum` from the `base_enum` module.
-3. Implement a new class in the file created in step 1. The class must inherit from the `BaseScraper` class and implement the due methods / properties:
+3. Implement a new class in the file created at the 1st step. The class must inherit from the `BaseScraper` class and implement the due methods / properties:
    - `model_class`: a `@property` returning the Pydantic model of the configuration of the scraper
    - `cookie_selector`: a `@property` returning the CSS selector of the cookie banner to be clicked, if any, or an empty string if the website does not have a cookie banner
    - `scrape`: a method that scrapes the website and returns the data
