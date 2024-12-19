@@ -21,36 +21,7 @@ MINIO_URL="http://minio:9100"
 ## Configuration
 The configuration file is located in the `config` folder and is named `config.json`. The configuration file contains the parameters
 to be used in the ETL pipeline. Each main key of the JSON file represents the configuration of a different scraper.
-The name of the key is the name of the scraper and the value is a dictionary containing the Pydantic model of the scraper configuration.
-E.g.:
-```json
-{
-    "IOPScraper": {
-        "issues": [
-            {
-                "issue_url": "https://iopscience.iop.org/issue/1755-1315/169/1"
-            }
-        ]
-    }
-}
-```
-since the `IOPScraper` is a scraper that scrapes the IOPScience website, the configuration contains the `issue_url` key, which is the URL of the issue to be scraped.
-```python
-from pydantic import BaseModel
-from abc import ABC
-from typing import List
-
-class BaseConfigScraper(ABC, BaseModel):
-    done: bool = False
-
-
-class IOPJournal(BaseConfigScraper):
-    issue_url: str  # url contains volume and issue number. Eg: https://www.mdpi.com/2072-4292/1/3
-
-
-class IOPConfig(BaseConfigScraper):
-    issues: List[IOPJournal]
-```
+The name of the key is the name of the scraper and the value is a dictionary containing the Pydantic model of the scraper configuration. For more examples, please take a look to the already implemented scrapers and their configurations.
 
 ## Usage
 1. Run the following command to execute the ETL pipeline:
@@ -74,12 +45,12 @@ so that the other team members can run the ETL pipeline with the updated configu
 
 ## New Scraper
 In order to add a new scraper, the following steps are required:
-1. Create a new file in the `scraper` folder with the name of the scraper. E.g.: `new_editor.py`
-2. Create a new class in the file created in step 1. The class must inherit from the `BaseScraper` class and implement 
-the due methods / properties:
+1. Create a new file in the `scrapers` folder with the name of the scraper. E.g.: `new_editor_scraper.py`
+2. Implement a new Pydantic model, representing the configuration of the new scraper, in the Python file previously created by extending the `BaseConfigScraper` class. If you need enumerators, please extend `Enum` from the `base_enum` module.
+3. Implement a new class in the file created in step 1. The class must inherit from the `BaseScraper` class and implement the due methods / properties:
    - `model_class`: a `@property` returning the Pydantic model of the configuration of the scraper
    - `cookie_selector`: a `@property` returning the CSS selector of the cookie banner to be clicked, if any, or an empty string if the website does not have a cookie banner
    - `scrape`: a method that scrapes the website and returns the data
    - `post_process`: a method that post-processes the data scraped and returns a list of strings representing the URLs of the files to be downloaded / uploaded to the storage
    - `upload_to_s3`: a method that uploads the files to the storage
-3. Enrich the `config.json` file with the JSON-formatted configuration of the new scraper
+4. Enrich the `config/config.json` file with the JSON-formatted configuration of the new scraper
