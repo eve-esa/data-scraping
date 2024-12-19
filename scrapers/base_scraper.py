@@ -56,6 +56,8 @@ class BaseScraper(ABC):
         self._s3_client = S3Storage()
         self._done = True
 
+        self._output_folder = "output"
+
     def __call__(self, model: BaseConfigScraper) -> List[str]:
         self._logger.info(f"Running scraper {self.__class__.__name__}")
 
@@ -63,9 +65,7 @@ class BaseScraper(ABC):
 
         self._driver.quit()
 
-        # TODO: save links in external file
-        # self._save_scraped_list(links)
-
+        self._save_scraped_list(links)
         self.upload_to_s3(links, model)
 
         result = self.post_process(links)
@@ -76,6 +76,16 @@ class BaseScraper(ABC):
         self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")
 
         return result
+
+    def _save_scraped_list(self, links: Any):
+        """
+        Save the scraped list to a file.
+
+        Args:
+            links (Any): The scraped list.
+        """
+        with open(f"{self._output_folder}/{self.__class__.__name__}.json", "w") as file:
+            json.dump(links, file, indent=4)
 
     def _update_json_config(self, scraper_name: str):
         """
@@ -142,18 +152,18 @@ class BaseScraper(ABC):
         except Exception as e:
             self._logger.error(f"Failed to handle cookie popup using JavaScript. Error: {e}")
 
-    def _setup_scraper(self, issue_url: str) -> BeautifulSoup:
+    def _scrape_url(self, url: str) -> BeautifulSoup:
         """
         Get a URL.
 
         Args:
-            issue_url (str): url contains volume and issue number. Eg:https://www.mdpi.com/2072-4292/1/3
+            url (str): url contains volume and issue number. Eg:https://www.mdpi.com/2072-4292/1/3
 
         Returns:
             BeautifulSoup: A BeautifulSoup object containing the fully rendered HTML of the URL.
         """
 
-        self._driver.get(issue_url)
+        self._driver.get(url)
         time.sleep(5)  # Give the page time to load
 
         # Handle cookie popup only once, for the first request

@@ -3,12 +3,13 @@ import inspect
 import json
 import pkgutil
 import threading
-from typing import Dict
+from typing import Dict, List, Callable
 import yaml
 import logging
+from bs4 import BeautifulSoup
 from pydantic import ValidationError
 
-from scrapers.base_publisher_scraper import BasePublisherScraper
+from scrapers.url_based_publisher_scraper import UrlBasedPublisherScraper
 from scrapers.base_scraper import BaseScraper
 
 logging.basicConfig(level=logging.INFO)
@@ -86,3 +87,20 @@ def run_scrapers(discovered_scrapers: Dict[str, BaseScraper], config: Dict):
 
     for thread in threads:
         thread.join()
+
+
+def get_scraped_urls(scraper: BeautifulSoup, base_url: str, href: bool | Callable, class_: str | None = None) -> List[str]:
+    """
+    Get the URLs of the articles in the issue.
+
+    Args:
+        scraper (BeautifulSoup): The BeautifulSoup object.
+        base_url (str): The base URL.
+        href (bool | callable): The href attribute.
+        class_ (str | None): The class attribute.
+
+    Returns:
+        List[str]: A list of URLs of the articles in the issue.
+    """
+    tags = scraper.find_all("a", class_=class_, href=href)
+    return [base_url + tag.get("href") if tag.get("href").startswith("/") else tag.get("href") for tag in tags]

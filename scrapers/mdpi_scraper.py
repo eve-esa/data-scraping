@@ -1,9 +1,16 @@
-import time
-from typing import Dict, List, Type
+from typing import List, Type
+from bs4 import Tag
 from pydantic import BaseModel
 
-from scrapers.base_scraper import BaseScraper, BaseConfigScraper
-from storage import PDFName
+from scrapers.base_scraper import BaseConfigScraper
+from scrapers.iterative_publisher_scraper import (
+    IterativePublisherScrapeOutput,
+    IterativePublisherScraper,
+    IterativePublisherScrapeJournalOutput,
+    IterativePublisherScrapeVolumeOutput,
+    IterativePublisherScrapeIssueOutput,
+)
+from utils import get_scraped_urls
 
 
 class MDPIJournal(BaseModel):
@@ -19,14 +26,14 @@ class MDPIConfig(BaseConfigScraper):
     journals: List[MDPIJournal]
 
 
-class MDPIScraper(BaseScraper):
+class MDPIScraper(IterativePublisherScraper):
     @property
-    def model_class(self) -> Type[BaseConfigScraper]:
+    def model_class(self) -> Type[MDPIConfig]:
         """
         Return the configuration model class.
 
         Returns:
-            Type[BaseConfigScraper]: The configuration model class.
+            Type[MDPIConfig]: The configuration model class.
         """
         return MDPIConfig
 
@@ -34,7 +41,7 @@ class MDPIScraper(BaseScraper):
     def cookie_selector(self) -> str:
         return ""
 
-    def scrape(self, model: MDPIConfig) -> Dict[str, Dict[int, Dict[int, List[str]]]]:
+    def scrape(self, model: MDPIConfig) -> IterativePublisherScrapeOutput:
         """
         Scrape the MDPI journals for PDF links.
 
@@ -42,52 +49,16 @@ class MDPIScraper(BaseScraper):
             model (MDPIConfig): The configuration model.
 
         Returns:
-            Dict[str, Dict[int, Dict[int, List[str]]]]: A dictionary containing the PDF links.
+            IterativePublisherScrapeOutput: A dictionary containing the PDF links.
         """
         links = {}
 
         for journal in model.journals:
-            links[journal.name] = self.__scrape_journal(journal)
+            links[journal.name] = self._scrape_journal(journal)
 
         return links
 
-    def post_process(self, links: Dict[str, Dict[int, Dict[int, List[str]]]]) -> List[str]:
-        """
-        Extract the PDF links from the dictionary.
-
-        Args:
-            links: A dictionary containing the PDF links.
-
-        Returns:
-            List[str]: A list of strings containing the PDF links
-        """
-        return [link for journal in links.values() for volume in journal.values() for issue in volume.values() for link in issue]
-
-    def upload_to_s3(self, links: Dict[str, Dict[int, Dict[int, List[str]]]], model: MDPIConfig):
-        """
-        Upload the PDF files to S3.
-
-        Args:
-            links (Dict[str, Dict[int, Dict[int, List[str]]]): A dictionary containing the PDF links.
-            model (MDPIConfig): The configuration model.
-        """
-        self._logger.info("Uploading files to S3")
-
-        for journal, volumes in links.items():
-            for volume_num, issues in volumes.items():
-                for issue_num, issue_links in issues.items():
-                    for link in issue_links:
-                        result = self._s3_client.upload(
-                            model.bucket_key, link, PDFName(journal=journal, volume=str(volume_num), issue=str(issue_num))
-                        )
-
-                        if not result:
-                            self._done = False
-
-                        # Sleep after each successful download to avoid overwhelming the server
-                        time.sleep(5)
-
-    def __scrape_journal(self, journal: MDPIJournal) -> Dict[int, Dict[int, List[str]]]:
+    def _scrape_journal(self, journal: MDPIJournal) -> IterativePublisherScrapeJournalOutput:
         """
         Scrape all volumes of a journal.
 
@@ -95,7 +66,7 @@ class MDPIScraper(BaseScraper):
             journal (MDPIJournal): The journal to scrape.
 
         Returns:
-            Dict[int, Dict[int, List[str]]]: A dictionary containing the PDF links.
+            IterativePublisherScrapeJournalOutput: A dictionary containing the PDF links.
         """
         self._logger.info(f"Processing Journal {journal.name}")
 
@@ -108,17 +79,13 @@ class MDPIScraper(BaseScraper):
         journal_url = journal.url
 
         return {
-            volume_num: self.__scrape_volume(journal_url, start_issue, end_issue, volume_num)
+            volume_num: self._scrape_volume(journal_url, start_issue, end_issue, volume_num)
             for volume_num in range(start_volume, end_volume + 1)
         }
 
-    def __scrape_volume(
-        self,
-        journal_url: str,
-        start_issue: int,
-        end_issue: int,
-        volume_num: int
-    ) -> Dict[int, List]:
+    def _scrape_volume(
+        self, journal_url: str, start_issue: int, end_issue: int, volume_num: int
+    ) -> IterativePublisherScrapeVolumeOutput:
         """
         Scrape all issues of a volume.
 
@@ -129,21 +96,16 @@ class MDPIScraper(BaseScraper):
             volume_num (int): The volume number.
 
         Returns:
-            Dict[int, List]: A dictionary containing the PDF links.
+            IterativePublisherScrapeVolumeOutput: A dictionary containing the PDF links.
         """
         self._logger.info(f"Processing Volume {volume_num}")
         return {
             issue_num: sir
             for issue_num in range(start_issue, end_issue + 1)
-            if (sir := self.__scrape_issue(journal_url, volume_num, issue_num))
+            if (sir := self._scrape_issue(journal_url, volume_num, issue_num))
         }
 
-    def __scrape_issue(
-        self,
-        journal_url: str,
-        volume_num: int,
-        issue_num: int
-    ) -> List | None:
+    def _scrape_issue(self, journal_url: str, volume_num: int, issue_num: int) -> IterativePublisherScrapeIssueOutput:
         """
         Scrape the issue URL for PDF links.
 
@@ -153,21 +115,17 @@ class MDPIScraper(BaseScraper):
             issue_num (int): The issue number.
 
         Returns:
-            List: A list of PDF links found in the issue.
+            IterativePublisherScrapeIssueOutput: A list of PDF links found in the issue.
         """
+        base_url = "https://www.mdpi.com"
         issue_url = f"{journal_url}/{volume_num}/{issue_num}"
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
-        scraper = self._setup_scraper(issue_url)
+        scraper = self._scrape_url(issue_url)
         try:
             # Get all PDF links using Selenium to scroll and handle cookie popup once
             # Now find all PDF links using the class_="UD_Listings_ArticlePDF"
-            pdf_links = scraper.find_all("a", class_="UD_Listings_ArticlePDF")
-            pdf_links = [tag.get("href") for tag in pdf_links if tag.get("href")]
-            base_url = "https://www.mdpi.com"
-            pdf_links = [
-                base_url + href if href.startswith("/") else href for href in pdf_links
-            ]
+            pdf_links = get_scraped_urls(scraper, base_url, href=True, class_="UD_Listings_ArticlePDF")
 
             self._logger.info(f"PDF links found: {len(pdf_links)}")
 
@@ -185,3 +143,12 @@ class MDPIScraper(BaseScraper):
             )
             self._done = False
             return None
+
+    def _scrape_article(self, *args, **kwargs) -> List[Tag]:
+        """
+        Scrape a single article.
+
+        Returns:
+            List[Tag]: A list of Tag objects containing the PDF links.
+        """
+        pass

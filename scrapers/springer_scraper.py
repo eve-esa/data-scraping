@@ -1,15 +1,15 @@
 from typing import List
 from bs4 import ResultSet
 
-from scrapers.base_publisher_scraper import BasePublisherSource, BasePublisherScraper, SourceType
+from scrapers.url_based_publisher_scraper import UrlBasesPublisherSource, UrlBasedPublisherScraper, SourceType
 
 
-class SpringerScraper(BasePublisherScraper):
+class SpringerScraper(UrlBasedPublisherScraper):
     @property
     def cookie_selector(self) -> str:
         return "button.cc-banner__button-accept"
 
-    def _scrape_journal(self, source: BasePublisherSource) -> List[ResultSet]:
+    def _scrape_journal(self, source: UrlBasesPublisherSource) -> List[ResultSet]:
         """
         Scrape all articles of a journal. This method is called when the journal_url is provided in the config.
 
@@ -28,16 +28,16 @@ class SpringerScraper(BasePublisherScraper):
             counter = 1
             article_links = []
             while next_page:
-                scraper = self._setup_scraper(f"{source.url}?filterOpenAccess=false&page={counter}")
+                scraper = self._scrape_url(f"{source.url}?filterOpenAccess=false&page={counter}")
 
-                # Find all article links using appropriate class or tag
+                # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
                 article_links.extend(scraper.find_all("a", href=lambda href: href and "/article/" in href))
 
                 next_page = len(article_links) > 0
                 counter += 1
 
             pdf_links = [self._scrape_article(
-                BasePublisherSource(url=link.get("href"), type=str(SourceType.ARTICLE))
+                UrlBasesPublisherSource(url=link.get("href"), type=str(SourceType.ARTICLE))
             ) for link in article_links]
             pdf_links = [link for link in pdf_links if link]
 
@@ -48,7 +48,7 @@ class SpringerScraper(BasePublisherScraper):
 
         return pdf_links
 
-    def _scrape_issue(self, source: BasePublisherSource) -> List[ResultSet]:
+    def _scrape_issue(self, source: UrlBasesPublisherSource) -> List[ResultSet]:
         """
         Scrape a single issue of a journal. This method is called when the issue_url is provided in the config.
 
@@ -60,10 +60,10 @@ class SpringerScraper(BasePublisherScraper):
         """
         self._logger.info(f"Processing Issue {source.url}")
 
-        scraper = self._setup_scraper(source.url)
+        scraper = self._scrape_url(source.url)
         pdf_links = []
         try:
-            # Find all PDF links using appropriate class or tag
+            # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             pdf_links = scraper.find_all("a", href=lambda href: href and "/pdf/" in href)
             self._logger.info(f"PDF links found: {len(pdf_links)}")
         except Exception as e:
@@ -72,7 +72,7 @@ class SpringerScraper(BasePublisherScraper):
 
         return pdf_links
 
-    def _scrape_article(self, source: BasePublisherSource) -> ResultSet | None:
+    def _scrape_article(self, source: UrlBasesPublisherSource) -> ResultSet | None:
         """
         Scrape a single article.
 
@@ -84,10 +84,10 @@ class SpringerScraper(BasePublisherScraper):
         """
         self._logger.info(f"Processing Article {source.url}")
 
-        scraper = self._setup_scraper(source.url)
+        scraper = self._scrape_url(source.url)
         pdf_link = None
         try:
-            # Find the PDF link using appropriate class or tag
+            # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             pdf_links = scraper.find_all("a", href=lambda href: href and "/pdf/" in href)
             self._logger.info(f"PDF links found: {pdf_links}")
 

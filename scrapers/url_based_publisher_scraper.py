@@ -14,7 +14,7 @@ class SourceType(Enum):
     ARTICLE = "article"
 
 
-class BasePublisherSource(BaseModel):
+class UrlBasesPublisherSource(BaseModel):
     url: str
     type: str
 
@@ -27,27 +27,27 @@ class BasePublisherSource(BaseModel):
         return v
 
 
-class BasePublisherConfig(BaseConfigScraper):
-    sources: List[BasePublisherSource]
+class UrlBasedPublisherConfig(BaseConfigScraper):
+    sources: List[UrlBasesPublisherSource]
 
 
-class BasePublisherScraper(BaseScraper):
+class UrlBasedPublisherScraper(BaseScraper):
     @property
-    def model_class(self) -> Type[BasePublisherConfig]:
+    def model_class(self) -> Type[UrlBasedPublisherConfig]:
         """
         Return the configuration model class.
 
         Returns:
             Type[BaseConfigScraper]: The configuration model class.
         """
-        return BasePublisherConfig
+        return UrlBasedPublisherConfig
 
-    def scrape(self, model: BasePublisherConfig) -> List[ResultSet]:
+    def scrape(self, model: UrlBasedPublisherConfig) -> List[ResultSet]:
         """
         Scrape the source URLs of for PDF links.
 
         Args:
-            model (BasePublisherConfig): The configuration model.
+            model (UrlBasedPublisherConfig): The configuration model.
 
         Returns:
             List[ResultSet]: A list of ResultSet objects containing the PDF links.
@@ -75,13 +75,13 @@ class BasePublisherScraper(BaseScraper):
         """
         return [link.get("href") for link in links]
 
-    def upload_to_s3(self, links: ResultSet, model: BasePublisherConfig):
+    def upload_to_s3(self, links: ResultSet, model: UrlBasedPublisherConfig):
         """
         Upload the PDF files to S3.
 
         Args:
             links (ResultSet): A ResultSet object containing the PDF links.
-            model (BasePublisherConfig): The configuration model.
+            model (UrlBasedPublisherConfig): The configuration model.
         """
         self._logger.info("Uploading files to S3")
 
@@ -94,7 +94,7 @@ class BasePublisherScraper(BaseScraper):
             time.sleep(5)
 
     @abstractmethod
-    def _scrape_journal(self, source: BasePublisherSource) -> List[ResultSet]:
+    def _scrape_journal(self, source: UrlBasesPublisherSource) -> List[ResultSet]:
         """
         Scrape all articles of a journal. This method is called when the journal_url is provided in the config.
 
@@ -107,7 +107,7 @@ class BasePublisherScraper(BaseScraper):
         pass
 
     @abstractmethod
-    def _scrape_issue(self, source: BasePublisherSource) -> List[ResultSet]:
+    def _scrape_issue(self, source: UrlBasesPublisherSource) -> List[ResultSet]:
         """
         Scrape the issue URL for PDF links.
 
@@ -120,7 +120,7 @@ class BasePublisherScraper(BaseScraper):
         pass
 
     @abstractmethod
-    def _scrape_article(self, element: BasePublisherSource) -> ResultSet | None:
+    def _scrape_article(self, element: UrlBasesPublisherSource) -> ResultSet | None:
         """
         Scrape a single article.
 
