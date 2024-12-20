@@ -1,0 +1,456 @@
+{
+    "IOPScraper": {
+        "bucket_key": "iopscience",
+        "done": false,
+        "sources": [
+            {
+                "url": "https://iopscience.iop.org/issue/1755-1315/169/1",
+                "type": "issue"
+            },
+            {
+                "url": "https://iopscience.iop.org/issue/1755-1315/540/1",
+                "type": "issue"
+            },
+            {
+                "url": "https://iopscience.iop.org/issue/1755-1315/18/1",
+                "type": "issue"
+            },
+            {
+                "url": "https://iopscience.iop.org/issue/1755-1315/500/1",
+                "type": "issue"
+            },
+            {
+                "url": "https://iopscience.iop.org/issue/1755-1315/37/1",
+                "type": "issue"
+            },
+            {
+                "url": "https://iopscience.iop.org/issue/1755-1315/17/1",
+                "type": "issue"
+            },
+            {
+                "url": "https://iopscience.iop.org/issue/1755-1315/20/1",
+                "type": "issue"
+            },
+            {
+                "url": "https://iopscience.iop.org/issue/1755-1315/1/1",
+                "type": "issue"
+            },
+            {
+                "url": "https://iopscience.iop.org/issue/1755-1315/57/1",
+                "type": "issue"
+            },
+            {
+                "url": "https://iopscience.iop.org/issue/1755-1315/1064/1",
+                "type": "issue"
+            },
+            {
+                "url": "https://iopscience.iop.org/issue/1755-1315/34/1",
+                "type": "issue"
+            },
+            {
+                "url": "https://iopscience.iop.org/issue/1755-1315/280/1",
+                "type": "issue"
+            },
+            {
+                "url": "https://iopscience.iop.org/issue/1755-1315/165/1",
+                "type": "issue"
+            },
+            {
+                "url": "https://iopscience.iop.org/issue/1755-1315/1170/1",
+                "type": "issue"
+            },
+            {
+                "url": "https://iopscience.iop.org/issue/1755-1315/74/1",
+                "type": "issue"
+            },
+            {
+                "url": "https://iopscience.iop.org/issue/1755-1315/1164/1",
+                "type": "issue"
+            },
+            {
+                "url": "https://iopscience.iop.org/issue/1755-1315/932/1",
+                "type": "issue"
+            },
+            {
+                "url": "https://iopscience.iop.org/issue/1755-1315/13/1",
+                "type": "issue"
+            }
+        ]
+    },
+    "MDPIScraper": {
+        "bucket_key": "mdpi",
+        "done": true,
+        "journals": [
+            {
+                "url": "https://www.mdpi.com/2072-4292",
+                "name": "remotesensing",
+                "start_volume": 1,
+                "end_volume": 16,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/2076-3263",
+                "name": "geosciences",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/2073-4433",
+                "name": "atmosphere",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/2220-9964",
+                "name": "ijgi",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/2071-1050",
+                "name": "sustainability",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/2306-5729",
+                "name": "data",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/2673-964X",
+                "name": "coasts",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/2673-4834",
+                "name": "earth",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/2624-795X",
+                "name": "geohazards",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/2673-4931",
+                "name": "environsciproc",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/2073-445X",
+                "name": "land",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/2673-1924",
+                "name": "oceans",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            },
+            {
+                "url": "https://www.mdpi.com/2073-4441",
+                "name": "water",
+                "start_volume": 1,
+                "end_volume": 12,
+                "start_issue": 1,
+                "end_issue": 30
+            }
+        ]
+    },
+    "SpringerScraper": {
+        "bucket_key": "springer",
+        "done": false,
+        "sources": [
+            {
+                "url": "https://link.springer.com/journal/44288/articles",
+                "type": "journal"
+            },
+            {
+                "url": "https://link.springer.com/book/10.1007/978-3-319-65633-5",
+                "type": "issue"
+            },
+            {
+                "url": "https://link.springer.com/book/10.1007/978-3-030-33157-3",
+                "type": "issue"
+            },
+            {
+                "url": "https://link.springer.com/book/10.1007/978-3-030-90998-7",
+                "type": "issue"
+            },
+            {
+                "url": "https://link.springer.com/book/10.1007/978-3-031-15988-6",
+                "type": "issue"
+            },
+            {
+                "url": "https://link.springer.com/book/10.1007/978-3-030-80767-2",
+                "type": "issue"
+            },
+            {
+                "url": "https://link.springer.com/book/10.1007/978-981-15-8983-6",
+                "type": "issue"
+            },
+            {
+                "url": "https://link.springer.com/book/10.1007/978-981-99-9375-8",
+                "type": "issue"
+            },
+            {
+                "url": "https://link.springer.com/book/10.1007/978-981-10-3713-9",
+                "type": "issue"
+            },
+            {
+                "url": "https://link.springer.com/book/10.1007/978-3-642-25643-1",
+                "type": "issue"
+            }
+        ]
+    },
+    "AMSScraper": {
+        "bucket_key": "ams",
+        "done": false,
+        "journals": [
+            {
+                "name": "Artificial Intelligence for the Earth Systems",
+                "code": "aies"
+            },
+            {
+                "name": "Bulletin of the American Meteorological Society",
+                "code": "bams"
+            },
+            {
+                "name": "Earth Interactions",
+                "code": "eint"
+            },
+            {
+                "name": "Journal of Applied Meteorology and Climatology",
+                "code": "apme"
+            },
+            {
+                "name": "Journal of Atmospheric and Oceanic Technology",
+                "code": "atot"
+            },
+            {
+                "name": "Journal of the Atmospheric Sciences",
+                "code": "atsc"
+            },
+            {
+                "name": "Journal of Climate",
+                "code": "clim"
+            },
+            {
+                "name": "Journal of Hydrometeorology",
+                "code": "hydr"
+            },
+            {
+                "name": "Journal of Physical Oceanography",
+                "code": "phoc"
+            },
+            {
+                "name": "Monthly Weather Review",
+                "code": "mwre"
+            },
+            {
+                "name": "Weather and Forecasting",
+                "code": "wefo"
+            },
+            {
+                "name": "Weather, Climate, and Society",
+                "code": "wcas"
+            }
+        ]
+    },
+    "CopernicusScraper": {
+        "bucket_key": "copernicus",
+        "done": false,
+        "journals": [
+            {
+                "url": "https://acp.copernicus.org",
+                "name": "Atmospheric Chemistry and Physics",
+                "start_volume": 1,
+                "end_volume": 30,
+                "start_issue": 1,
+                "end_issue": 30,
+                "consecutive_missing_volumes_threshold": 3,
+                "consecutive_missing_issues_threshold": 3
+            },
+            {
+                "url": "https://amt.copernicus.org",
+                "name": "Atmospheric Measurement Techniques",
+                "start_volume": 1,
+                "end_volume": 30,
+                "start_issue": 1,
+                "end_issue": 30,
+                "consecutive_missing_volumes_threshold": 3,
+                "consecutive_missing_issues_threshold": 3
+            },
+            {
+                "url": "https://bg.copernicus.org",
+                "name": "Biogeosciences",
+                "start_volume": 1,
+                "end_volume": 30,
+                "start_issue": 1,
+                "end_issue": 30,
+                "consecutive_missing_volumes_threshold": 3,
+                "consecutive_missing_issues_threshold": 3
+            },
+            {
+                "url": "https://cp.copernicus.org",
+                "name": "Climate of the Past",
+                "start_volume": 1,
+                "end_volume": 30,
+                "start_issue": 1,
+                "end_issue": 30,
+                "consecutive_missing_volumes_threshold": 3,
+                "consecutive_missing_issues_threshold": 3
+            },
+            {
+                "url": "https://esurf.copernicus.org",
+                "name": "Earth Surface Dynamics",
+                "start_volume": 1,
+                "end_volume": 30,
+                "start_issue": 1,
+                "end_issue": 30,
+                "consecutive_missing_volumes_threshold": 3,
+                "consecutive_missing_issues_threshold": 3
+            },
+            {
+                "url": "https://esd.copernicus.org",
+                "name": "Earth System Dynamics",
+                "start_volume": 1,
+                "end_volume": 30,
+                "start_issue": 1,
+                "end_issue": 30,
+                "consecutive_missing_volumes_threshold": 3,
+                "consecutive_missing_issues_threshold": 3
+            },
+            {
+                "url": "https://egusphere.copernicus.org",
+                "name": "EGU Sphere",
+                "start_volume": 1,
+                "end_volume": 30,
+                "start_issue": 1,
+                "end_issue": 30,
+                "consecutive_missing_volumes_threshold": 3,
+                "consecutive_missing_issues_threshold": 3
+            },
+            {
+                "url": "https://gmd.copernicus.org",
+                "name": "Geoscientific Model Development",
+                "start_volume": 1,
+                "end_volume": 30,
+                "start_issue": 1,
+                "end_issue": 30,
+                "consecutive_missing_volumes_threshold": 3,
+                "consecutive_missing_issues_threshold": 3
+            },
+            {
+                "url": "https://hess.copernicus.org",
+                "name": "Hydrology and Earth System Sciences",
+                "start_volume": 1,
+                "end_volume": 30,
+                "start_issue": 1,
+                "end_issue": 30,
+                "consecutive_missing_volumes_threshold": 3,
+                "consecutive_missing_issues_threshold": 3
+            },
+            {
+                "url": "https://nhess.copernicus.org",
+                "name": "Natural Hazards and Earth System Sciences",
+                "start_volume": 1,
+                "end_volume": 30,
+                "start_issue": 1,
+                "end_issue": 30,
+                "consecutive_missing_volumes_threshold": 3,
+                "consecutive_missing_issues_threshold": 3
+            },
+            {
+                "url": "https://npg.copernicus.org",
+                "name": "Nonlinear Processes in Geophysics",
+                "start_volume": 1,
+                "end_volume": 30,
+                "start_issue": 1,
+                "end_issue": 30,
+                "consecutive_missing_volumes_threshold": 3,
+                "consecutive_missing_issues_threshold": 3
+            },
+            {
+                "url": "https://soil.copernicus.org",
+                "name": "Soil",
+                "start_volume": 1,
+                "end_volume": 30,
+                "start_issue": 1,
+                "end_issue": 30,
+                "consecutive_missing_volumes_threshold": 3,
+                "consecutive_missing_issues_threshold": 3
+            },
+            {
+                "url": "https://tc.copernicus.org",
+                "name": "The Cryosphere",
+                "start_volume": 1,
+                "end_volume": 30,
+                "start_issue": 1,
+                "end_issue": 30,
+                "consecutive_missing_volumes_threshold": 3,
+                "consecutive_missing_issues_threshold": 3
+            },
+            {
+                "url": "https://wcd.copernicus.org",
+                "name": "Weather and Climate Dynamics",
+                "start_volume": 1,
+                "end_volume": 30,
+                "start_issue": 1,
+                "end_issue": 30,
+                "consecutive_missing_volumes_threshold": 3,
+                "consecutive_missing_issues_threshold": 3
+            },
+            {
+                "url": "https://gi.copernicus.org",
+                "name": "Geoscientific Instrumentation, Methods and Data Systems",
+                "start_volume": 1,
+                "end_volume": 30,
+                "start_issue": 1,
+                "end_issue": 30,
+                "consecutive_missing_volumes_threshold": 3,
+                "consecutive_missing_issues_threshold": 3
+            },
+            {
+                "url": "https://ar.copernicus.org",
+                "name": "Aerosol Research Journal",
+                "start_volume": 1,
+                "end_volume": 30,
+                "start_issue": 1,
+                "end_issue": 30,
+                "consecutive_missing_volumes_threshold": 3,
+                "consecutive_missing_issues_threshold": 3
+            }
+        ]
+    }
+}

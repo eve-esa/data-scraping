@@ -1,0 +1,104 @@
+from typing import List
+from bs4 import ResultSet, Tag
+
+from scrapers.url_based_publisher_scraper import UrlBasesPublisherSource, UrlBasedPublisherScraper, SourceType
+
+
+class SpringerScraper(UrlBasedPublisherScraper):
+    @property
+    def cookie_selector(self) -> str:
+        return "button.cc-banner__button-accept"
+
+    def _scrape_journal(self, source: UrlBasesPublisherSource) -> List[Tag]:
+        """
+        Scrape all articles of a journal. This method is called when the journal_url is provided in the config.
+
+        Args:
+            source (UrlBasesPublisherSource): The journal to scrape.
+
+        Returns:
+            List[Tag]: A list of Tag objects containing the PDF links.
+        """
+        self._logger.info(f"Processing Journal {source.url}")
+
+        # navigate through the pagination of the journal
+        counter = 1
+        article_tag_list = []
+        while True:
+            try:
+                scraper = self._scrape_url(f"{source.url}?filterOpenAccess=false&page={counter}")
+
+                # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
+                tags = scraper.find_all("a", href=lambda href: href and "/article/" in href)
+                if len(tags) == 0:
+                    break
+
+                article_tag_list.extend(tags)
+                counter += 1
+            except Exception as e:
+                self._logger.error(f"Failed to process Journal {source.url}. Error: {e}")
+                break
+
+        try:
+            # For each tag of articles previously collected, scrape the article
+            pdf_tag_list = [
+                self._scrape_article(UrlBasesPublisherSource(url=tag.get("href"), type=str(SourceType.ARTICLE)))
+                for tag in article_tag_list
+            ]
+            pdf_tag_list = [tag for tag in pdf_tag_list if tag]
+
+            self._logger.info(f"PDF links found: {pdf_tag_list}")
+        except Exception as e:
+            self._logger.error(f"Failed to process Journal {source.url}. Error: {e}")
+            self._done = False
+
+            pdf_tag_list = []
+
+        return pdf_tag_list
+
+    def _scrape_issue(self, source: UrlBasesPublisherSource) -> ResultSet:
+        """
+        Scrape the issue URL for PDF links.
+
+        Args:
+            source (UrlBasesPublisherSource): The issue to scrape.
+
+        Returns:
+            ResultSet: A ResultSet (i.e., list) object containing the tags to the PDF links.
+        """
+        self._logger.info(f"Processing Issue {source.url}")
+
+        try:
+            scraper = self._scrape_url(source.url)
+
+            # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
+            pdf_tag_list = scraper.find_all("a", href=lambda href: href and "/pdf/" in href)
+            self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
+        except Exception as e:
+            self._logger.error(f"Failed to process Issue {source.url}. Error: {e}")
+            self._done = False
+
+            pdf_tag_list = []
+
+        return pdf_tag_list
+
+    def _scrape_article(self, source: UrlBasesPublisherSource) -> Tag | None:
+        """
+        Scrape a single article.
+
+        Args:
+            source (UrlBasesPublisherSource): The article to scrape.
+
+        Returns:
+            Tag | None: The tag containing the PDF link found in the article, or None if no tag was found.
+        """
+        self._logger.info(f"Processing Article {source.url}")
+
+        try:
+            scraper = self._scrape_url(source.url)
+
+            # Find the PDF link using appropriate class or tag (if lambda returns True, it will be included in the list)
+            return scraper.find("a", href=lambda href: href and "/pdf/" in href)
+        except Exception as e:
+            self._logger.error(f"Failed to process Article {source.url}. Error: {e}")
+            return None
