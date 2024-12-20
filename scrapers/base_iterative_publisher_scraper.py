@@ -12,7 +12,7 @@ IterativePublisherScrapeVolumeOutput: TypeAlias = Dict[int, List[str]]
 IterativePublisherScrapeIssueOutput: TypeAlias = List[str] | None
 
 
-class IterativePublisherScraper(BaseScraper):
+class BaseIterativePublisherScraper(BaseScraper):
     def post_process(self, links: IterativePublisherScrapeOutput) -> List[str]:
         """
         Extract the PDF links from the dictionary.

@@ -1,20 +1,20 @@
 from typing import List
 from bs4 import ResultSet, Tag
 
-from scrapers.url_based_publisher_scraper import UrlBasesPublisherSource, UrlBasedPublisherScraper, SourceType
+from scrapers.base_url_publisher_scraper import BaseUrlPublisherSource, BaseUrlPublisherScraper, SourceType
 
 
-class SpringerScraper(UrlBasedPublisherScraper):
+class SpringerScraper(BaseUrlPublisherScraper):
     @property
     def cookie_selector(self) -> str:
         return "button.cc-banner__button-accept"
 
-    def _scrape_journal(self, source: UrlBasesPublisherSource) -> List[Tag]:
+    def _scrape_journal(self, source: BaseUrlPublisherSource) -> List[Tag]:
         """
         Scrape all articles of a journal. This method is called when the journal_url is provided in the config.
 
         Args:
-            source (UrlBasesPublisherSource): The journal to scrape.
+            source (BaseUrlPublisherSource): The journal to scrape.
 
         Returns:
             List[Tag]: A list of Tag objects containing the PDF links.
@@ -42,7 +42,7 @@ class SpringerScraper(UrlBasedPublisherScraper):
         try:
             # For each tag of articles previously collected, scrape the article
             pdf_tag_list = [
-                self._scrape_article(UrlBasesPublisherSource(url=tag.get("href"), type=str(SourceType.ARTICLE)))
+                self._scrape_article(BaseUrlPublisherSource(url=tag.get("href"), type=str(SourceType.ARTICLE)))
                 for tag in article_tag_list
             ]
             pdf_tag_list = [tag for tag in pdf_tag_list if tag]
@@ -56,12 +56,12 @@ class SpringerScraper(UrlBasedPublisherScraper):
 
         return pdf_tag_list
 
-    def _scrape_issue(self, source: UrlBasesPublisherSource) -> ResultSet:
+    def _scrape_issue(self, source: BaseUrlPublisherSource) -> ResultSet:
         """
         Scrape the issue URL for PDF links.
 
         Args:
-            source (UrlBasesPublisherSource): The issue to scrape.
+            source (BaseUrlPublisherSource): The issue to scrape.
 
         Returns:
             ResultSet: A ResultSet (i.e., list) object containing the tags to the PDF links.
@@ -82,12 +82,12 @@ class SpringerScraper(UrlBasedPublisherScraper):
 
         return pdf_tag_list
 
-    def _scrape_article(self, source: UrlBasesPublisherSource) -> Tag | None:
+    def _scrape_article(self, source: BaseUrlPublisherSource) -> Tag | None:
         """
         Scrape a single article.
 
         Args:
-            source (UrlBasesPublisherSource): The article to scrape.
+            source (BaseUrlPublisherSource): The article to scrape.
 
         Returns:
             Tag | None: The tag containing the PDF link found in the article, or None if no tag was found.

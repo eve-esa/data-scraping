@@ -9,7 +9,6 @@ import logging
 from bs4 import BeautifulSoup
 from pydantic import ValidationError
 
-from scrapers.url_based_publisher_scraper import UrlBasedPublisherScraper
 from scrapers.base_scraper import BaseScraper
 
 logging.basicConfig(level=logging.INFO)

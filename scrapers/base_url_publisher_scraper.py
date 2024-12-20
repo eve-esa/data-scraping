@@ -14,7 +14,7 @@ class SourceType(Enum):
     ARTICLE = "article"
 
 
-class UrlBasesPublisherSource(BaseModel):
+class BaseUrlPublisherSource(BaseModel):
     url: str
     type: str
 
@@ -27,27 +27,27 @@ class UrlBasesPublisherSource(BaseModel):
         return v
 
 
-class UrlBasedPublisherConfig(BaseConfigScraper):
-    sources: List[UrlBasesPublisherSource]
+class BaseUrlPublisherConfig(BaseConfigScraper):
+    sources: List[BaseUrlPublisherSource]
 
 
-class UrlBasedPublisherScraper(BaseScraper):
+class BaseUrlPublisherScraper(BaseScraper):
     @property
-    def model_class(self) -> Type[UrlBasedPublisherConfig]:
+    def model_class(self) -> Type[BaseUrlPublisherConfig]:
         """
         Return the configuration model class.
 
         Returns:
-            Type[BaseConfigScraper]: The configuration model class.
+            Type[BaseUrlPublisherConfig]: The configuration model class.
         """
-        return UrlBasedPublisherConfig
+        return BaseUrlPublisherConfig
 
-    def scrape(self, model: UrlBasedPublisherConfig) -> ResultSet | List[Tag]:
+    def scrape(self, model: BaseUrlPublisherConfig) -> ResultSet | List[Tag]:
         """
         Scrape the source URLs of for PDF links.
 
         Args:
-            model (UrlBasedPublisherConfig): The configuration model.
+            model (BaseUrlPublisherConfig): The configuration model.
 
         Returns:
             ResultSet | List[Tag]: A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF
@@ -77,13 +77,13 @@ class UrlBasedPublisherScraper(BaseScraper):
         """
         return [tag.get("href") for tag in pdf_tag_list]
 
-    def upload_to_s3(self, pdf_tag_list: ResultSet | List[Tag], model: UrlBasedPublisherConfig):
+    def upload_to_s3(self, pdf_tag_list: ResultSet | List[Tag], model: BaseUrlPublisherConfig):
         """
         Upload the PDF files to S3.
 
         Args:
             pdf_tag_list (ResultSet | List[Tag]): A ResultSet (i.e., a list) or a list of Tag objects containing the
-            model (UrlBasedPublisherConfig): The configuration model.
+            model (BaseUrlPublisherConfig): The configuration model.
         """
         self._logger.info("Uploading files to S3")
 
@@ -96,12 +96,12 @@ class UrlBasedPublisherScraper(BaseScraper):
             time.sleep(5)
 
     @abstractmethod
-    def _scrape_journal(self, source: UrlBasesPublisherSource) -> ResultSet | List[Tag]:
+    def _scrape_journal(self, source: BaseUrlPublisherSource) -> ResultSet | List[Tag]:
         """
         Scrape all articles of a journal. This method is called when the journal_url is provided in the config.
 
         Args:
-            source (UrlBasesPublisherSource): The journal to scrape.
+            source (BaseUrlPublisherSource): The journal to scrape.
 
         Returns:
             ResultSet | List[Tag]: A ResultSet (i.e., a list) or a list of Tag objects containing the PDF links.
@@ -109,12 +109,12 @@ class UrlBasedPublisherScraper(BaseScraper):
         pass
 
     @abstractmethod
-    def _scrape_issue(self, source: UrlBasesPublisherSource) -> ResultSet:
+    def _scrape_issue(self, source: BaseUrlPublisherSource) -> ResultSet:
         """
         Scrape the issue URL for PDF links.
 
         Args:
-            source (UrlBasesPublisherSource): The issue to scrape.
+            source (BaseUrlPublisherSource): The issue to scrape.
 
         Returns:
             ResultSet: A ResultSet (i.e., list) object containing the tags to the PDF links.
@@ -122,12 +122,12 @@ class UrlBasedPublisherScraper(BaseScraper):
         pass
 
     @abstractmethod
-    def _scrape_article(self, element: UrlBasesPublisherSource) -> Tag | None:
+    def _scrape_article(self, element: BaseUrlPublisherSource) -> Tag | None:
         """
         Scrape a single article.
 
         Args:
-            element (UrlBasesPublisherSource): The article to scrape.
+            element (BaseUrlPublisherSource): The article to scrape.
 
         Returns:
             Tag | None: The tag containing the PDF link found in the article, or None if no tag was found.

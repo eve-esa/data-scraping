@@ -1,32 +1,32 @@
 from typing import List
 from bs4 import ResultSet, Tag
 
-from scrapers.url_based_publisher_scraper import UrlBasesPublisherSource, UrlBasedPublisherScraper
+from scrapers.base_url_publisher_scraper import BaseUrlPublisherSource, BaseUrlPublisherScraper
 
 
-class IOPScraper(UrlBasedPublisherScraper):
+class IOPScraper(BaseUrlPublisherScraper):
     @property
     def cookie_selector(self) -> str:
         return "body > div.cky-consent-container.cky-classic-bottom > div.cky-consent-bar > div > div > div.cky-notice-btn-wrapper > button.cky-btn.cky-btn-accept"
 
-    def _scrape_journal(self, source: UrlBasesPublisherSource) -> ResultSet | List[Tag]:
+    def _scrape_journal(self, source: BaseUrlPublisherSource) -> ResultSet | List[Tag]:
         """
         Scrape all articles of a journal. This method is called when the journal_url is provided in the config.
 
         Args:
-            source (UrlBasesPublisherSource): The journal to scrape.
+            source (BaseUrlPublisherSource): The journal to scrape.
 
         Returns:
             ResultSet | List[Tag]: A ResultSet (i.e., a list) or a list of Tag objects containing the PDF links.
         """
         pass
 
-    def _scrape_issue(self, source: UrlBasesPublisherSource) -> ResultSet:
+    def _scrape_issue(self, source: BaseUrlPublisherSource) -> ResultSet:
         """
         Scrape the issue URL for PDF links.
 
         Args:
-            source (UrlBasesPublisherSource): The issue to scrape.
+            source (BaseUrlPublisherSource): The issue to scrape.
 
         Returns:
             ResultSet: A ResultSet (i.e., list) object containing the tags to the PDF links.
@@ -47,12 +47,12 @@ class IOPScraper(UrlBasedPublisherScraper):
 
         return pdf_tag_list
 
-    def _scrape_article(self, element: UrlBasesPublisherSource) -> Tag | None:
+    def _scrape_article(self, element: BaseUrlPublisherSource) -> Tag | None:
         """
         Scrape a single article.
 
         Args:
-            element (UrlBasesPublisherSource): The article to scrape.
+            element (BaseUrlPublisherSource): The article to scrape.
 
         Returns:
             Tag | None: The tag containing the PDF link found in the article, or None if no tag was found.

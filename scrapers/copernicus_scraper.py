@@ -1,14 +1,14 @@
 from typing import List, Type, Tuple
 from pydantic import BaseModel
 
-from scrapers.base_scraper import BaseConfigScraper
-from scrapers.iterative_publisher_scraper import (
-    IterativePublisherScraper,
+from scrapers.base_iterative_publisher_scraper import (
+    BaseIterativePublisherScraper,
     IterativePublisherScrapeJournalOutput,
     IterativePublisherScrapeVolumeOutput,
     IterativePublisherScrapeIssueOutput,
     IterativePublisherScrapeOutput,
 )
+from scrapers.base_scraper import BaseConfigScraper
 from utils import get_scraped_urls
 
 
@@ -27,7 +27,7 @@ class CopernicusConfig(BaseConfigScraper):
     journals: List[CopernicusJournal]
 
 
-class CopernicusScraper(IterativePublisherScraper):
+class CopernicusScraper(BaseIterativePublisherScraper):
     @property
     def model_class(self) -> Type[CopernicusConfig]:
         """

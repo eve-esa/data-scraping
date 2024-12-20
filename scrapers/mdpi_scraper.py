@@ -1,14 +1,14 @@
 from typing import List, Type
 from pydantic import BaseModel
 
-from scrapers.base_scraper import BaseConfigScraper
-from scrapers.iterative_publisher_scraper import (
+from scrapers.base_iterative_publisher_scraper import (
     IterativePublisherScrapeOutput,
-    IterativePublisherScraper,
+    BaseIterativePublisherScraper,
     IterativePublisherScrapeJournalOutput,
     IterativePublisherScrapeVolumeOutput,
     IterativePublisherScrapeIssueOutput,
 )
+from scrapers.base_scraper import BaseConfigScraper
 from utils import get_scraped_urls
 
 
@@ -25,7 +25,7 @@ class MDPIConfig(BaseConfigScraper):
     journals: List[MDPIJournal]
 
 
-class MDPIScraper(IterativePublisherScraper):
+class MDPIScraper(BaseIterativePublisherScraper):
     @property
     def model_class(self) -> Type[MDPIConfig]:
         """
