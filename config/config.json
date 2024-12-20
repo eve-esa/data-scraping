@@ -79,7 +79,7 @@
     },
     "MDPIScraper": {
         "bucket_key": "mdpi",
-        "done": false,
+        "done": true,
         "journals": [
             {
                 "url": "https://www.mdpi.com/2072-4292",

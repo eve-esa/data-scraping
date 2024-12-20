@@ -1,7 +1,6 @@
 import time
 from abc import abstractmethod
 from typing import Dict, List, TypeAlias
-from bs4 import Tag
 
 from scrapers.base_scraper import BaseScraper, BaseConfigScraper
 from storage import PDFName
@@ -84,11 +83,11 @@ class IterativePublisherScraper(BaseScraper):
         pass
 
     @abstractmethod
-    def _scrape_article(self, *args, **kwargs) -> List[Tag]:
+    def _scrape_article(self, *args, **kwargs) -> str | None:
         """
         Scrape a single article.
 
         Returns:
-            List[Tag]: A list of Tag objects containing the PDF links.
+            str | None: The string containing the PDF link.
         """
         pass

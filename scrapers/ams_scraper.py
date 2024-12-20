@@ -1,5 +1,4 @@
 from typing import List, Type
-from bs4 import Tag
 from pydantic import BaseModel
 
 from scrapers.base_scraper import BaseConfigScraper
@@ -68,16 +67,16 @@ class AMSScraper(IterativePublisherScraper):
 
         volume = 1
 
-        result = {}
+        links = {}
         while True:
             res = self._scrape_volume(journal.code, volume)
             if not res:
                 break
 
-            result[volume] = res
+            links[volume] = res
             volume += 1  # Move to next volume
 
-        return result
+        return links
 
     def _scrape_volume(self, journal_code: str, volume_num: int) -> IterativePublisherScrapeVolumeOutput:
         """
@@ -93,16 +92,16 @@ class AMSScraper(IterativePublisherScraper):
         self._logger.info(f"Processing Volume {volume_num}")
 
         issue = 1
-        result = {}
+        links = {}
         while True:
             res = self._scrape_issue(journal_code, volume_num, issue)
             if res is None:
                 break
 
-            result[issue] = res
+            links[issue] = res
             issue += 1  # Move to next issue
 
-        return result
+        return links
 
     def _scrape_issue(self, journal_code: str, volume_num: int, issue_num: int) -> IterativePublisherScrapeIssueOutput:
         """
@@ -120,8 +119,9 @@ class AMSScraper(IterativePublisherScraper):
         issue_url = f"{base_url}/view/journals/{journal_code}/{volume_num}/{issue_num}/{journal_code}.{volume_num}.issue-{issue_num}.xml"
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
-        scraper = self._scrape_url(issue_url)
         try:
+            scraper = self._scrape_url(issue_url)
+
             # find all the URLs to the articles where I can grab the PDF links (one per article URL, if lambda returns
             # True, it will be included in the list)
             article_urls = get_scraped_urls(
@@ -131,11 +131,8 @@ class AMSScraper(IterativePublisherScraper):
                 class_="c-Button--link",
             )
 
-            pdf_links = [
-                base_url + tag.get("href")
-                if tag.get("href").startswith("/") else tag.get("href")
-                for tag in self._scrape_article(article_urls, base_url)
-            ]
+            pdf_links = [self._scrape_article(article_url, base_url) for article_url in article_urls]
+            pdf_links = [link for link in pdf_links if link]
 
             self._logger.info(f"PDF links found: {len(pdf_links)}")
 
@@ -154,25 +151,27 @@ class AMSScraper(IterativePublisherScraper):
             self._done = False
             return None
 
-    def _scrape_article(self, article_urls: List[str], base_url: str) -> List[Tag]:
+    def _scrape_article(self, article_url: str, base_url: str) -> str | None:
         """
         Scrape a single article.
 
         Args:
-            article_urls (List[str]): The article links to scrape.
+            article_url (str): The article links to scrape.
             base_url (str): The base URL.
 
         Returns:
-            List[Tag]: A list of Tag objects containing the PDF links.
+            str | None: The string containing the PDF link.
         """
-        pdf_links = []
-        for article_url in article_urls:
-            self._logger.info(f"Processing Article URL: {article_url}")
+        self._logger.info(f"Processing Article URL: {article_url}")
 
+        try:
             scraper = self._scrape_url(article_url)
 
-            pdf_link = scraper.find("a", href=True, class_="pdf-download")  # Update 'pdf-download' as needed
-            if pdf_link:
-                pdf_links.append(pdf_link)
+            pdf_tag = scraper.find("a", href=True, class_="pdf-download")  # Update 'pdf-download' as needed
+            if pdf_tag:
+                return base_url + pdf_tag.get("href") if pdf_tag.get("href").startswith("/") else pdf_tag.get("href")
 
-        return pdf_links
+            return None
+        except Exception as e:
+            self._logger.error(f"Failed to process Article {article_url}. Error: {e}")
+            return None

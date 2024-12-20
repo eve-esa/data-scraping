@@ -1,5 +1,4 @@
 from typing import List, Type
-from bs4 import Tag
 from pydantic import BaseModel
 
 from scrapers.base_scraper import BaseConfigScraper
@@ -121,8 +120,9 @@ class MDPIScraper(IterativePublisherScraper):
         issue_url = f"{journal_url}/{volume_num}/{issue_num}"
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
-        scraper = self._scrape_url(issue_url)
         try:
+            scraper = self._scrape_url(issue_url)
+
             # Get all PDF links using Selenium to scroll and handle cookie popup once
             # Now find all PDF links using the class_="UD_Listings_ArticlePDF"
             pdf_links = get_scraped_urls(scraper, base_url, href=True, class_="UD_Listings_ArticlePDF")
@@ -144,11 +144,11 @@ class MDPIScraper(IterativePublisherScraper):
             self._done = False
             return None
 
-    def _scrape_article(self, *args, **kwargs) -> List[Tag]:
+    def _scrape_article(self, *args, **kwargs) -> str | None:
         """
         Scrape a single article.
 
         Returns:
-            List[Tag]: A list of Tag objects containing the PDF links.
+            str | None: The string containing the PDF link.
         """
         pass

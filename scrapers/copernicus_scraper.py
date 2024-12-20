@@ -1,5 +1,4 @@
 from typing import List, Type, Tuple
-from bs4 import Tag
 from pydantic import BaseModel
 
 from scrapers.base_scraper import BaseConfigScraper
@@ -84,7 +83,7 @@ class CopernicusScraper(IterativePublisherScraper):
 
         consecutive_missing_issues_threshold = journal.consecutive_missing_issues_threshold
 
-        result = {}
+        links = {}
         for volume_num in range(start_volume, end_volume + 1):
             res, all_issues_missing = self._scrape_volume(
                 journal_url, start_issue, end_issue, volume_num, consecutive_missing_issues_threshold
@@ -95,9 +94,9 @@ class CopernicusScraper(IterativePublisherScraper):
                 self._done = True
                 break  # Exit loop and move to the next journal
 
-            result[volume_num] = res
+            links[volume_num] = res
 
-        return result
+        return links
 
     def _scrape_volume(
         self, journal_url: str, start_issue: int, end_issue: int, volume_num: int, consecutive_missing_issues_threshold: int
@@ -122,14 +121,14 @@ class CopernicusScraper(IterativePublisherScraper):
         missing_issue_count = 0  # Track consecutive missing issues
         all_issues_missing = 0  # Track if all issues are missing for the volume
 
-        result = {}
+        links = {}
 
         # Iterate over each issue in the specified range
         for issue_num in range(start_issue, end_issue + 1):
             res = self._scrape_issue(journal_url, volume_num, issue_num)
             if res:
                 missing_issue_count = 0
-                result[issue_num] = res
+                links[issue_num] = res
             else:
                 missing_issue_count += 1
                 all_issues_missing += 1
@@ -139,7 +138,7 @@ class CopernicusScraper(IterativePublisherScraper):
                 self._done = True
                 break  # Exit loop and move to the next volume
 
-        return result, all_issues_missing
+        return links, all_issues_missing
 
     def _scrape_issue(self, journal_url: str, volume_num: int, issue_num: int) -> IterativePublisherScrapeIssueOutput:
         """
@@ -156,8 +155,9 @@ class CopernicusScraper(IterativePublisherScraper):
         issue_url = f"{journal_url}/articles/{volume_num}/issue{issue_num}.html"
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
-        scraper = self._scrape_url(issue_url)
         try:
+            scraper = self._scrape_url(issue_url)
+
             # find all the URLs to the articles where I can grab the PDF links (one per article URL, if lambda returns
             # True, it will be included in the list)
             article_urls = get_scraped_urls(
@@ -167,11 +167,8 @@ class CopernicusScraper(IterativePublisherScraper):
                 class_="article-title",
             )
 
-            pdf_links = [
-                journal_url + tag.get("href")
-                if tag.get("href").startswith("/") else tag.get("href")
-                for tag in self._scrape_article(article_urls, journal_url)
-            ]
+            pdf_links = [self._scrape_article(article_url, journal_url) for article_url in article_urls]
+            pdf_links = [link for link in pdf_links if link]
 
             self._logger.info(f"PDF links found: {len(pdf_links)}")
 
@@ -190,26 +187,28 @@ class CopernicusScraper(IterativePublisherScraper):
             self._done = False
             return None
 
-    def _scrape_article(self, article_urls: List[str], base_url: str) -> List[Tag]:
+    def _scrape_article(self, article_url: str, base_url: str) -> str | None:
         """
         Scrape a single article.
 
         Args:
-            article_urls (List[str]): The article links to scrape.
+            article_url (str): The article links to scrape.
             base_url (str): The base URL.
 
         Returns:
-            List[Tag]: A list of Tag objects containing the PDF links.
+            str | None: The string containing the PDF link.
         """
-        pdf_links = []
-        for article_url in article_urls:
-            self._logger.info(f"Processing Article URL: {article_url}")
+        self._logger.info(f"Processing Article URL: {article_url}")
 
+        try:
             scraper = self._scrape_url(article_url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
-            pdf_link = scraper.find("a", href=lambda href: href and ".pdf" in href)
-            if pdf_link:
-                pdf_links.append(pdf_link)
+            pdf_tag = scraper.find("a", href=lambda href: href and ".pdf" in href)
+            if pdf_tag:
+                return base_url + pdf_tag.get("href") if pdf_tag.get("href").startswith("/") else pdf_tag.get("href")
 
-        return pdf_links
+            return None
+        except Exception as e:
+            self._logger.error(f"Failed to process Article {article_url}. Error: {e}")
+            return None

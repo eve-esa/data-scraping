@@ -7,7 +7,16 @@ Code for the main ETL pipeline to be utilized to collect, scrape and transform t
 ```bash
 make sync-requirements
 ```
-3. Create a `.env` file in the root of the project with the following content:
+
+## Configuration
+The configuration file is located in the `config` folder and is named `config.json`. The configuration file contains the parameters
+to be used in the ETL pipeline. Each main key of the JSON file represents the configuration of a different scraper.
+The name of the key is the name of the scraper and the value is a dictionary containing the Pydantic model of the scraper configuration. For more examples, please take a look to the already implemented scrapers and their configurations.
+
+## Usage
+
+### Local testing
+For the local usage with testing purposes, please create a `.env` file in the root of the project with the following content:
 ```bash
 AWS_URL="http://localhost:9101"
 AWS_REGION="us-east-1"
@@ -18,13 +27,7 @@ AWS_BUCKET_NAME="esa-eve"
 MINIO_URL="http://minio:9100"
 ```
 
-## Configuration
-The configuration file is located in the `config` folder and is named `config.json`. The configuration file contains the parameters
-to be used in the ETL pipeline. Each main key of the JSON file represents the configuration of a different scraper.
-The name of the key is the name of the scraper and the value is a dictionary containing the Pydantic model of the scraper configuration. For more examples, please take a look to the already implemented scrapers and their configurations.
-
-## Usage
-Run the following command to execute the ETL pipeline:
+Then, you can run the following command to execute the ETL pipeline:
 ```bash
 make up
 make run
@@ -38,19 +41,56 @@ Every time the ETL pipeline is executed, the data is stored in the MinIO server 
 The `make run` command can be executed multiple times to run the ETL pipeline.
 The `make down` command can be executed to stop the docker container.
 
+### Local production
 <div style="background-color: #2D5D7B; padding: 10px; border-radius: 5px; font-weight: bold; width: 100%">
-If yours is a team-working environment and you locally run the ETL pipeline, please make sure to commit and push the changes to the configuration file,
-so that the other team members can run the ETL pipeline with the updated configuration.
+If yours is a team-working environment and you locally run the ETL pipeline for production purposes, please make sure to
+pull latest changes in the git repository, before starting your job.
 </div>
 
-## New Scraper
+For the local usage with testing purposes, please create a `.env` file in the root of the project with the following content:
+```bash
+AWS_URL=<the_url_of_your_s3_bucket>
+AWS_REGION=<aws_region>
+AWS_ACCESS_KEY=<aws_access_key>
+AWS_SECRET_KEY=<aws_secret_key>
+AWS_BUCKET_NAME=<aws_bucket_name>
+```
+
+Then, you can run the following command to execute the ETL pipeline:
+```bash
+make run
+```
+
+<div style="background-color: #2D5D7B; padding: 10px; border-radius: 5px; font-weight: bold; width: 100%">
+If yours is a team-working environment and you locally run the ETL pipeline, please make sure to commit and push the
+changes to the configuration file, so that the other team members can run the ETL pipeline with the updated configuration.
+</div>
+
+### Remote production
+Within your remote server, please add the following environment variables, even by using a `.env` file:
+```bash
+AWS_URL=<the_url_of_your_s3_bucket>
+AWS_REGION=<aws_region>
+AWS_ACCESS_KEY=<aws_access_key>
+AWS_SECRET_KEY=<aws_secret_key>
+AWS_BUCKET_NAME=<aws_bucket_name>
+```
+
+Then, you can run the following command to execute the ETL pipeline:
+```bash
+make run
+```
+
+## HowTo: add a new Scraper
 In order to add a new scraper, the following steps are required:
 1. Create a new file in the `scrapers` folder with the name of the scraper. E.g.: `new_editor_scraper.py`
-2. Implement a new Pydantic model, representing the configuration of the new scraper, in the Python file previously created by extending the `BaseConfigScraper` class. If you need enumerators, please extend `Enum` from the `base_enum` module.
-3. Implement a new class in the file created at the 1st step. The class must inherit from the `BaseScraper` class and implement the due methods / properties:
+2. Implement a new Pydantic model, representing the configuration of the new scraper, in the Python file previously
+created by extending the `BaseConfigScraper` class. If you need enumerators, please extend `Enum` from the `base_enum` module.
+3. Implement a new class in the file created at the 1st step. The class must inherit from the `BaseScraper` class and
+implement the due methods / properties:
    - `model_class`: a `@property` returning the Pydantic model of the configuration of the scraper
    - `cookie_selector`: a `@property` returning the CSS selector of the cookie banner to be clicked, if any, or an empty string if the website does not have a cookie banner
    - `scrape`: a method that scrapes the website and returns the data
    - `post_process`: a method that post-processes the data scraped and returns a list of strings representing the URLs of the files to be downloaded / uploaded to the storage
    - `upload_to_s3`: a method that uploads the files to the storage
-4. Enrich the `config/config.json` file with the JSON-formatted configuration of the new scraper
+4. Enrich the `config/config.json` file with the JSON-formatted configuration of the new scraper.
