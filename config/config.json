@@ -448,6 +448,25 @@
             }
         ]
     },
+    "PubMedScraper": {
+        "bucket_key": "pubmed",
+        "sources": [
+            {
+                "landing_page": {
+                    "pagination_url": "https://www.ncbi.nlm.nih.gov/pmc/?term=\"earth+observation\"",
+                    "should_store": false
+                },
+                "pagination_url": "https://www.ncbi.nlm.nih.gov/pmc/?term=\"earth+observation\"&EntrezSystem2.PEntrez.PMC.Pmc_PageController.PreviousPageName=results&EntrezSystem2.PEntrez.PMC.Pmc_ResultsPanel.Pmc_DisplayBar.PageSize=100&EntrezSystem2.PEntrez.PMC.Pmc_ResultsPanel.Entrez_Pager.CurrPage={page_number}&EntrezSystem2.PEntrez.DbConnector.LastQueryKey={source_number}&EntrezSystem2.PEntrez.DbConnector.Cmd=PageChanged",
+            },
+            {
+                "landing_page": {
+                    "pagination_url": "https://www.ncbi.nlm.nih.gov/pmc/?term=\"Remote+Sensing\"",
+                    "should_store": false
+                },
+                "pagination_url": "https://www.ncbi.nlm.nih.gov/pmc/?term=\"Remote+Sensing\"&EntrezSystem2.PEntrez.PMC.Pmc_PageController.PreviousPageName=results&EntrezSystem2.PEntrez.PMC.Pmc_ResultsPanel.Pmc_DisplayBar.PageSize=100&EntrezSystem2.PEntrez.PMC.Pmc_ResultsPanel.Entrez_Pager.CurrPage={page_number}&EntrezSystem2.PEntrez.DbConnector.LastQueryKey={source_number}&EntrezSystem2.PEntrez.DbConnector.Cmd=PageChanged",
+            }
+        ]
+    },
     "SeosScraper": {
         "bucket_key": "seos",
         "sources": [
