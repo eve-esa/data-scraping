@@ -447,5 +447,26 @@
                 "consecutive_missing_issues_threshold": 3
             }
         ]
+    },
+    "SeosScraper": {
+        "bucket_key": "seos",
+        "sources": [
+            {
+                "url": "https://seos-project.eu/remotesensing/remotesensing-c{chapter}-p02.html",
+                "chapters": 5
+            },
+            {
+                "url": "https://seos-project.eu/landuse/landuse-c{chapter}-p02.html",
+                "chapters": 4
+            },
+            {
+                "url": "https://seos-project.eu/agriculture/agriculture-c{chapter}-p02.html",
+                "chapters": 4
+            },
+            {
+                "url": "https://seos-project.eu/resources/resources-c{chapter}-p02.html",
+                "chapters": 5
+            }
+        ]
     }
 }
