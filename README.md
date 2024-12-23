@@ -67,5 +67,4 @@ implement the due methods / properties:
    - `cookie_selector`: a `@property` returning the CSS selector of the cookie banner to be clicked, if any, or an empty string if the website does not have a cookie banner
    - `scrape`: a method that scrapes the website and returns the data
    - `post_process`: a method that post-processes the data scraped and returns a list of strings representing the URLs of the files to be downloaded / uploaded to the storage
-   - `upload_to_s3`: a method that uploads the files to the storage
 4. Enrich the `config/config.json` file with the JSON-formatted configuration of the new scraper.
