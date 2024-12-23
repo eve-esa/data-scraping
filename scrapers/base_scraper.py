@@ -35,6 +35,7 @@ class BaseScraper(ABC):
         chrome_options.add_argument("--headless")  # Run in headless mode (no browser UI)
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
 
         # Create a new Chrome browser instance
         self._driver = webdriver.Chrome(
