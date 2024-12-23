@@ -1,4 +1,3 @@
-import time
 from abc import abstractmethod
 from typing import List, Type
 from bs4 import ResultSet, Tag
@@ -42,7 +41,7 @@ class BaseUrlPublisherScraper(BaseScraper):
         """
         return BaseUrlPublisherConfig
 
-    def scrape(self, model: BaseUrlPublisherConfig) -> ResultSet | List[Tag]:
+    def scrape(self, model: BaseUrlPublisherConfig) -> ResultSet | List[Tag] | None:
         """
         Scrape the source URLs of for PDF links.
 
@@ -50,53 +49,37 @@ class BaseUrlPublisherScraper(BaseScraper):
             model (BaseUrlPublisherConfig): The configuration model.
 
         Returns:
-            ResultSet | List[Tag]: A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF
-                links.
+            ResultSet | List[Tag]: A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF links. If no tag was found, return None.
         """
         pdf_tags = []
         for source in model.sources:
             if source.type == SourceType.ISSUE:
-                pdf_tags.extend(self._scrape_issue(source))
+                scraped_tags = self._scrape_issue(source)
             elif source.type == SourceType.JOURNAL:
-                pdf_tags.extend(self._scrape_journal(source))
-            elif scraped_tag := self._scrape_article(source):
-                pdf_tags.append(scraped_tag)
+                scraped_tags = self._scrape_journal(source)
+            else:
+                scraped_tag = self._scrape_article(source)
+                scraped_tags = [scraped_tag] if scraped_tag is not None else None
 
-        return pdf_tags
+            if scraped_tags is not None:
+                pdf_tags.extend(scraped_tags)
 
-    def post_process(self, pdf_tag_list: ResultSet | List[Tag]) -> List[str]:
+        return pdf_tags if pdf_tags else None
+
+    def post_process(self, scrape_output: ResultSet | List[Tag]) -> List[str]:
         """
         Extract the href attribute from the links.
 
         Args:
-            pdf_tag_list (ResultSet | List[Tag]): A ResultSet (i.e., a list) or a list of Tag objects containing the
-            tags to the PDF links.
+            scrape_output (ResultSet | List[Tag]): A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF links.
 
         Returns:
             List[str]: A list of strings containing the PDF links
         """
-        return [tag.get("href") for tag in pdf_tag_list]
-
-    def upload_to_s3(self, pdf_tag_list: ResultSet | List[Tag], model: BaseUrlPublisherConfig):
-        """
-        Upload the PDF files to S3.
-
-        Args:
-            pdf_tag_list (ResultSet | List[Tag]): A ResultSet (i.e., a list) or a list of Tag objects containing the
-            model (BaseUrlPublisherConfig): The configuration model.
-        """
-        self._logger.info("Uploading files to S3")
-
-        for tag in pdf_tag_list:
-            result = self._s3_client.upload(model.bucket_key, tag.get("href"))
-            if not result:
-                self._done = False
-
-            # Sleep after each successful download to avoid overwhelming the server
-            time.sleep(5)
+        return [tag.get("href") for tag in scrape_output]
 
     @abstractmethod
-    def _scrape_journal(self, source: BaseUrlPublisherSource) -> ResultSet | List[Tag]:
+    def _scrape_journal(self, source: BaseUrlPublisherSource) -> ResultSet | List[Tag] | None:
         """
         Scrape all articles of a journal. This method is called when the journal_url is provided in the config.
 
@@ -104,12 +87,12 @@ class BaseUrlPublisherScraper(BaseScraper):
             source (BaseUrlPublisherSource): The journal to scrape.
 
         Returns:
-            ResultSet | List[Tag]: A ResultSet (i.e., a list) or a list of Tag objects containing the PDF links.
+            ResultSet | List[Tag]: A ResultSet (i.e., a list) or a list of Tag objects containing the PDF links. If no tag was found, return None.
         """
         pass
 
     @abstractmethod
-    def _scrape_issue(self, source: BaseUrlPublisherSource) -> ResultSet:
+    def _scrape_issue(self, source: BaseUrlPublisherSource) -> ResultSet | None:
         """
         Scrape the issue URL for PDF links.
 
@@ -117,7 +100,7 @@ class BaseUrlPublisherScraper(BaseScraper):
             source (BaseUrlPublisherSource): The issue to scrape.
 
         Returns:
-            ResultSet: A ResultSet (i.e., list) object containing the tags to the PDF links.
+            ResultSet: A ResultSet (i.e., list) object containing the tags to the PDF links, or None if no tag was found.
         """
         pass
 

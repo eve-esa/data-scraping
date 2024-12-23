@@ -1,7 +1,6 @@
 import logging
 import os
 from typing import Final
-
 import boto3
 import requests
 from botocore.exceptions import ClientError
@@ -35,19 +34,14 @@ class S3Storage:
     def __repr__(self):
         return self.__str__()
 
-    def upload(self, root_key: str, pdf_url: str, schema_name: PDFName | None = None) -> bool:
+    def upload(self, root_key: str, pdf_url: str) -> bool:
         self.logger.info(f"Uploading PDF: {pdf_url}")
 
-        pdf_name = os.path.basename(pdf_url)
-        if schema_name:
-            pdf_name = f"{schema_name.journal}/volume_{schema_name.volume}/issue_{schema_name.issue}/{os.path.basename(pdf_url)}"
-
-        s3_key = os.path.join(root_key, pdf_name)  # Construct S3 key
-
         # Check if the file already exists in S3
+        s3_key = os.path.join(root_key, os.path.basename(pdf_url))  # Construct S3 key
         try:
             self.client.head_object(Bucket=self.bucket_name, Key=s3_key)
-            self.logger.warning(f"{pdf_name} already exists in S3, skipping upload.")
+            self.logger.warning(f"{s3_key} already exists in S3, skipping upload.")
             return True  # Exit the function if the file exists
         except ClientError as e:
             if e.response["Error"]["Code"] == "404":
@@ -55,7 +49,7 @@ class S3Storage:
                 pass
             else:
                 # Handle other exceptions, e.g. permissions
-                self.logger.error(f"Error checking if {pdf_name} exists in S3: {e}")
+                self.logger.error(f"Error checking if {s3_key} exists in S3: {e}")
                 return False
 
         try:

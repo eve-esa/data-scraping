@@ -17,11 +17,11 @@ class IOPScraper(BaseUrlPublisherScraper):
             source (BaseUrlPublisherSource): The journal to scrape.
 
         Returns:
-            ResultSet | List[Tag]: A ResultSet (i.e., a list) or a list of Tag objects containing the PDF links.
+            ResultSet | List[Tag] | None: A ResultSet (i.e., a list) or a list of Tag objects containing the PDF links. If no tag was found, return None.
         """
         pass
 
-    def _scrape_issue(self, source: BaseUrlPublisherSource) -> ResultSet:
+    def _scrape_issue(self, source: BaseUrlPublisherSource) -> ResultSet | None:
         """
         Scrape the issue URL for PDF links.
 
@@ -29,7 +29,7 @@ class IOPScraper(BaseUrlPublisherScraper):
             source (BaseUrlPublisherSource): The issue to scrape.
 
         Returns:
-            ResultSet: A ResultSet (i.e., list) object containing the tags to the PDF links.
+            ResultSet: A ResultSet (i.e., list) object containing the tags to the PDF links, or None if no tag was found.
         """
         self._logger.info(f"Processing Issue {source.url}")
 
@@ -39,13 +39,11 @@ class IOPScraper(BaseUrlPublisherScraper):
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             pdf_tag_list = scraper.find_all("a", href=lambda href: href and "/article/" in href)
             self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
+
+            return pdf_tag_list
         except Exception as e:
             self._logger.error(f"Failed to process Issue {source.url}. Error: {e}")
-            self._done = False
-
-            pdf_tag_list = []
-
-        return pdf_tag_list
+            return None
 
     def _scrape_article(self, element: BaseUrlPublisherSource) -> Tag | None:
         """

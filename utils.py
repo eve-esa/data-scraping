@@ -1,6 +1,7 @@
 import importlib
 import inspect
 import json
+import os
 import pkgutil
 import threading
 from typing import Dict, List, Callable
@@ -9,6 +10,7 @@ import logging
 from bs4 import BeautifulSoup
 from pydantic import ValidationError
 
+from constants import OUTPUT_FOLDER
 from scrapers.base_scraper import BaseScraper
 
 logging.basicConfig(level=logging.INFO)
@@ -22,11 +24,26 @@ def read_yaml_file(file_path: str):
     return data
 
 
+# Write the YAML file
+def write_yaml_file(file_path: str, data: Dict | List):
+    with open(file_path, "w") as file:
+        yaml.dump(data, file, default_flow_style=False)
+
+
 # Load the JSON file
 def read_json_file(file_path: str):
     with open(file_path, "r") as file:
         data = json.load(file)
     return data
+
+
+# Write the JSON file
+def write_json_file(file_path: str, data: Dict | List):
+    # if the folder does not exist, create it
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+    with open(file_path, "w") as file:
+        json.dump(data, file, indent=4)
 
 
 def discover_scrapers(base_package: str) -> Dict[str, BaseScraper]:
@@ -57,16 +74,11 @@ def run_scrapers(discovered_scrapers: Dict[str, BaseScraper], config: Dict):
     """
     Find all scraper classes in the specified package and run them in separate threads.
     """
-
-    def run_scraper(model_class, scraper_config):
-        model_instance = model_class(**scraper_config) if model_class else None
-        class_scraper(model_instance)
-
     threads = []
     for name_scraper, config_scraper in config.items():
-        is_done = config_scraper.get("done", False)
+        is_done = os.path.exists(os.path.join(OUTPUT_FOLDER, f"{name_scraper}.json"))
         if is_done:
-            logger.info(f"Scraper {name_scraper} already done")
+            logger.warning(f"Scraper {name_scraper} already done")
             continue
 
         if name_scraper not in discovered_scrapers:
@@ -74,11 +86,13 @@ def run_scrapers(discovered_scrapers: Dict[str, BaseScraper], config: Dict):
             continue
 
         class_scraper = discovered_scrapers[name_scraper]
+        model_class_scraper = getattr(class_scraper, "model_class", None)
+        if model_class_scraper is None:
+            logger.error(f"Model class not found for scraper {name_scraper}")
+            continue
+
         try:
-            thread = threading.Thread(
-                target=run_scraper,
-                args=(getattr(class_scraper, "model_class", None), config_scraper)
-            )
+            thread = threading.Thread(target=lambda: class_scraper(model_class_scraper(**config_scraper)))
             thread.start()
             threads.append(thread)
         except ValidationError as e:

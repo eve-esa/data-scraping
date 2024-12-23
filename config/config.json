@@ -1,7 +1,6 @@
 {
     "IOPScraper": {
         "bucket_key": "iopscience",
-        "done": false,
         "sources": [
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/169/1",
@@ -79,7 +78,6 @@
     },
     "MDPIScraper": {
         "bucket_key": "mdpi",
-        "done": true,
         "journals": [
             {
                 "url": "https://www.mdpi.com/2072-4292",
@@ -189,7 +187,6 @@
     },
     "SpringerScraper": {
         "bucket_key": "springer",
-        "done": false,
         "sources": [
             {
                 "url": "https://link.springer.com/journal/44288/articles",
@@ -235,7 +232,6 @@
     },
     "AMSScraper": {
         "bucket_key": "ams",
-        "done": false,
         "journals": [
             {
                 "name": "Artificial Intelligence for the Earth Systems",
@@ -289,7 +285,6 @@
     },
     "CopernicusScraper": {
         "bucket_key": "copernicus",
-        "done": false,
         "journals": [
             {
                 "url": "https://acp.copernicus.org",

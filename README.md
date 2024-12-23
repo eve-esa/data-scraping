@@ -15,8 +15,8 @@ The name of the key is the name of the scraper and the value is a dictionary con
 
 ## Usage
 
-### Local testing
-For the local usage with testing purposes, please create a `.env` file in the root of the project with the following content:
+### Testing
+For the usage with testing purposes, please create a `.env` file in the root of the project with the following content:
 ```bash
 AWS_URL="http://localhost:9101"
 AWS_REGION="us-east-1"
@@ -41,33 +41,8 @@ Every time the ETL pipeline is executed, the data is stored in the MinIO server 
 The `make run` command can be executed multiple times to run the ETL pipeline.
 The `make down` command can be executed to stop the docker container.
 
-### Local production
-<div style="background-color: #2D5D7B; padding: 10px; border-radius: 5px; font-weight: bold; width: 100%">
-If yours is a team-working environment and you locally run the ETL pipeline for production purposes, please make sure to
-pull latest changes in the git repository, before starting your job.
-</div>
-
-For the local usage with testing purposes, please create a `.env` file in the root of the project with the following content:
-```bash
-AWS_URL=<the_url_of_your_s3_bucket>
-AWS_REGION=<aws_region>
-AWS_ACCESS_KEY=<aws_access_key>
-AWS_SECRET_KEY=<aws_secret_key>
-AWS_BUCKET_NAME=<aws_bucket_name>
-```
-
-Then, you can run the following command to execute the ETL pipeline:
-```bash
-make run
-```
-
-<div style="background-color: #2D5D7B; padding: 10px; border-radius: 5px; font-weight: bold; width: 100%">
-If yours is a team-working environment and you locally run the ETL pipeline, please make sure to commit and push the
-changes to the configuration file, so that the other team members can run the ETL pipeline with the updated configuration.
-</div>
-
-### Remote production
-Within your remote server, please add the following environment variables, even by using a `.env` file:
+### Production
+For the usage with productive purposes, please create a `.env` file in the root of the project with the following content:
 ```bash
 AWS_URL=<the_url_of_your_s3_bucket>
 AWS_REGION=<aws_region>

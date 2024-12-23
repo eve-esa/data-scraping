@@ -1,4 +1,4 @@
-from typing import List, Type, Tuple
+from typing import List, Type
 from pydantic import BaseModel
 
 from scrapers.base_iterative_publisher_scraper import (
@@ -28,6 +28,11 @@ class CopernicusConfig(BaseConfigScraper):
 
 
 class CopernicusScraper(BaseIterativePublisherScraper):
+    def __init__(self):
+        super().__init__()
+
+        self.__all_issues_missing = 0  # Track if all issues are missing for the volume
+
     @property
     def model_class(self) -> Type[CopernicusConfig]:
         """
@@ -42,7 +47,7 @@ class CopernicusScraper(BaseIterativePublisherScraper):
     def cookie_selector(self) -> str:
         return ""
 
-    def scrape(self, model: CopernicusConfig) -> IterativePublisherScrapeOutput:
+    def scrape(self, model: CopernicusConfig) -> IterativePublisherScrapeOutput | None:
         """
         Scrape the AMS journals for PDF links.
 
@@ -50,16 +55,15 @@ class CopernicusScraper(BaseIterativePublisherScraper):
             model (CopernicusConfig): The configuration model.
 
         Returns:
-            IterativePublisherScrapeOutput: A dictionary containing the PDF links.
+            IterativePublisherScrapeOutput | None: A dictionary containing the PDF links, or None if no link was found.
         """
         links = {}
 
         for journal in model.journals:
-            res = self._scrape_journal(journal)
-            if res:
-                links[journal.name] = res
+            if scraped_tags := self._scrape_journal(journal):
+                links[journal.name] = scraped_tags
 
-        return links
+        return links if links else None
 
     def _scrape_journal(self, journal: CopernicusJournal) -> IterativePublisherScrapeJournalOutput:
         """
@@ -85,13 +89,14 @@ class CopernicusScraper(BaseIterativePublisherScraper):
 
         links = {}
         for volume_num in range(start_volume, end_volume + 1):
-            res, all_issues_missing = self._scrape_volume(
+            self.__all_issues_missing = 0
+
+            res = self._scrape_volume(
                 journal_url, start_issue, end_issue, volume_num, consecutive_missing_issues_threshold
             )
 
-            if all_issues_missing == end_issue - start_issue + 1:
+            if self.__all_issues_missing == end_issue - start_issue + 1:
                 self._logger.warning(f"No issues found for Volume {volume_num}. Moving to next journal.")
-                self._done = True
                 break  # Exit loop and move to the next journal
 
             links[volume_num] = res
@@ -99,8 +104,13 @@ class CopernicusScraper(BaseIterativePublisherScraper):
         return links
 
     def _scrape_volume(
-        self, journal_url: str, start_issue: int, end_issue: int, volume_num: int, consecutive_missing_issues_threshold: int
-    ) -> Tuple[IterativePublisherScrapeVolumeOutput, int]:
+        self,
+        journal_url: str,
+        start_issue: int,
+        end_issue: int,
+        volume_num: int,
+        consecutive_missing_issues_threshold: int,
+    ) -> IterativePublisherScrapeVolumeOutput:
         """
         Scrape all issues of a volume.
 
@@ -109,18 +119,14 @@ class CopernicusScraper(BaseIterativePublisherScraper):
             start_issue (int): The starting issue number.
             end_issue (int): The ending issue number.
             volume_num (int): The volume number.
-            consecutive_missing_issues_threshold (int): The number of consecutive missing issues to allow before moving
-                to the next volume.
+            consecutive_missing_issues_threshold (int): The number of consecutive missing issues to allow before moving to the next volume.
 
         Returns:
-            Tuple[IterativePublisherScrapeVolumeOutput, int]: A dictionary containing the PDF links, and the number of
-                missing issues.
+            IterativePublisherScrapeVolumeOutput: A dictionary containing the PDF links.
         """
         self._logger.info(f"Processing Volume {volume_num}")
 
         missing_issue_count = 0  # Track consecutive missing issues
-        all_issues_missing = 0  # Track if all issues are missing for the volume
-
         links = {}
 
         # Iterate over each issue in the specified range
@@ -131,16 +137,17 @@ class CopernicusScraper(BaseIterativePublisherScraper):
                 links[issue_num] = res
             else:
                 missing_issue_count += 1
-                all_issues_missing += 1
+                self.__all_issues_missing += 1
 
             if missing_issue_count >= consecutive_missing_issues_threshold:
                 self._logger.warning(f"Consecutive missing issues for Volume {volume_num}. Moving to the next volume.")
-                self._done = True
                 break  # Exit loop and move to the next volume
 
-        return links, all_issues_missing
+        return links
 
-    def _scrape_issue(self, journal_url: str, volume_num: int, issue_num: int) -> IterativePublisherScrapeIssueOutput:
+    def _scrape_issue(
+        self, journal_url: str, volume_num: int, issue_num: int
+    ) -> IterativePublisherScrapeIssueOutput | None:
         """
         Scrape the issue URL for PDF links.
 
@@ -150,7 +157,7 @@ class CopernicusScraper(BaseIterativePublisherScraper):
             issue_num (int): The issue number.
 
         Returns:
-            IterativePublisherScrapeIssueOutput: A list of PDF links found in the issue.
+            IterativePublisherScrapeIssueOutput | None: A list of PDF links found in the issue, or None is something went wrong.
         """
         issue_url = f"{journal_url}/articles/{volume_num}/issue{issue_num}.html"
         self._logger.info(f"Processing Issue URL: {issue_url}")
@@ -171,20 +178,9 @@ class CopernicusScraper(BaseIterativePublisherScraper):
             pdf_links = [link for link in pdf_links if link]
 
             self._logger.info(f"PDF links found: {len(pdf_links)}")
-
-            # If no PDF links are found, skip to the next volume
-            if not pdf_links:
-                self._logger.info(
-                    f"No PDF links found for Issue {issue_num} in Volume {volume_num}. Skipping to the next volume."
-                )
-                return None
-
             return pdf_links
         except Exception as e:
-            self._logger.error(
-                f"Failed to process Issue {issue_num} in Volume {volume_num}. Error: {e}"
-            )
-            self._done = False
+            self._logger.error(f"Failed to process Issue {issue_num} in Volume {volume_num}. Error: {e}")
             return None
 
     def _scrape_article(self, article_url: str, base_url: str) -> str | None:

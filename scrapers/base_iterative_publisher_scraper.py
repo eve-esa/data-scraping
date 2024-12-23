@@ -1,53 +1,33 @@
-import time
 from abc import abstractmethod
 from typing import Dict, List, TypeAlias
 
 from scrapers.base_scraper import BaseScraper, BaseConfigScraper
-from storage import PDFName
 
 
 IterativePublisherScrapeOutput: TypeAlias = Dict[str, Dict[int, Dict[int, List[str]]]]
 IterativePublisherScrapeJournalOutput: TypeAlias = Dict[int, Dict[int, List[str]]]
 IterativePublisherScrapeVolumeOutput: TypeAlias = Dict[int, List[str]]
-IterativePublisherScrapeIssueOutput: TypeAlias = List[str] | None
+IterativePublisherScrapeIssueOutput: TypeAlias = List[str]
 
 
 class BaseIterativePublisherScraper(BaseScraper):
-    def post_process(self, links: IterativePublisherScrapeOutput) -> List[str]:
+    def post_process(self, scrape_output: IterativePublisherScrapeOutput) -> List[str]:
         """
         Extract the PDF links from the dictionary.
 
         Args:
-            links: A dictionary containing the PDF links.
+            scrape_output: A dictionary containing the PDF links.
 
         Returns:
             List[str]: A list of strings containing the PDF links
         """
-        return [link for journal in links.values() for volume in journal.values() for issue in volume.values() for link in issue]
-
-    def upload_to_s3(self, links: IterativePublisherScrapeOutput, model: BaseConfigScraper):
-        """
-        Upload the PDF files to S3.
-
-        Args:
-            links (IterativePublisherScrapeOutput): A dictionary containing the PDF links.
-            model (BaseConfigScraper): The configuration model.
-        """
-        self._logger.info("Uploading files to S3")
-
-        for journal, volumes in links.items():
-            for volume_num, issues in volumes.items():
-                for issue_num, issue_links in issues.items():
-                    for link in issue_links:
-                        result = self._s3_client.upload(
-                            model.bucket_key, link, PDFName(journal=journal, volume=str(volume_num), issue=str(issue_num))
-                        )
-
-                        if not result:
-                            self._done = False
-
-                        # Sleep after each successful download to avoid overwhelming the server
-                        time.sleep(5)
+        return [
+            issue_link
+            for journal_links in scrape_output.values()
+            for volume_links in journal_links.values()
+            for issues_links in volume_links.values()
+            for issue_link in issues_links
+        ]
 
     @abstractmethod
     def _scrape_journal(self, journal: BaseConfigScraper) -> IterativePublisherScrapeJournalOutput:
@@ -73,12 +53,12 @@ class BaseIterativePublisherScraper(BaseScraper):
         pass
 
     @abstractmethod
-    def _scrape_issue(self, *args, **kwargs) -> IterativePublisherScrapeIssueOutput:
+    def _scrape_issue(self, *args, **kwargs) -> IterativePublisherScrapeIssueOutput | None:
         """
         Scrape the issue URL for PDF links.
 
         Returns:
-            List: A list of PDF links found in the issue.
+            IterativePublisherScrapeIssueOutput | None: A list of PDF links found in the issue, or None is something went wrong.
         """
         pass
 

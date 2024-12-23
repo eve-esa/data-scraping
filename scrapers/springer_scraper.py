@@ -9,7 +9,7 @@ class SpringerScraper(BaseUrlPublisherScraper):
     def cookie_selector(self) -> str:
         return "button.cc-banner__button-accept"
 
-    def _scrape_journal(self, source: BaseUrlPublisherSource) -> List[Tag]:
+    def _scrape_journal(self, source: BaseUrlPublisherSource) -> List[Tag] | None:
         """
         Scrape all articles of a journal. This method is called when the journal_url is provided in the config.
 
@@ -17,7 +17,7 @@ class SpringerScraper(BaseUrlPublisherScraper):
             source (BaseUrlPublisherSource): The journal to scrape.
 
         Returns:
-            List[Tag]: A list of Tag objects containing the PDF links.
+            List[Tag] | None: A list of Tag objects containing the PDF links. If no tag was found, return None.
         """
         self._logger.info(f"Processing Journal {source.url}")
 
@@ -46,17 +46,14 @@ class SpringerScraper(BaseUrlPublisherScraper):
                 for tag in article_tag_list
             ]
             pdf_tag_list = [tag for tag in pdf_tag_list if tag]
-
             self._logger.info(f"PDF links found: {pdf_tag_list}")
+
+            return pdf_tag_list
         except Exception as e:
             self._logger.error(f"Failed to process Journal {source.url}. Error: {e}")
-            self._done = False
+            return None
 
-            pdf_tag_list = []
-
-        return pdf_tag_list
-
-    def _scrape_issue(self, source: BaseUrlPublisherSource) -> ResultSet:
+    def _scrape_issue(self, source: BaseUrlPublisherSource) -> ResultSet | None:
         """
         Scrape the issue URL for PDF links.
 
@@ -64,7 +61,7 @@ class SpringerScraper(BaseUrlPublisherScraper):
             source (BaseUrlPublisherSource): The issue to scrape.
 
         Returns:
-            ResultSet: A ResultSet (i.e., list) object containing the tags to the PDF links.
+            ResultSet: A ResultSet (i.e., list) object containing the tags to the PDF links, or None if no tag was found.
         """
         self._logger.info(f"Processing Issue {source.url}")
 
@@ -74,13 +71,11 @@ class SpringerScraper(BaseUrlPublisherScraper):
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             pdf_tag_list = scraper.find_all("a", href=lambda href: href and "/pdf/" in href)
             self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
+
+            return pdf_tag_list
         except Exception as e:
             self._logger.error(f"Failed to process Issue {source.url}. Error: {e}")
-            self._done = False
-
-            pdf_tag_list = []
-
-        return pdf_tag_list
+            return None
 
     def _scrape_article(self, source: BaseUrlPublisherSource) -> Tag | None:
         """

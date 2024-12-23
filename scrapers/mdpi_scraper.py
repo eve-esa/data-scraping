@@ -40,7 +40,7 @@ class MDPIScraper(BaseIterativePublisherScraper):
     def cookie_selector(self) -> str:
         return ""
 
-    def scrape(self, model: MDPIConfig) -> IterativePublisherScrapeOutput:
+    def scrape(self, model: MDPIConfig) -> IterativePublisherScrapeOutput | None:
         """
         Scrape the MDPI journals for PDF links.
 
@@ -48,14 +48,15 @@ class MDPIScraper(BaseIterativePublisherScraper):
             model (MDPIConfig): The configuration model.
 
         Returns:
-            IterativePublisherScrapeOutput: A dictionary containing the PDF links.
+            IterativePublisherScrapeOutput | None: A dictionary containing the PDF links, or None if no link was found.
         """
         links = {}
 
         for journal in model.journals:
-            links[journal.name] = self._scrape_journal(journal)
+            if scraped_tags := self._scrape_journal(journal):
+                links[journal.name] = scraped_tags
 
-        return links
+        return links if links else None
 
     def _scrape_journal(self, journal: MDPIJournal) -> IterativePublisherScrapeJournalOutput:
         """
@@ -99,12 +100,14 @@ class MDPIScraper(BaseIterativePublisherScraper):
         """
         self._logger.info(f"Processing Volume {volume_num}")
         return {
-            issue_num: sir
+            issue_num: scrape_issue_result
             for issue_num in range(start_issue, end_issue + 1)
-            if (sir := self._scrape_issue(journal_url, volume_num, issue_num))
+            if (scrape_issue_result := self._scrape_issue(journal_url, volume_num, issue_num))
         }
 
-    def _scrape_issue(self, journal_url: str, volume_num: int, issue_num: int) -> IterativePublisherScrapeIssueOutput:
+    def _scrape_issue(
+        self, journal_url: str, volume_num: int, issue_num: int
+    ) -> IterativePublisherScrapeIssueOutput | None:
         """
         Scrape the issue URL for PDF links.
 
@@ -114,7 +117,7 @@ class MDPIScraper(BaseIterativePublisherScraper):
             issue_num (int): The issue number.
 
         Returns:
-            IterativePublisherScrapeIssueOutput: A list of PDF links found in the issue.
+            IterativePublisherScrapeIssueOutput | None: A list of PDF links found in the issue, or None is something went wrong.
         """
         base_url = "https://www.mdpi.com"
         issue_url = f"{journal_url}/{volume_num}/{issue_num}"
@@ -128,20 +131,11 @@ class MDPIScraper(BaseIterativePublisherScraper):
             pdf_links = get_scraped_urls(scraper, base_url, href=True, class_="UD_Listings_ArticlePDF")
 
             self._logger.info(f"PDF links found: {len(pdf_links)}")
-
-            # If no PDF links are found, skip to the next volume
-            if not pdf_links:
-                self._logger.info(
-                    f"No PDF links found for Issue {issue_num} in Volume {volume_num}. Skipping to the next volume."
-                )
-                return None
-
             return pdf_links
         except Exception as e:
             self._logger.error(
                 f"Failed to process Issue {issue_num} in Volume {volume_num}. Error: {e}"
             )
-            self._done = False
             return None
 
     def _scrape_article(self, *args, **kwargs) -> str | None:

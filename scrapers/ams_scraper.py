@@ -36,7 +36,7 @@ class AMSScraper(BaseIterativePublisherScraper):
     def cookie_selector(self) -> str:
         return ""
 
-    def scrape(self, model: AMSConfig) -> IterativePublisherScrapeOutput:
+    def scrape(self, model: AMSConfig) -> IterativePublisherScrapeOutput | None:
         """
         Scrape the AMS journals for PDF links.
 
@@ -44,14 +44,15 @@ class AMSScraper(BaseIterativePublisherScraper):
             model (AMSConfig): The configuration model.
 
         Returns:
-            IterativePublisherScrapeOutput: A dictionary containing the PDF links.
+            IterativePublisherScrapeOutput | None: A dictionary containing the PDF links, or None if no link was found.
         """
         links = {}
 
         for journal in model.journals:
-            links[journal.code] = self._scrape_journal(journal)
+            if scraped_tags := self._scrape_journal(journal):
+                links[journal.code] = scraped_tags
 
-        return links
+        return links if links else None
 
     def _scrape_journal(self, journal: AMSJournal) -> IterativePublisherScrapeJournalOutput:
         """
@@ -69,8 +70,7 @@ class AMSScraper(BaseIterativePublisherScraper):
 
         links = {}
         while True:
-            res = self._scrape_volume(journal.code, volume)
-            if not res:
+            if not (res := self._scrape_volume(journal.code, volume)):
                 break
 
             links[volume] = res
@@ -94,8 +94,7 @@ class AMSScraper(BaseIterativePublisherScraper):
         issue = 1
         links = {}
         while True:
-            res = self._scrape_issue(journal_code, volume_num, issue)
-            if res is None:
+            if not (res := self._scrape_issue(journal_code, volume_num, issue)):
                 break
 
             links[issue] = res
@@ -103,7 +102,9 @@ class AMSScraper(BaseIterativePublisherScraper):
 
         return links
 
-    def _scrape_issue(self, journal_code: str, volume_num: int, issue_num: int) -> IterativePublisherScrapeIssueOutput:
+    def _scrape_issue(
+        self, journal_code: str, volume_num: int, issue_num: int
+    ) -> IterativePublisherScrapeIssueOutput | None:
         """
         Scrape the issue URL for PDF links.
 
@@ -113,7 +114,7 @@ class AMSScraper(BaseIterativePublisherScraper):
             issue_num (int): The issue number.
 
         Returns:
-            IterativePublisherScrapeIssueOutput: A list of PDF links found in the issue.
+            IterativePublisherScrapeIssueOutput | None: A list of PDF links found in the issue, or None is something went wrong.
         """
         base_url = "https://journals.ametsoc.org"
         issue_url = f"{base_url}/view/journals/{journal_code}/{volume_num}/{issue_num}/{journal_code}.{volume_num}.issue-{issue_num}.xml"
@@ -135,20 +136,14 @@ class AMSScraper(BaseIterativePublisherScraper):
             pdf_links = [link for link in pdf_links if link]
 
             self._logger.info(f"PDF links found: {len(pdf_links)}")
-
-            # If no PDF links are found, skip to the next volume
             if not pdf_links:
                 self._logger.info(
                     f"No PDF links found for Issue {issue_num} in Volume {volume_num}. Skipping to the next volume."
                 )
-                return None
 
             return pdf_links
         except Exception as e:
-            self._logger.error(
-                f"Failed to process Issue {issue_num} in Volume {volume_num}. Error: {e}"
-            )
-            self._done = False
+            self._logger.error(f"Failed to process Issue {issue_num} in Volume {volume_num}. Error: {e}")
             return None
 
     def _scrape_article(self, article_url: str, base_url: str) -> str | None:
@@ -160,7 +155,7 @@ class AMSScraper(BaseIterativePublisherScraper):
             base_url (str): The base URL.
 
         Returns:
-            str | None: The string containing the PDF link.
+            str | None: The string containing the PDF link, or None if no link was found or something went wrong.
         """
         self._logger.info(f"Processing Article URL: {article_url}")
 
