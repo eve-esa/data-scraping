@@ -18,7 +18,7 @@ The name of the key is the name of the scraper and the value is a dictionary con
 ### Testing
 For the usage with testing purposes, please create a `.env` file in the root of the project with the following content:
 ```bash
-AWS_URL="http://localhost:9101"
+AWS_URL="http://localhost:9100"
 AWS_REGION="us-east-1"
 AWS_ACCESS_KEY="minio"
 AWS_SECRET_KEY="minio1234"
