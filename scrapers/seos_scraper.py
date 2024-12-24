@@ -1,5 +1,6 @@
 from typing import List, Type, Dict
 from bs4 import Tag
+import os
 from pydantic import BaseModel
 
 from scrapers.base_scraper import BaseConfigScraper, BaseScraper
@@ -62,10 +63,13 @@ class SeosScraper(BaseScraper):
         for i in range(1, source.chapters + 1):
             self._logger.info(f"Processing Chapter {i}")
             try:
-                scraper = self._scrape_url(source.url.format(**{"chapter": i}))
-                i_str = f"-c{i}" if i >= 10 else f"-c0{i}"
 
-                html_tags_chapter = scraper.find_all("a", href=lambda href: href and i_str in href)
+                i_str = f"-c{i}" if i >= 10 else f"-c0{i}"
+                scraper = self._scrape_url(source.url.format(**{"chapter": i_str[2:]}))
+
+                html_tags_chapter = scraper.find_all(
+                    "a", href=lambda href: href and i_str in href
+                )
                 html_tags.extend(html_tags_chapter)
             except Exception as e:
                 self._logger.error(f"Failed to process Chapter {i}. Error: {e}")
@@ -83,4 +87,13 @@ class SeosScraper(BaseScraper):
         Returns:
             List[str]: A list of strings containing the HTML links
         """
-        return [tag.get("href") for tags in scrape_output.values() for tag in tags]
+
+        links = []
+        for key_url in scrape_output.keys():
+            links.extend(
+                [
+                    key_url.replace(os.path.basename(key_url), tag.get("href"))
+                    for tag in scrape_output[key_url]
+                ]
+            )
+        return list(set(links))
