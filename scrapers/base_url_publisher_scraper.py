@@ -5,6 +5,7 @@ from pydantic import BaseModel, field_validator
 
 from base_enum import Enum
 from scrapers.base_scraper import BaseScraper, BaseConfigScraper
+from utils import get_scraped_url
 
 
 class SourceType(Enum):
@@ -76,7 +77,7 @@ class BaseUrlPublisherScraper(BaseScraper):
         Returns:
             List[str]: A list of strings containing the PDF links
         """
-        return [tag.get("href") for tag in scrape_output]
+        return [get_scraped_url(tag, self.base_url) for tag in scrape_output]
 
     @abstractmethod
     def _scrape_journal(self, source: BaseUrlPublisherSource) -> ResultSet | List[Tag] | None:

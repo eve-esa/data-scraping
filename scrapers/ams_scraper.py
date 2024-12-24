@@ -9,7 +9,7 @@ from scrapers.base_iterative_publisher_scraper import (
     IterativePublisherScrapeOutput,
 )
 from scrapers.base_scraper import BaseConfigScraper
-from utils import get_scraped_urls
+from utils import get_scraped_url
 
 
 class AMSJournal(BaseModel):
@@ -35,6 +35,10 @@ class AMSScraper(BaseIterativePublisherScraper):
     @property
     def cookie_selector(self) -> str:
         return ""
+
+    @property
+    def base_url(self) -> str:
+        return "https://journals.ametsoc.org"
 
     def scrape(self, model: AMSConfig) -> IterativePublisherScrapeOutput | None:
         """
@@ -116,8 +120,7 @@ class AMSScraper(BaseIterativePublisherScraper):
         Returns:
             IterativePublisherScrapeIssueOutput | None: A list of PDF links found in the issue, or None is something went wrong.
         """
-        base_url = "https://journals.ametsoc.org"
-        issue_url = f"{base_url}/view/journals/{journal_code}/{volume_num}/{issue_num}/{journal_code}.{volume_num}.issue-{issue_num}.xml"
+        issue_url = f"{self.base_url}/view/journals/{journal_code}/{volume_num}/{issue_num}/{journal_code}.{volume_num}.issue-{issue_num}.xml"
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
         try:
@@ -125,14 +128,14 @@ class AMSScraper(BaseIterativePublisherScraper):
 
             # find all the URLs to the articles where I can grab the PDF links (one per article URL, if lambda returns
             # True, it will be included in the list)
-            article_urls = get_scraped_urls(
-                scraper,
-                base_url,
-                href=lambda href: href and f"/view/journals/{journal_code}/{volume_num}/{issue_num}/" in href,
+            tags = scraper.find_all(
+                "a",
                 class_="c-Button--link",
+                href=lambda href: href and f"/view/journals/{journal_code}/{volume_num}/{issue_num}/" in href
             )
+            article_urls = [get_scraped_url(tag, self.base_url) for tag in tags]
 
-            pdf_links = [self._scrape_article(article_url, base_url) for article_url in article_urls]
+            pdf_links = [self._scrape_article(article_url) for article_url in article_urls]
             pdf_links = [link for link in pdf_links if link]
 
             self._logger.info(f"PDF links found: {len(pdf_links)}")
@@ -146,13 +149,12 @@ class AMSScraper(BaseIterativePublisherScraper):
             self._logger.error(f"Failed to process Issue {issue_num} in Volume {volume_num}. Error: {e}")
             return None
 
-    def _scrape_article(self, article_url: str, base_url: str) -> str | None:
+    def _scrape_article(self, article_url: str) -> str | None:
         """
         Scrape a single article.
 
         Args:
             article_url (str): The article links to scrape.
-            base_url (str): The base URL.
 
         Returns:
             str | None: The string containing the PDF link, or None if no link was found or something went wrong.
@@ -164,7 +166,7 @@ class AMSScraper(BaseIterativePublisherScraper):
 
             pdf_tag = scraper.find("a", href=True, class_="pdf-download")  # Update 'pdf-download' as needed
             if pdf_tag:
-                return base_url + pdf_tag.get("href") if pdf_tag.get("href").startswith("/") else pdf_tag.get("href")
+                return get_scraped_url(pdf_tag, self.base_url)
 
             return None
         except Exception as e:

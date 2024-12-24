@@ -9,6 +9,10 @@ class IOPScraper(BaseUrlPublisherScraper):
     def cookie_selector(self) -> str:
         return "body > div.cky-consent-container.cky-classic-bottom > div.cky-consent-bar > div > div > div.cky-notice-btn-wrapper > button.cky-btn.cky-btn-accept"
 
+    @property
+    def base_url(self) -> str:
+        return "https://iopscience.iop.org"
+
     def _scrape_journal(self, source: BaseUrlPublisherSource) -> ResultSet | List[Tag]:
         """
         Scrape all articles of a journal. This method is called when the journal_url is provided in the config.
@@ -37,7 +41,7 @@ class IOPScraper(BaseUrlPublisherScraper):
             scraper = self._scrape_url(source.url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
-            pdf_tag_list = scraper.find_all("a", href=lambda href: href and "/article/" in href)
+            pdf_tag_list = scraper.find_all("a", href=lambda href: href and "/article/" in href and "/pdf" in href)
             self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
 
             return pdf_tag_list

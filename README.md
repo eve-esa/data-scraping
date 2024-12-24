@@ -40,7 +40,7 @@ make run --scrapers IOPScraper
 ```
 or
 ```bash
-make run --scrapers IOPScraper SpringerScraper
+make run args="--scrapers IOPScraper SpringerScraper"
 ```
 
 The docker container are locally required, since a MinIO server is used to store the data and emulate a remote S3 bucket.
@@ -71,6 +71,7 @@ created by extending the `BaseConfigScraper` class. If you need enumerators, ple
 implement the due methods / properties:
    - `config_model_type`: a `@property` returning the Pydantic model of the configuration of the scraper
    - `cookie_selector`: a `@property` returning the CSS selector of the cookie banner to be clicked, if any, or an empty string if the website does not have a cookie banner
+   - `base_url`: a `@property` returning the base URL of the website to be scraped
    - `scrape`: a method that scrapes the website and returns the data
    - `post_process`: a method that post-processes the data scraped and returns a list of strings representing the URLs of the files to be downloaded / uploaded to the storage
 4. Enrich the `config/config.json` file with the JSON-formatted configuration of the new scraper.

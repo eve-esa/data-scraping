@@ -75,7 +75,6 @@ class BaseScraper(ABC):
 
         self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")
 
-
     def _scrape_url(self, url: str, pause_time: int = 2) -> BeautifulSoup:
         """
         Get a URL.
@@ -202,5 +201,16 @@ class BaseScraper(ABC):
 
         Returns:
             str: The CSS selector for the cookie popup.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def base_url(self) -> str:
+        """
+        Return the base URL of the publisher.
+
+        Returns:
+            str: The base URL of the publisher
         """
         pass
