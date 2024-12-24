@@ -23,12 +23,12 @@ class AMSConfig(BaseConfigScraper):
 
 class AMSScraper(BaseIterativePublisherScraper):
     @property
-    def model_class(self) -> Type[AMSConfig]:
+    def config_model_type(self) -> Type[AMSConfig]:
         """
-        Return the configuration model class.
+        Return the configuration model type. This method must be implemented in the derived class.
 
         Returns:
-            Type[AMSConfig]: The configuration model class.
+            Type[AMSConfig]: The configuration model type
         """
         return AMSConfig
 

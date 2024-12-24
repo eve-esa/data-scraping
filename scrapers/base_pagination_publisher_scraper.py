@@ -1,59 +1,71 @@
-import time
 from abc import abstractmethod
-from typing import List, Type, Dict
+from typing import List, Type
 from bs4 import ResultSet, Tag
-from pydantic import Field, BaseModel, field_validator
+from pydantic import Field, BaseModel
 
 from scrapers.base_scraper import BaseScraper, BaseConfigScraper
 
 
-class BasePaginationPublisherQuery(BaseModel):
+class BasePagePublisherSource(BaseModel):
     """
-    Configuration model for a query to apply to a URL. The query is applied to the URL, and it can contain parameters.
-    Each parameter must be enclosed in curly braces. For example, if the query is "page/{page}", the parameter "page"
-    must be specified in the `params` dictionary.
+    Configuration model for the base page publisher scraper source.
 
     Variables:
-        query (str): The query to apply to the URL.
-        params (Dict[str, str] | None): The parameters to apply to the query. Default is None.
+        pagination_url (str): The landing URL to scrape
     """
-    query: str
-    params: Dict[str, str] | None = Field(default=None)
+    base_url: str
+
+
+class BaseLandingPagePublisherSource(BasePagePublisherSource):
+    """
+    Configuration model for the base landing page publisher scraper source. The model contains the landing URL to scrape
+    and whether to store the PDF tags from the landing page. The landing URL is the URL to scrape to get the initial
+    pagination URL. The `should_store` variable is a boolean that indicates whether to store the PDF tags from the
+    landing page. If `should_store` is True, the PDF tags from the landing page are stored. Otherwise, the PDF tags are
+    not stored.
+
+    Variables:
+        pagination_url (str): The landing URL to scrape
+        should_store (bool): Store the PDF tags from the landing page
+    """
+    should_store: bool = Field(False, description="Store the PDF tags from the landing page")
+
+
+class BasePaginationPublisherSource(BasePagePublisherSource):
+    """
+    Configuration model for the base pagination publisher scraper source. The model contains the landing URL to scrape
+    and the pagination URL. The landing URL, if provided, is the URL to scrape to get the initial pagination URL. The
+    pagination URL is the URL to scrape to get the PDF links.
+
+    Variables:
+        landing_page (BaseLandingPagePublisherSource | None): The landing URL to scrape and whether to store the PDF tags from the landing page
+        pagination_url (str): The pagination URL
+    """
+    landing_page: BaseLandingPagePublisherSource | None = Field(None, description="The landing URL to scrape")
 
 
 class BasePaginationPublisherConfig(BaseConfigScraper):
     """
-    Configuration model for a pagination publisher scraper. It is possible to specify up to two queries, one for the
-    first page and one for the rest. The queries are applied to the URL. The URL is the URL of the main page of the
-    pagination.
+    Configuration model for the base pagination publisher scraper. The model contains a list of sources to scrape.
 
     Variables:
-        url (str): The URL of the publisher.
-        queries (List[BasePaginationPublisherQuery] | None): The queries to apply to the URL. Default is None.
+        sources (List[BasePaginationPublisherSource]): A list of sources to scrape
     """
-    url: str
-    queries: List[BasePaginationPublisherQuery] | None = Field(default=None)
-
-    @field_validator("queries")
-    def validate_type(cls, v):
-        if len(v) > 2:
-            raise ValueError(f"You can specify at most two queries, one for the first page and one for the rest. "
-                             f"Received {len(v)} queries.")
-        return v
+    sources: List[BasePaginationPublisherSource]
 
 
-class BaseUrlPublisherScraper(BaseScraper):
+class BasePaginationPublisherScraper(BaseScraper):
     @property
-    def model_class(self) -> Type[BasePaginationPublisherConfig]:
+    def config_model_type(self) -> Type[BasePaginationPublisherConfig]:
         """
-        Return the configuration model class.
+        Return the configuration model type. This method must be implemented in the derived class.
 
         Returns:
-            Type[BasePaginationPublisherConfig]: The configuration model class.
+            Type[BasePaginationPublisherConfig]: The configuration model type
         """
         return BasePaginationPublisherConfig
 
-    def scrape(self, model: BasePaginationPublisherConfig) -> ResultSet | List[Tag]:
+    def scrape(self, model: BasePaginationPublisherConfig) -> ResultSet | List[Tag] | None:
         """
         Scrape the source URLs of for PDF links.
 
@@ -61,79 +73,92 @@ class BaseUrlPublisherScraper(BaseScraper):
             model (BaseUrlPublisherConfig): The configuration model.
 
         Returns:
-            ResultSet | List[Tag]: A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF
-                links.
+            ResultSet | List[Tag]: A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF links. If no tag was found, return None.
         """
-        pass
+        pdf_tags = []
+        for idx, source in enumerate(model.sources):
+            if source.landing_page:
+                pdf_tags.extend(self._scrape_landing_page(source.landing_page))
+            pdf_tags.extend(self._scrape_pagination(source, idx + 1))
 
-    def post_process(self, pdf_tag_list: ResultSet | List[Tag]) -> List[str]:
+        return pdf_tags if pdf_tags else None
+
+    def post_process(self, scrape_output: ResultSet | List[Tag]) -> List[str]:
         """
         Extract the href attribute from the links.
 
         Args:
-            pdf_tag_list (ResultSet | List[Tag]): A ResultSet (i.e., a list) or a list of Tag objects containing the
-            tags to the PDF links.
+            scrape_output (ResultSet | List[Tag]): A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF links.
 
         Returns:
             List[str]: A list of strings containing the PDF links
         """
-        return [tag.get("href") for tag in pdf_tag_list]
+        return [tag.get("href") for tag in scrape_output]
 
-    def upload_to_s3(self, pdf_tag_list: ResultSet | List[Tag], model: BasePaginationPublisherConfig):
+    def _scrape_landing_page(self, landing_page: BaseLandingPagePublisherSource) -> List[Tag]:
         """
-        Upload the PDF files to S3.
+        Scrape the landing page. If the source has a landing page, scrape the landing page for PDF links. If the source
+        has a landing page and the `should_store` is True, store the PDF tags from the landing page. Otherwise, return
+        an empty list.
 
         Args:
-            pdf_tag_list (ResultSet | List[Tag]): A ResultSet (i.e., a list) or a list of Tag objects containing the
-            model (BaseUrlPublisherConfig): The configuration model.
-        """
-        self._logger.info("Uploading files to S3")
-
-        for tag in pdf_tag_list:
-            result = self._s3_client.upload(model.bucket_key, tag.get("href"))
-            if not result:
-                self._done = False
-
-            # Sleep after each successful download to avoid overwhelming the server
-            time.sleep(5)
-
-    def _parse_query_with_params(self, query_model: BasePaginationPublisherQuery) -> str:
-        """
-        Parse the query with the parameters. The parameters must be enclosed in curly braces.
-
-        Args:
-            query_model (BasePaginationPublisherQuery): The query model.
+            landing_page (BaseLandingPagePublisherSource): The landing page to scrape.
 
         Returns:
-            str: The parsed query.
+            List[Tag]: A list of Tag objects containing the tags to the PDF links, if the source has a landing page and the `should_store` is True. Otherwise, an empty list.
         """
-        if not query_model.params:
-            return query_model.query
+        landing_url = landing_page.pagination_url
+        self._logger.info(f"Processing Landing Page {landing_url}")
 
-        return query_model.query.format(**query_model.params)
+        pdf_tag_list = self._scrape_page(landing_url)
+        if landing_page.should_store:
+            return pdf_tag_list
+
+        return []
+
+    def _scrape_pagination(self, source: BasePaginationPublisherSource, source_number: int) -> ResultSet | List[Tag]:
+        """
+        Scrape the pagination URL for PDF links.
+
+        Args:
+            source (BasePaginationPublisherSource): The source to scrape.
+            source_number (int): The source number.
+
+        Returns:
+            ResultSet | List[Tag]: A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF links.
+        """
+        pagination_url = source.pagination_url
+        self._logger.info(f"Processing Source {pagination_url}")
+
+        page_number = 1
+
+        pdf_tag_list = []
+        while True:
+            # parse the query with parameters
+            # they are enclosed in curly braces, must be replaced with the actual values
+            # "page_number" and "source_number" are reserved keywords
+            page_url = pagination_url.format(
+                **{**source.query_params, "page_number": page_number, "source_number": source_number}
+            )
+
+            page_tag_list = self._scrape_page(page_url)
+            if not page_tag_list:
+                break
+
+            pdf_tag_list.extend(page_tag_list)
+            page_number += 1
+
+        return pdf_tag_list
 
     @abstractmethod
-    def _scrape_pagination(self, source: BasePaginationPublisherConfig) -> ResultSet:
+    def _scrape_page(self, url: str) -> ResultSet | List[Tag] | None:
         """
-        Scrape all the pages of the paginated URLs identified by the `source.url` plus the queries.
+        Scrape the page.
 
         Args:
-            source (BasePaginationPublisherConfig): The source to scrape.
+            url (str): The URL to scrape.
 
         Returns:
-            ResultSet: A ResultSet (i.e., a list) of objects containing the PDF links.
-        """
-        pass
-
-    @abstractmethod
-    def _scrape_page(self, source: BasePaginationPublisherConfig) -> ResultSet:
-        """
-        Scrape the single page of the paginated URLs identified by the `source.url` plus the queries.
-
-        Args:
-            source (BasePaginationPublisherConfig): The issue to scrape.
-
-        Returns:
-            ResultSet: A ResultSet (i.e., list) object containing the tags to the PDF links.
+            ResultSet | List[Tag] | None: A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF links. If something went wrong, return None.
         """
         pass

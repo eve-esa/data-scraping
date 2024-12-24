@@ -85,14 +85,14 @@ def run_scrapers(discovered_scrapers: Dict[str, BaseScraper], config: Dict):
             logger.error(f"Scraper {name_scraper} not found in discovered scrapers")
             continue
 
-        class_scraper = discovered_scrapers[name_scraper]
-        model_class_scraper = getattr(class_scraper, "model_class", None)
-        if model_class_scraper is None:
-            logger.error(f"Model class not found for scraper {name_scraper}")
+        class_type_scraper = discovered_scrapers[name_scraper]  # e.g. SeosScraper
+        config_model_type_scraper = getattr(class_type_scraper, "config_model_type", None)
+        if config_model_type_scraper is None:
+            logger.error(f"Config class not found for scraper {name_scraper}")
             continue
 
         try:
-            thread = threading.Thread(target=lambda: class_scraper(model_class_scraper(**config_scraper)))
+            thread = threading.Thread(target=lambda: class_type_scraper(config_model_type_scraper(**config_scraper)))
             thread.start()
             threads.append(thread)
         except ValidationError as e:

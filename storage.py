@@ -34,11 +34,11 @@ class S3Storage:
     def __repr__(self):
         return self.__str__()
 
-    def upload(self, root_key: str, pdf_url: str) -> bool:
-        self.logger.info(f"Uploading PDF: {pdf_url}")
+    def upload(self, root_key: str, source_url: str) -> bool:
+        self.logger.info(f"Uploading Source: {source_url}")
 
         # Check if the file already exists in S3
-        s3_key = os.path.join(root_key, os.path.basename(pdf_url))  # Construct S3 key
+        s3_key = os.path.join(root_key, os.path.basename(source_url))  # Construct S3 key
         try:
             self.client.head_object(Bucket=self.bucket_name, Key=s3_key)
             self.logger.warning(f"{s3_key} already exists in S3, skipping upload.")
@@ -54,7 +54,7 @@ class S3Storage:
 
         try:
             # Download PDF content from the URL
-            response = requests.get(pdf_url)
+            response = requests.get(source_url)
             response.raise_for_status()  # Check for request errors
 
             # Upload to S3
@@ -63,6 +63,6 @@ class S3Storage:
 
             return True
         except Exception as e:
-            self.logger.error(f"Failed to upload PDF: {pdf_url}. Error: {e}")
+            self.logger.error(f"Failed to upload PDF: {source_url}. Error: {e}")
 
             return False

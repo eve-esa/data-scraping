@@ -34,6 +34,15 @@ make run
 ```
 
 The command `make up` will start the docker container and `make run` will execute the ETL pipeline.
+It is possible to specify the name(s) of the scraper(s) to be executed by adding the `--scrapers` parameter to the `make run` command. E.g.:
+```bash
+make run --scrapers IOPScraper
+```
+or
+```bash
+make run --scrapers IOPScraper SpringerScraper
+```
+
 The docker container are locally required, since a MinIO server is used to store the data and emulate a remote S3 bucket.
 Every time the ETL pipeline is executed, the data is stored in the MinIO server and the configuration file is updated with the `done` key set to `True`.
 
@@ -51,10 +60,7 @@ AWS_SECRET_KEY=<aws_secret_key>
 AWS_BUCKET_NAME=<aws_bucket_name>
 ```
 
-Then, you can run the following command to execute the ETL pipeline:
-```bash
-make run
-```
+Then, you can run the ETL pipeline as described in the previous section.
 
 ## HowTo: add a new Scraper
 In order to add a new scraper, the following steps are required:
@@ -63,7 +69,7 @@ In order to add a new scraper, the following steps are required:
 created by extending the `BaseConfigScraper` class. If you need enumerators, please extend `Enum` from the `base_enum` module.
 3. Implement a new class in the file created at the 1st step. The class must inherit from the `BaseScraper` class and
 implement the due methods / properties:
-   - `model_class`: a `@property` returning the Pydantic model of the configuration of the scraper
+   - `config_model_type`: a `@property` returning the Pydantic model of the configuration of the scraper
    - `cookie_selector`: a `@property` returning the CSS selector of the cookie banner to be clicked, if any, or an empty string if the website does not have a cookie banner
    - `scrape`: a method that scrapes the website and returns the data
    - `post_process`: a method that post-processes the data scraped and returns a list of strings representing the URLs of the files to be downloaded / uploaded to the storage

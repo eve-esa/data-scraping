@@ -34,12 +34,12 @@ class CopernicusScraper(BaseIterativePublisherScraper):
         self.__all_issues_missing = 0  # Track if all issues are missing for the volume
 
     @property
-    def model_class(self) -> Type[CopernicusConfig]:
+    def config_model_type(self) -> Type[CopernicusConfig]:
         """
-        Return the configuration model class.
+        Return the configuration model type. This method must be implemented in the derived class.
 
         Returns:
-            Type[CopernicusConfig]: The configuration model class.
+            Type[CopernicusConfig]: The configuration model type
         """
         return CopernicusConfig
 

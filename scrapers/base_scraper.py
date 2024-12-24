@@ -12,7 +12,6 @@ import logging
 
 from constants import OUTPUT_FOLDER
 from storage import S3Storage
-from utils import write_json_file
 
 
 class BaseConfigScraper(ABC, BaseModel):
@@ -55,19 +54,20 @@ class BaseScraper(ABC):
 
         self._s3_client = S3Storage()
 
-    def __call__(self, model: BaseConfigScraper):
+    def __call__(self, config_model: BaseConfigScraper):
         self._logger.info(f"Running scraper {self.__class__.__name__}")
 
-        scraping_results = self.scrape(model)
+        scraping_results = self.scrape(config_model)
         self._driver.quit()
 
         if scraping_results is None:
             return
 
         links = self.post_process(scraping_results)
-        all_done = self.upload_to_s3(links, model)
+        all_done = self.upload_to_s3(links, config_model)
 
         if all_done:
+            from utils import write_json_file
             write_json_file(
                 f"{OUTPUT_FOLDER}/{self.__class__.__name__}.json",
                 scraping_results if isinstance(scraping_results, list) or isinstance(scraping_results, dict) else links
@@ -132,12 +132,12 @@ class BaseScraper(ABC):
 
         return BeautifulSoup(html, "html.parser")
 
-    def upload_to_s3(self, pdf_links: List[str], model: BaseConfigScraper) -> bool:
+    def upload_to_s3(self, sources_links: List[str], model: BaseConfigScraper) -> bool:
         """
-        Upload the PDF files to S3.
+        Upload the source files to S3.
 
         Args:
-            pdf_links (List[str]): The list of PDF links.
+            sources_links (List[str]): The list of links of the various sources.
             model (BaseUrlPublisherConfig): The configuration model.
 
         Returns:
@@ -146,7 +146,7 @@ class BaseScraper(ABC):
         self._logger.info("Uploading files to S3")
 
         all_done = True
-        for link in pdf_links:
+        for link in sources_links:
             result = self._s3_client.upload(model.bucket_key, link)
             if not result:
                 all_done = False
@@ -159,7 +159,7 @@ class BaseScraper(ABC):
     @abstractmethod
     def scrape(self, model: BaseConfigScraper) -> Any | None:
         """
-        Scrape the PDF links.
+        Scrape the resources links.
 
         Args:
             model (BaseConfigScraper): The configuration model.
@@ -172,25 +172,25 @@ class BaseScraper(ABC):
     @abstractmethod
     def post_process(self, scrape_output: Any) -> List[str]:
         """
-        Post-process the scraped output. This method is called after the sources for PDFs have been scraped. It is used
-        to retrieve the final list of processed PDF URLs
+        Post-process the scraped output. This method is called after the sources have been scraped. It is used to
+        retrieve the final list of processed URLs
 
         Args:
             scrape_output (Any): The scraped output
 
         Returns:
-            List[str]: A list of processed PDF links
+            List[str]: A list of processed links
         """
         pass
 
     @property
     @abstractmethod
-    def model_class(self) -> Type[BaseConfigScraper]:
+    def config_model_type(self) -> Type[BaseConfigScraper]:
         """
-        Return the configuration model class. This method must be implemented in the derived class.
+        Return the configuration model type. This method must be implemented in the derived class.
 
         Returns:
-            Type[BaseConfigScraper]: The configuration model class.
+            Type[BaseConfigScraper]: The configuration model type
         """
         pass
 
