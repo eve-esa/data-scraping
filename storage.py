@@ -91,7 +91,7 @@ class S3Storage:
 
             # Upload to S3
             self.client.put_object(
-                Bucket=self.bucket_name, Key=s3_key, Body=response.content, ExtraArgs={"ContentType": "application/pdf"}
+                Bucket=self.bucket_name, Key=s3_key, Body=response.content, ContentType="application/pdf"
             )
             self.logger.info(f"Successfully uploaded to S3: {s3_key}")
 

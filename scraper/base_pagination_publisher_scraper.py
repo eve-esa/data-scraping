@@ -4,6 +4,7 @@ from bs4 import ResultSet, Tag
 from pydantic import Field, BaseModel
 
 from scraper.base_scraper import BaseScraper, BaseConfigScraper
+from utils import get_scraped_url
 
 
 class BasePagePublisherSource(BaseModel):
@@ -11,7 +12,7 @@ class BasePagePublisherSource(BaseModel):
     Configuration model for the base page publisher scraper source.
 
     Variables:
-        pagination_url (str): The landing URL to scrape
+        base_url (str): The landing URL to scrape
     """
     base_url: str
 
@@ -25,7 +26,7 @@ class BaseLandingPagePublisherSource(BasePagePublisherSource):
     not stored.
 
     Variables:
-        pagination_url (str): The landing URL to scrape
+        base_url (str): The landing URL to scrape
         should_store (bool): Store the PDF tags from the landing page
     """
     should_store: bool = Field(False, description="Store the PDF tags from the landing page")
@@ -38,8 +39,8 @@ class BasePaginationPublisherSource(BasePagePublisherSource):
     pagination URL is the URL to scrape to get the PDF links.
 
     Variables:
+        base_url (str): The pagination URL
         landing_page (BaseLandingPagePublisherSource | None): The landing URL to scrape and whether to store the PDF tags from the landing page
-        pagination_url (str): The pagination URL
     """
     landing_page: BaseLandingPagePublisherSource | None = Field(None, description="The landing URL to scrape")
 
@@ -78,7 +79,7 @@ class BasePaginationPublisherScraper(BaseScraper):
         pdf_tags = []
         for idx, source in enumerate(model.sources):
             if source.landing_page:
-                pdf_tags.extend(self._scrape_landing_page(source.landing_page))
+                pdf_tags.extend(self._scrape_landing_page(source.landing_page, idx + 1))
             pdf_tags.extend(self._scrape_pagination(source, idx + 1))
 
         return pdf_tags if pdf_tags else None
@@ -93,9 +94,9 @@ class BasePaginationPublisherScraper(BaseScraper):
         Returns:
             List[str]: A list of strings containing the PDF links
         """
-        return [tag.get("href") for tag in scrape_output]
+        return [get_scraped_url(tag, self.base_url) for tag in scrape_output]
 
-    def _scrape_landing_page(self, landing_page: BaseLandingPagePublisherSource) -> List[Tag]:
+    def _scrape_landing_page(self, landing_page: BaseLandingPagePublisherSource, source_number: int) -> List[Tag]:
         """
         Scrape the landing page. If the source has a landing page, scrape the landing page for PDF links. If the source
         has a landing page and the `should_store` is True, store the PDF tags from the landing page. Otherwise, return
@@ -107,10 +108,10 @@ class BasePaginationPublisherScraper(BaseScraper):
         Returns:
             List[Tag]: A list of Tag objects containing the tags to the PDF links, if the source has a landing page and the `should_store` is True. Otherwise, an empty list.
         """
-        landing_url = landing_page.pagination_url
+        landing_url = landing_page.base_url
         self._logger.info(f"Processing Landing Page {landing_url}")
 
-        pdf_tag_list = self._scrape_page(landing_url)
+        pdf_tag_list = self._scrape_page(landing_url, 0, source_number, show_logs=landing_page.should_store)
         if landing_page.should_store:
             return pdf_tag_list
 
@@ -127,9 +128,6 @@ class BasePaginationPublisherScraper(BaseScraper):
         Returns:
             ResultSet | List[Tag]: A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF links.
         """
-        pagination_url = source.pagination_url
-        self._logger.info(f"Processing Source {pagination_url}")
-
         page_number = 1
 
         pdf_tag_list = []
@@ -137,11 +135,11 @@ class BasePaginationPublisherScraper(BaseScraper):
             # parse the query with parameters
             # they are enclosed in curly braces, must be replaced with the actual values
             # "page_number" and "source_number" are reserved keywords
-            page_url = pagination_url.format(
-                **{**source.query_params, "page_number": page_number, "source_number": source_number}
-            )
+            page_url = source.base_url.format(**{"page_number": page_number, "source_number": source_number})
 
-            page_tag_list = self._scrape_page(page_url)
+            self._logger.info(f"Processing Pagination {page_url}")
+
+            page_tag_list = self._scrape_page(page_url, page_number, source_number)
             if not page_tag_list:
                 break
 
@@ -151,12 +149,15 @@ class BasePaginationPublisherScraper(BaseScraper):
         return pdf_tag_list
 
     @abstractmethod
-    def _scrape_page(self, url: str) -> ResultSet | List[Tag] | None:
+    def _scrape_page(self, url: str, page_number: int, source_number: int, show_logs: bool = True) -> ResultSet | List[Tag] | None:
         """
         Scrape the page.
 
         Args:
             url (str): The URL to scrape.
+            page_number (int): The page number.
+            source_number (int): The source number.
+            show_logs (bool): Whether to show logs.
 
         Returns:
             ResultSet | List[Tag] | None: A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF links. If something went wrong, return None.
