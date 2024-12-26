@@ -41,7 +41,7 @@ class BaseScraper(ABC):
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option("useAutomationExtension", False)
 
-        chrome_options.add_argument(f"user-agent={random.choice(AGENT_LIST)}")
+        chrome_options.add_argument(f"user-agent={random.choice(AGENT_LIST)}")  # Randomly select a user agent
         chrome_options.add_argument("--headless")  # Run in headless mode (no browser UI)
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
