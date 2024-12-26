@@ -32,7 +32,7 @@ class NCBIScraper(BasePaginationPublisherScraper):
     def base_url(self) -> str:
         return "https://www.ncbi.nlm.nih.gov"
 
-    def scrape(self, model: NCBIConfig) -> ResultSet | List[Tag] | None:
+    def scrape(self, model: NCBIConfig) -> List[Tag] | None:
         """
         Scrape the source URLs of for PDF links.
 
@@ -40,7 +40,7 @@ class NCBIScraper(BasePaginationPublisherScraper):
             model (NCBIConfig): The configuration model.
 
         Returns:
-            ResultSet | List[Tag]: A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF links. If no tag was found, return None.
+            List[Tag] | None: A list of Tag objects containing the tags to the PDF links. If no tag was found, return None.
         """
         pdf_tags = []
         for idx, source in enumerate(model.sources):
@@ -49,7 +49,7 @@ class NCBIScraper(BasePaginationPublisherScraper):
 
         return pdf_tags if pdf_tags else None
 
-    def _scrape_landing_page(self, landing_page_url: str, source_number: int):
+    def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> None:
         """
         Scrape the landing page. If the source has a landing page, scrape the landing page for PDF links. If the source
         has a landing page and the `should_store` is True, store the PDF tags from the landing page. Otherwise, return

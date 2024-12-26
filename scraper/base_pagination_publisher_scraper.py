@@ -19,7 +19,7 @@ class BasePaginationPublisherSource(BaseModel):
 
 
 class BasePaginationPublisherScraper(BaseScraper):
-    def _scrape_pagination(self, base_url: str, source_number: int) -> ResultSet | List[Tag]:
+    def _scrape_pagination(self, base_url: str, source_number: int) -> List[Tag]:
         """
         Scrape the pagination URL for PDF links.
 
@@ -27,7 +27,7 @@ class BasePaginationPublisherScraper(BaseScraper):
             base_url (str): The base URL to scrape.
 
         Returns:
-            ResultSet | List[Tag]: A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF links.
+            List[Tag]: A list of Tag objects containing the tags to the PDF links.
         """
         page_number = 1
 
@@ -76,7 +76,7 @@ class BasePaginationPublisherScraper(BaseScraper):
         pass
 
     @abstractmethod
-    def _scrape_page(self, url: str, page_number: int, source_number: int, show_logs: bool = True) -> ResultSet | List[Tag] | None:
+    def _scrape_page(self, url: str, page_number: int, source_number: int, show_logs: bool = True) -> ResultSet | None:
         """
         Scrape the page.
 
@@ -87,6 +87,6 @@ class BasePaginationPublisherScraper(BaseScraper):
             show_logs (bool): Whether to show logs.
 
         Returns:
-            ResultSet | List[Tag] | None: A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF links. If something went wrong, return None.
+            ResultSet | None: A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF links. If something went wrong, return None.
         """
         pass
