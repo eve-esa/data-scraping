@@ -148,7 +148,7 @@ class BaseScraper(ABC):
 
     def __scrape_by_tor(self, url: str, pause_time: int = 2) -> str:
         """
-        Scrape the URL by Tor Network and return the BeautifulSoup object.
+        Scrape the URL by Tor Network and return the fully rendered HTML.
 
         Args:
             url (str): The URL to scrape.
