@@ -77,7 +77,7 @@ class BaseScraper(ABC):
             return
 
         links = self.post_process(scraping_results)
-        all_done = self.upload_to_s3(links, config_model)
+        all_done = self._upload_to_s3(links, config_model)
 
         if all_done:
             from utils import write_json_file
@@ -162,7 +162,7 @@ class BaseScraper(ABC):
 
         return BeautifulSoup(html, "html.parser")
 
-    def upload_to_s3(self, sources_links: List[str], model: BaseConfigScraper) -> bool:
+    def _upload_to_s3(self, sources_links: List[str], model: BaseConfigScraper) -> bool:
         """
         Upload the source files to S3.
 
