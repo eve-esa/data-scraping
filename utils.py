@@ -12,7 +12,7 @@ from pydantic import ValidationError
 from urllib.parse import urlparse
 
 from constants import OUTPUT_FOLDER
-from scrapers.base_scraper import BaseScraper
+from scraper.base_scraper import BaseScraper
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

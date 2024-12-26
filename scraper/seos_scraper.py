@@ -3,7 +3,7 @@ from bs4 import Tag
 import os
 from pydantic import BaseModel
 
-from scrapers.base_scraper import BaseConfigScraper, BaseScraper
+from scraper.base_scraper import BaseConfigScraper, BaseScraper
 
 
 class SeosSource(BaseModel):

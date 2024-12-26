@@ -1,3 +1,4 @@
+import random
 from typing import List, Type, Any
 from bs4 import BeautifulSoup
 from pydantic import BaseModel
@@ -10,7 +11,7 @@ from abc import ABC, abstractmethod
 import time
 import logging
 
-from constants import OUTPUT_FOLDER
+from constants import OUTPUT_FOLDER, AGENT_LIST
 from storage import S3Storage
 
 
@@ -25,9 +26,11 @@ class BaseScraper(ABC):
         chrome_options.add_argument("--disable-blink-features=AutomationControlled")
         chrome_options.add_argument("--disable-infobars")
         chrome_options.add_argument("--start-maximized")
+        chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        chrome_options.add_experimental_option("useAutomationExtension", False)
 
         chrome_options.add_argument(
-            "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            f"user-agent={random.choice(AGENT_LIST)}"  # Randomly select a user agent from the list
         )
 
         chrome_options.add_argument("--headless")  # Run in headless mode (no browser UI)
@@ -151,7 +154,7 @@ class BaseScraper(ABC):
                 all_done = False
 
             # Sleep after each successful download to avoid overwhelming the server
-            time.sleep(5)
+            time.sleep(random.uniform(2, 5))  # random between 2 and 5 seconds
 
         return all_done
 

@@ -3,7 +3,7 @@ from typing import List, Type
 from bs4 import ResultSet, Tag
 from pydantic import Field, BaseModel
 
-from scrapers.base_scraper import BaseScraper, BaseConfigScraper
+from scraper.base_scraper import BaseScraper, BaseConfigScraper
 
 
 class BasePagePublisherSource(BaseModel):

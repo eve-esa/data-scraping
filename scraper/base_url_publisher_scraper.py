@@ -4,7 +4,7 @@ from bs4 import ResultSet, Tag
 from pydantic import BaseModel, field_validator
 
 from base_enum import Enum
-from scrapers.base_scraper import BaseScraper, BaseConfigScraper
+from scraper.base_scraper import BaseScraper, BaseConfigScraper
 from utils import get_scraped_url
 
 

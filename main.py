@@ -7,7 +7,7 @@ from utils import read_json_file, discover_scrapers, run_scrapers
 
 def main(args):
     scraper_config = read_json_file(CONFIG_PATH)
-    scrapers = discover_scrapers("scrapers")
+    scrapers = discover_scrapers("scraper")
 
     if args.scrapers:
         scrapers = {name: scrapers[name] for name in args.scrapers}

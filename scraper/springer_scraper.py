@@ -1,7 +1,7 @@
 from typing import List
 from bs4 import ResultSet, Tag
 
-from scrapers.base_url_publisher_scraper import BaseUrlPublisherSource, BaseUrlPublisherScraper, SourceType
+from scraper.base_url_publisher_scraper import BaseUrlPublisherSource, BaseUrlPublisherScraper, SourceType
 
 
 class SpringerScraper(BaseUrlPublisherScraper):

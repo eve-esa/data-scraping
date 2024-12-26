@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Dict, List, TypeAlias
 
-from scrapers.base_scraper import BaseScraper, BaseConfigScraper
+from scraper.base_scraper import BaseScraper, BaseConfigScraper
 
 
 IterativePublisherScrapeOutput: TypeAlias = Dict[str, Dict[int, Dict[int, List[str]]]]

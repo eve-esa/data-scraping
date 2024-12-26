@@ -1,14 +1,14 @@
 from typing import List, Type
 from pydantic import BaseModel
 
-from scrapers.base_iterative_publisher_scraper import (
+from scraper.base_iterative_publisher_scraper import (
     BaseIterativePublisherScraper,
     IterativePublisherScrapeJournalOutput,
     IterativePublisherScrapeVolumeOutput,
     IterativePublisherScrapeIssueOutput,
     IterativePublisherScrapeOutput,
 )
-from scrapers.base_scraper import BaseConfigScraper
+from scraper.base_scraper import BaseConfigScraper
 from utils import get_scraped_url
 
 

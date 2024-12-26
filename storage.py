@@ -1,11 +1,13 @@
 import logging
 import os
+import random
 from typing import Final
 import boto3
 import requests
 from botocore.exceptions import ClientError
 from pydantic import BaseModel
 
+from constants import AGENT_LIST
 from singleton import singleton
 
 
@@ -18,7 +20,7 @@ class PDFName(BaseModel):
 @singleton
 class S3Storage:
     def __init__(self):
-        self.client = boto3.client(
+        self.client: boto3.session.Session.client = boto3.client(
             "s3",
             region_name=os.getenv("AWS_REGION"),
             endpoint_url=os.getenv("AWS_URL"),
@@ -28,15 +30,37 @@ class S3Storage:
         self.bucket_name: Final[str] = os.getenv("AWS_BUCKET_NAME")
         self.logger: Final = logging.getLogger(__name__)
 
+        self.create_bucket_if_not_existing()
+
     def __str__(self):
         return f"S3Storage: {self.bucket_name}"
 
     def __repr__(self):
         return self.__str__()
 
-    def upload(self, root_key: str, source_url: str) -> bool:
+    def create_bucket_if_not_existing(self):
+        """
+        Create an S3 bucket in a specified region. If a region is not specified, the bucket is created in the S3 default
+        region (us-east-1).
+        """
+        # Check if the bucket already exists
+        for bucket in self.client.list_buckets()["Buckets"]:
+            if bucket["Name"] == self.bucket_name:
+                self.logger.info(f"Bucket {self.bucket_name} already exists in S3.")
+                return
+
+        # Create bucket, if it does not exist
+        region = os.getenv("AWS_REGION")
+        if region is None:
+            self.client.create_bucket(Bucket=self.bucket_name)
+        else:
+            location = {"LocationConstraint": region}
+            self.client.create_bucket(Bucket=self.bucket_name, CreateBucketConfiguration=location)
+
+    def upload(self, root_key: str, source_url: str, referer_url: str | None = None) -> bool:
         from utils import get_pdf_name
 
+        referer_url = referer_url if referer_url is not None else "https://www.google.com"
         s3_key = os.path.join(root_key, get_pdf_name(source_url))  # Construct S3 key
 
         self.logger.info(f"Uploading Source: {source_url} to {s3_key}")
@@ -57,11 +81,18 @@ class S3Storage:
 
         try:
             # Download PDF content from the URL
-            response = requests.get(source_url)
+            response = requests.get(source_url, headers={
+                "User-Agent": random.choice(AGENT_LIST),
+                "Accept": "application/pdf,*/*",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Referer": referer_url,
+            })
             response.raise_for_status()  # Check for request errors
 
             # Upload to S3
-            self.client.put_object(Bucket=self.bucket_name, Key=s3_key, Body=response.content)
+            self.client.put_object(
+                Bucket=self.bucket_name, Key=s3_key, Body=response.content, ExtraArgs={"ContentType": "application/pdf"}
+            )
             self.logger.info(f"Successfully uploaded to S3: {s3_key}")
 
             return True
