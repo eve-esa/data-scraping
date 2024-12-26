@@ -30,6 +30,10 @@ class SeosScraper(BaseScraper):
         """
         return SeosConfig
 
+    @property
+    def base_url(self) -> str:
+        return "https://seos-project.eu"
+
     def scrape(self, model: SeosConfig) -> Dict[str, List[Tag]] | None:
         """
         Scrape the source URLs for HTML links.
