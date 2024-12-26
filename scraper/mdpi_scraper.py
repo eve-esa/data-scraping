@@ -29,7 +29,7 @@ class MDPIScraper(BaseIterativePublisherScraper):
     @property
     def config_model_type(self) -> Type[MDPIConfig]:
         """
-        Return the configuration model type. This method must be implemented in the derived class.
+        Return the configuration model type.
 
         Returns:
             Type[MDPIConfig]: The configuration model type

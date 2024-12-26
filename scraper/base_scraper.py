@@ -189,7 +189,7 @@ class BaseScraper(ABC):
     @abstractmethod
     def scrape(self, model: BaseConfigScraper) -> Any | None:
         """
-        Scrape the resources links.
+        Scrape the resources links. This method must be implemented in the derived class.
 
         Args:
             model (BaseConfigScraper): The configuration model.
@@ -203,7 +203,7 @@ class BaseScraper(ABC):
     def post_process(self, scrape_output: Any) -> List[str]:
         """
         Post-process the scraped output. This method is called after the sources have been scraped. It is used to
-        retrieve the final list of processed URLs
+        retrieve the final list of processed URLs. This method must be implemented in the derived class.
 
         Args:
             scrape_output (Any): The scraped output
@@ -217,7 +217,7 @@ class BaseScraper(ABC):
     @abstractmethod
     def config_model_type(self) -> Type[BaseConfigScraper]:
         """
-        Return the configuration model type. This method must be implemented in the derived class.
+        Return the configuration model type. This property must be implemented in the derived class.
 
         Returns:
             Type[BaseConfigScraper]: The configuration model type
@@ -228,7 +228,7 @@ class BaseScraper(ABC):
     @abstractmethod
     def cookie_selector(self) -> str:
         """
-        Return the CSS selector for the cookie popup. This method must be implemented in the derived class.
+        Return the CSS selector for the cookie popup. This property must be implemented in the derived class.
 
         Returns:
             str: The CSS selector for the cookie popup.
@@ -239,7 +239,7 @@ class BaseScraper(ABC):
     @abstractmethod
     def base_url(self) -> str:
         """
-        Return the base URL of the publisher.
+        Return the base URL of the publisher. This property must be implemented in the derived class.
 
         Returns:
             str: The base URL of the publisher

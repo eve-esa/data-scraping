@@ -35,7 +35,7 @@ class BaseUrlPublisherScraper(BaseScraper):
     @property
     def config_model_type(self) -> Type[BaseUrlPublisherConfig]:
         """
-        Return the configuration model type. This method must be implemented in the derived class.
+        Return the configuration model type.
 
         Returns:
             Type[BaseUrlPublisherConfig]: The configuration model type

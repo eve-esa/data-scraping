@@ -36,7 +36,7 @@ class CopernicusScraper(BaseIterativePublisherScraper):
     @property
     def config_model_type(self) -> Type[CopernicusConfig]:
         """
-        Return the configuration model type. This method must be implemented in the derived class.
+        Return the configuration model type.
 
         Returns:
             Type[CopernicusConfig]: The configuration model type

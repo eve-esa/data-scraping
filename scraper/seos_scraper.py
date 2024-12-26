@@ -23,7 +23,7 @@ class SeosScraper(BaseScraper):
     @property
     def config_model_type(self) -> Type[SeosConfig]:
         """
-        Return the configuration model type. This method must be implemented in the derived class.
+        Return the configuration model type.
 
         Returns:
             Type[SeosConfig]: The configuration model type
