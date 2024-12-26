@@ -33,10 +33,17 @@ class BaseScraper(ABC):
             f"user-agent={random.choice(AGENT_LIST)}"  # Randomly select a user agent from the list
         )
 
-        chrome_options.add_argument("--headless")  # Run in headless mode (no browser UI)
+        chrome_options.add_argument(
+            "--headless"
+        )  # Run in headless mode (no browser UI)
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-popup-blocking")
+        chrome_options.add_argument("--disable-notifications")
+        chrome_options.add_argument("--disable-extensions")
+        chrome_options.add_argument("--disable-background-networking")
+        chrome_options.add_argument("--ignore-certificate-errors")
 
         # Create a new Chrome browser instance
         self._driver = webdriver.Chrome(
@@ -44,13 +51,16 @@ class BaseScraper(ABC):
         )
         # driver = webdriver.Chrome(service=Service())
 
-        self._driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-            "source": """
+        self._driver.execute_cdp_cmd(
+            "Page.addScriptToEvaluateOnNewDocument",
+            {
+                "source": """
             Object.defineProperty(navigator, 'webdriver', {
               get: () => undefined
             })
           """
-        })
+            },
+        )
 
         self._logger = logging.getLogger(self.__class__.__name__)
         self._cookie_handled = False
@@ -71,9 +81,15 @@ class BaseScraper(ABC):
 
         if all_done:
             from utils import write_json_file
+
             write_json_file(
                 f"{OUTPUT_FOLDER}/{self.__class__.__name__}.json",
-                scraping_results if isinstance(scraping_results, list) or isinstance(scraping_results, dict) else links
+                (
+                    scraping_results
+                    if isinstance(scraping_results, list)
+                    or isinstance(scraping_results, dict)
+                    else links
+                ),
             )
 
         self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")
@@ -98,20 +114,30 @@ class BaseScraper(ABC):
             try:
                 # Wait for the page to fully load
                 WebDriverWait(self._driver, 15).until(
-                    lambda d: d.execute_script("return document.readyState") == "complete")
-                self._logger.info("Page fully loaded. Attempting to locate the 'Accept All' button using JavaScript.")
+                    lambda d: d.execute_script("return document.readyState")
+                    == "complete"
+                )
+                self._logger.info(
+                    "Page fully loaded. Attempting to locate the 'Accept All' button using JavaScript."
+                )
 
                 # Execute JavaScript to find and click the "Accept All" button
-                self._driver.execute_script(f"""
+                self._driver.execute_script(
+                    f"""
                             let acceptButton = document.querySelector("{self.cookie_selector}");
                             if (acceptButton) {{
                                 acceptButton.click();
                             }}
-                        """)
-                self._logger.info("'Accept All' button clicked successfully using JavaScript.")
+                        """
+                )
+                self._logger.info(
+                    "'Accept All' button clicked successfully using JavaScript."
+                )
                 self._cookie_handled = True
             except Exception as e:
-                self._logger.error(f"Failed to handle cookie popup using JavaScript. Error: {e}")
+                self._logger.error(
+                    f"Failed to handle cookie popup using JavaScript. Error: {e}"
+                )
 
         # Scroll through the page to load all articles
         last_height = self._driver.execute_script("return document.body.scrollHeight")
@@ -124,7 +150,9 @@ class BaseScraper(ABC):
             time.sleep(pause_time)
 
             # Calculate new scroll height and compare with the last height
-            new_height = self._driver.execute_script("return document.body.scrollHeight")
+            new_height = self._driver.execute_script(
+                "return document.body.scrollHeight"
+            )
             if new_height == last_height:
                 break
             last_height = new_height
