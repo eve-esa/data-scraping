@@ -70,3 +70,11 @@ class IOPScraper(BaseUrlPublisherScraper):
             Tag | None: The tag containing the PDF link found in the article, or None if no tag was found.
         """
         pass
+
+    @property
+    def scrape_by_selenium(self) -> bool:
+        return False
+
+    @property
+    def referer_url(self) -> str:
+        return "https://iopscience.iop.org"

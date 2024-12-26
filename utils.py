@@ -3,16 +3,23 @@ import inspect
 import json
 import os
 import pkgutil
+import random
 import threading
 from typing import Dict, List, Type
+import requests
 import yaml
 import logging
 from bs4 import Tag
 from pydantic import ValidationError
 from urllib.parse import urlparse
+from torpy.http.requests import tor_requests_session
+import urllib3
 
-from constants import OUTPUT_FOLDER
+from constants import OUTPUT_FOLDER, AGENT_LIST
 from scraper.base_scraper import BaseScraper
+
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -148,3 +155,35 @@ def get_pdf_name(pdf_url: str, file_extension: str) -> str:
 
     # otherwise, replace `/` with `_` and add the file extension
     return path.replace("/", "_") + file_extension
+
+
+def get_content_response(source_url: str, referer_url: str | None = None, with_tor: bool = False) -> bytes:
+    """
+    Get the content response from the URL. If `with_tor` is True, use Tor to get the response. Otherwise, use the
+    default requests library.
+
+    Args:
+        source_url (str): The URL of the source.
+        referer_url (str): The URL of the referer.
+        with_tor (bool): Whether to use Tor or not.
+
+    Returns:
+        bytes: The content response from the URL.
+    """
+    referer_url = referer_url if referer_url is not None else "https://www.google.com"
+    headers = {
+        "User-Agent": random.choice(AGENT_LIST),
+        "Accept": "application/pdf,*/*",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Referer": referer_url,
+    }
+
+    if with_tor:
+        with tor_requests_session(headers=headers) as sess:
+            response = sess.get(source_url, timeout=10)
+    else:
+        response = requests.get(source_url, headers=headers, timeout=10)
+
+    response.raise_for_status()  # Check for request errors
+
+    return response.content

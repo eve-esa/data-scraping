@@ -1,13 +1,10 @@
 import logging
 import os
-import random
 from typing import Final
 import boto3
-import requests
 from botocore.exceptions import ClientError
 from pydantic import BaseModel
 
-from constants import USER_AGENT_LIST
 from singleton import singleton
 
 
@@ -57,10 +54,16 @@ class S3Storage:
             location = {"LocationConstraint": region}
             self.client.create_bucket(Bucket=self.bucket_name, CreateBucketConfiguration=location)
 
-    def upload(self, root_key: str, source_url: str, file_extension: str, referer_url: str | None = None) -> bool:
-        from utils import get_pdf_name
+    def upload(
+        self,
+        root_key: str,
+        source_url: str,
+        file_extension: str,
+        referer_url: str | None = None,
+        with_tor: bool = False,
+    ) -> bool:
+        from utils import get_pdf_name, get_content_response
 
-        referer_url = referer_url if referer_url is not None else "https://www.google.com"
         s3_key = os.path.join(root_key, get_pdf_name(source_url, file_extension))  # Construct S3 key
 
         self.logger.info(f"Uploading Source: {source_url} to {s3_key}")
@@ -80,17 +83,12 @@ class S3Storage:
                 return False
 
         try:
-            # Download PDF content from the URL
-            response = requests.get(source_url, headers={
-                "User-Agent": random.choice(USER_AGENT_LIST),
-                "Accept": "application/pdf,*/*",
-                "Accept-Language": "en-US,en;q=0.9",
-                "Referer": referer_url,
-            })
-            response.raise_for_status()  # Check for request errors
+            content = get_content_response(source_url, referer_url=referer_url, with_tor=with_tor)
 
             # Upload to S3
-            self.client.put_object(Bucket=self.bucket_name, Key=s3_key, Body=response.content)
+            self.client.put_object(
+                Bucket=self.bucket_name, Key=s3_key, Body=content, ContentType="application/pdf"
+            )
             self.logger.info(f"Successfully uploaded to S3: {s3_key}")
 
             return True

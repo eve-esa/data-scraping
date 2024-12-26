@@ -3,4 +3,6 @@ boto3
 pydantic
 PyYAML==6.0.2
 selenium==4.27.1
+torpy
+urllib3==1.26.20
 webdriver-manager==4.0.2

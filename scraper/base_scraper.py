@@ -10,6 +10,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from abc import ABC, abstractmethod
 import time
 import logging
+from torpy.http.requests import tor_requests_session
 
 from constants import OUTPUT_FOLDER, USER_AGENT_LIST, ROTATE_USER_AGENT_EVERY
 from storage import S3Storage
@@ -21,6 +22,17 @@ class BaseConfigScraper(ABC, BaseModel):
 
 class BaseScraper(ABC):
     def __init__(self) -> None:
+        self._logger = logging.getLogger(self.__class__.__name__)
+        self._cookie_handled = False
+        self._num_requests = 0
+
+        self._driver = None
+        if self.scrape_by_selenium:
+            self.__init_selenium_driver()
+
+        self._s3_client = S3Storage()
+
+    def __init_selenium_driver(self):
         chrome_options = Options()
 
         chrome_options.add_argument("--disable-blink-features=AutomationControlled")
@@ -29,13 +41,8 @@ class BaseScraper(ABC):
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option("useAutomationExtension", False)
 
-        chrome_options.add_argument(
-            f"user-agent={random.choice(USER_AGENT_LIST)}"  # Randomly select a user agent from the list
-        )
-
-        chrome_options.add_argument(
-            "--headless"
-        )  # Run in headless mode (no browser UI)
+        chrome_options.add_argument(f"user-agent={random.choice(AGENT_LIST)}")
+        chrome_options.add_argument("--headless")  # Run in headless mode (no browser UI)
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
@@ -50,11 +57,9 @@ class BaseScraper(ABC):
         chrome_options.add_argument("--disable-offline-load-stale-cache")
         chrome_options.add_argument("--disk-cache-size=0")
 
-        # Create a new Chrome browser instance
         self._driver = webdriver.Chrome(
             service=Service(ChromeDriverManager().install()), options=chrome_options
         )
-        # driver = webdriver.Chrome(service=Service())
 
         self._driver.execute_cdp_cmd(
             "Page.addScriptToEvaluateOnNewDocument",
@@ -67,17 +72,14 @@ class BaseScraper(ABC):
             },
         )
 
-        self._logger = logging.getLogger(self.__class__.__name__)
-        self._cookie_handled = False
-        self._num_requests = 0
-
-        self._s3_client = S3Storage()
-
     def __call__(self, config_model: BaseConfigScraper):
         self._logger.info(f"Running scraper {self.__class__.__name__}")
 
-        scraping_results = self.scrape(config_model)
-        self._driver.quit()
+        try:
+            scraping_results = self.scrape(config_model)
+        finally:
+            if self._driver:
+                self._driver.quit()
 
         if scraping_results is None:
             return
@@ -92,8 +94,7 @@ class BaseScraper(ABC):
                 f"{OUTPUT_FOLDER}/{self.__class__.__name__}.json",
                 (
                     scraping_results
-                    if isinstance(scraping_results, list)
-                    or isinstance(scraping_results, dict)
+                    if isinstance(scraping_results, list) or isinstance(scraping_results, dict)
                     else links
                 ),
             )
@@ -125,7 +126,8 @@ class BaseScraper(ABC):
 
     def _scrape_url(self, url: str, pause_time: int = 2) -> BeautifulSoup:
         """
-        Get a URL.
+        Scrape the URL and return the BeautifulSoup object. This method is used to scrape the URL and return the fully
+        rendered HTML.
 
         Args:
             url (str): url contains volume and issue number. Eg: https://www.mdpi.com/2072-4292/1/3
@@ -137,6 +139,50 @@ class BaseScraper(ABC):
         if self._num_requests % ROTATE_USER_AGENT_EVERY == 0:
             self._rotate_user_agent()
 
+        if self.scrape_by_selenium:
+            html = self.__scrape_by_selenium(url, pause_time)
+        else:
+            html = self.__scrape_by_tor(url)
+
+        return BeautifulSoup(html, "html.parser")
+
+    def __scrape_by_tor(self, url: str, pause_time: int = 2) -> str:
+        """
+        Scrape the URL by Tor Network and return the BeautifulSoup object.
+
+        Args:
+            url (str): The URL to scrape.
+            pause_time (int): The time to pause before scraping the next URL.
+
+        Returns:
+            str: The fully rendered HTML of the URL.
+        """
+        headers = {
+            "User-Agent": random.choice(AGENT_LIST),
+            "Accept": "application/pdf,*/*",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Referer": self.referer_url,
+        }
+
+        with tor_requests_session(headers=headers) as sess:
+            response = sess.get(url, timeout=10)
+            response.raise_for_status()
+
+        time.sleep(pause_time)
+
+        return response.text
+
+    def __scrape_by_selenium(self, url: str, pause_time: int = 2) -> str:
+        """
+        Scrape the URL using Selenium. This method is used to scrape the URL and return the fully rendered HTML.
+
+        Args:
+            url (str): The URL to scrape.
+            pause_time (int): The time to pause between scrolling the page.
+
+        Returns:
+            str: The fully rendered HTML of the URL.
+        """
         self._driver.get(url)
         time.sleep(5)  # Give the page time to load
 
@@ -146,30 +192,21 @@ class BaseScraper(ABC):
             try:
                 # Wait for the page to fully load
                 WebDriverWait(self._driver, 15).until(
-                    lambda d: d.execute_script("return document.readyState")
-                    == "complete"
+                    lambda d: d.execute_script("return document.readyState") == "complete"
                 )
-                self._logger.info(
-                    "Page fully loaded. Attempting to locate the 'Accept All' button using JavaScript."
-                )
+                self._logger.info("Page fully loaded. Attempting to locate the 'Accept All' button using JavaScript.")
 
                 # Execute JavaScript to find and click the "Accept All" button
-                self._driver.execute_script(
-                    f"""
+                self._driver.execute_script(f"""
                             let acceptButton = document.querySelector("{self.cookie_selector}");
                             if (acceptButton) {{
                                 acceptButton.click();
                             }}
-                        """
-                )
-                self._logger.info(
-                    "'Accept All' button clicked successfully using JavaScript."
-                )
+                        """)
+                self._logger.info("'Accept All' button clicked successfully using JavaScript.")
                 self._cookie_handled = True
             except Exception as e:
-                self._logger.error(
-                    f"Failed to handle cookie popup using JavaScript. Error: {e}"
-                )
+                self._logger.error(f"Failed to handle cookie popup using JavaScript. Error: {e}")
 
         # Scroll through the page to load all articles
         last_height = self._driver.execute_script("return document.body.scrollHeight")
@@ -182,17 +219,13 @@ class BaseScraper(ABC):
             time.sleep(pause_time)
 
             # Calculate new scroll height and compare with the last height
-            new_height = self._driver.execute_script(
-                "return document.body.scrollHeight"
-            )
+            new_height = self._driver.execute_script("return document.body.scrollHeight")
             if new_height == last_height:
                 break
             last_height = new_height
 
         # Get the fully rendered HTML and pass it to BeautifulSoup
-        html = self._driver.page_source
-
-        return BeautifulSoup(html, "html.parser")
+        return self._driver.page_source
 
     def _upload_to_s3(self, sources_links: List[str], model: BaseConfigScraper) -> bool:
         """
@@ -209,7 +242,13 @@ class BaseScraper(ABC):
 
         all_done = True
         for link in sources_links:
-            result = self._s3_client.upload(model.bucket_key, link, self.file_extension)
+            result = self._s3_client.upload(
+                model.bucket_key,
+                link,
+                self.file_extension,
+                referer_url=self.referer_url,
+                with_tor=(not self.scrape_by_selenium)
+            )
             if not result:
                 all_done = False
 
@@ -217,6 +256,14 @@ class BaseScraper(ABC):
             time.sleep(random.uniform(2, 5))  # random between 2 and 5 seconds
 
         return all_done
+
+    @property
+    def scrape_by_selenium(self) -> bool:
+        return True
+
+    @property
+    def referer_url(self) -> str | None:
+        return None
 
     @abstractmethod
     def scrape(self, model: BaseConfigScraper) -> Any | None:
