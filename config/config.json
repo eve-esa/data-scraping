@@ -506,5 +506,16 @@
                 "end_issue": 1
             }
         ]
+    },
+    "IEEEScraper": {
+        "bucket_key": "ieee",
+        "sources": [
+            {
+                "landing_page_url": "https://ieeexplore.ieee.org/xpl/issues?punumber=4609443&isnumber=10766875"
+            },
+            {
+                "landing_page_url": "https://ieeexplore.ieee.org/xpl/issues?punumber=6287639&isnumber=10380310"
+            }
+        ]
     }
 }
