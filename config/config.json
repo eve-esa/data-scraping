@@ -4,75 +4,75 @@
         "sources": [
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/169/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/540/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/18/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/500/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/37/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/17/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/20/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/1/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/57/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/1064/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/34/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/280/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/165/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/1170/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/74/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/1164/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/932/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/13/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             }
         ]
     },
@@ -194,39 +194,39 @@
             },
             {
                 "url": "https://link.springer.com/book/10.1007/978-3-319-65633-5",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://link.springer.com/book/10.1007/978-3-030-33157-3",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://link.springer.com/book/10.1007/978-3-030-90998-7",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://link.springer.com/book/10.1007/978-3-031-15988-6",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://link.springer.com/book/10.1007/978-3-030-80767-2",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://link.springer.com/book/10.1007/978-981-15-8983-6",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://link.springer.com/book/10.1007/978-981-99-9375-8",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://link.springer.com/book/10.1007/978-981-10-3713-9",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://link.springer.com/book/10.1007/978-3-642-25643-1",
-                "type": "issue"
+                "type": "issue_or_collection"
             }
         ]
     },
@@ -499,6 +499,36 @@
             },
             {
                 "landing_page_url": "https://ieeexplore.ieee.org/xpl/issues?punumber=6287639&isnumber=10380310"
+            }
+        ]
+    },
+    "TaylorAndFrancisSectionScraper": {
+        "bucket_key": "taylor_and_francis",
+        "sources": [
+            {
+                "url": "https://www.tandfonline.com/journals/tgda21/sections/earth-observations?startPage=0&pageSize=1000",
+                "type": "issue_or_collection"
+            }
+        ]
+    },
+    "TaylorAndFrancisJournalScraper": {
+        "bucket_key": "taylor_and_francis",
+        "sources": [
+            {
+                "url": "https://www.tandfonline.com/loi/tbed20",
+                "type": "journal"
+            },
+            {
+                "url": "https://www.tandfonline.com/loi/tejr20",
+                "type": "journal"
+            },
+            {
+                "url": "https://www.tandfonline.com/loi/tres20",
+                "type": "journal"
+            },
+            {
+                "url": "https://www.tandfonline.com/loi/tgei20",
+                "type": "journal"
             }
         ]
     }

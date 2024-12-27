@@ -106,7 +106,7 @@ class MDPIScraper(BaseIterativePublisherScraper):
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
         try:
-            scraper = self._scrape_url(issue_url)
+            scraper = self._scrape_url_by_bs4(issue_url)
 
             # Get all PDF links using Selenium to scroll and handle cookie popup once
             # Now find all PDF links using the class_="UD_Listings_ArticlePDF"

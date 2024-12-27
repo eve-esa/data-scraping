@@ -83,7 +83,7 @@ class BaseIterativePublisherScraper(BaseScraper):
     @abstractmethod
     def _scrape_journal(self, journal: BaseIterativePublisherJournal) -> IterativePublisherScrapeJournalOutput:
         """
-        Scrape all volumes of a journal.
+        Scrape all volumes of a journal. This method must be implemented in the derived class.
 
         Args:
             journal (BaseIterativePublisherJournal): The journal to scrape.
@@ -96,7 +96,7 @@ class BaseIterativePublisherScraper(BaseScraper):
     @abstractmethod
     def _scrape_volume(self, journal: BaseIterativePublisherJournal, volume_num: int) -> IterativePublisherScrapeVolumeOutput:
         """
-        Scrape all issues of a volume.
+        Scrape all issues of a volume. This method must be implemented in the derived class.
 
         Args:
             journal (BaseIterativePublisherJournal): The journal to scrape.
@@ -112,7 +112,7 @@ class BaseIterativePublisherScraper(BaseScraper):
         self, journal: BaseIterativePublisherJournal, volume_num: int, issue_num: int
     ) -> IterativePublisherScrapeIssueOutput | None:
         """
-        Scrape the issue URL for PDF links.
+        Scrape the issue URL for PDF links. This method must be implemented in the derived class.
 
         Args:
             journal (BaseIterativePublisherJournal): The journal to scrape.
@@ -127,7 +127,7 @@ class BaseIterativePublisherScraper(BaseScraper):
     @abstractmethod
     def _scrape_article(self, *args, **kwargs) -> str | None:
         """
-        Scrape a single article.
+        Scrape a single article. This method must be implemented in the derived class.
 
         Returns:
             str | None: The string containing the PDF link.
@@ -137,7 +137,7 @@ class BaseIterativePublisherScraper(BaseScraper):
     @abstractmethod
     def journal_identifier(self, model: BaseModel) -> str:
         """
-        Return the journal identifier.
+        Return the journal identifier. This method must be implemented in the derived class.
 
         Args:
             model (BaseModel): The configuration model.

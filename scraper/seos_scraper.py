@@ -78,7 +78,7 @@ class SeosScraper(BaseScraper):
             self._logger.info(f"Processing Chapter {i}")
             try:
                 i_str = f"-c{i}" if i >= 10 else f"-c0{i}"
-                scraper = self._scrape_url(source.url.format(**{"chapter": i_str[2:]}))
+                scraper = self._scrape_url_by_bs4(source.url.format(**{"chapter": i_str[2:]}))
 
                 html_tags.extend(scraper.find_all("a", href=lambda href: href and i_str in href))
             except Exception as e:

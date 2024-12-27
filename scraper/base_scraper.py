@@ -6,6 +6,10 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
 from abc import ABC, abstractmethod
 import time
@@ -29,13 +33,8 @@ class BaseScraper(ABC):
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option("useAutomationExtension", False)
 
-        chrome_options.add_argument(
-            f"user-agent={random.choice(USER_AGENT_LIST)}"  # Randomly select a user agent from the list
-        )
-
-        chrome_options.add_argument(
-            "--headless"
-        )  # Run in headless mode (no browser UI)
+        chrome_options.add_argument(f"user-agent={random.choice(USER_AGENT_LIST)}")  # Randomly select a user agent
+        chrome_options.add_argument("--headless")  # Run in headless mode (no browser UI)
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
@@ -54,7 +53,6 @@ class BaseScraper(ABC):
         self._driver = webdriver.Chrome(
             service=Service(ChromeDriverManager().install()), options=chrome_options
         )
-        # driver = webdriver.Chrome(service=Service())
 
         self._driver.execute_cdp_cmd(
             "Page.addScriptToEvaluateOnNewDocument",
@@ -123,15 +121,15 @@ class BaseScraper(ABC):
             }
         )
 
-    def _scrape_url(self, url: str, pause_time: int = 2) -> BeautifulSoup:
+    def _scrape_url_by_selenium(self, url: str, pause_time: int = 2) -> str:
         """
-        Get a URL.
+        Scrape the URL using Selenium.
 
         Args:
             url (str): url contains volume and issue number. Eg: https://www.mdpi.com/2072-4292/1/3
 
         Returns:
-            BeautifulSoup: A BeautifulSoup object containing the fully rendered HTML of the URL.
+            str: the fully rendered HTML of the URL.
         """
         self._num_requests += 1
         if self._num_requests % ROTATE_USER_AGENT_EVERY == 0:
@@ -146,8 +144,7 @@ class BaseScraper(ABC):
             try:
                 # Wait for the page to fully load
                 WebDriverWait(self._driver, 15).until(
-                    lambda d: d.execute_script("return document.readyState")
-                    == "complete"
+                    lambda d: d.execute_script("return document.readyState") == "complete"
                 )
                 self._logger.info(
                     "Page fully loaded. Attempting to locate the 'Accept All' button using JavaScript."
@@ -156,11 +153,11 @@ class BaseScraper(ABC):
                 # Execute JavaScript to find and click the "Accept All" button
                 self._driver.execute_script(
                     f"""
-                            let acceptButton = document.querySelector("{self.cookie_selector}");
-                            if (acceptButton) {{
-                                acceptButton.click();
-                            }}
-                        """
+                        let acceptButton = document.querySelector("{self.cookie_selector}");
+                        if (acceptButton) {{
+                            acceptButton.click();
+                        }}
+                    """
                 )
                 self._logger.info(
                     "'Accept All' button clicked successfully using JavaScript."
@@ -182,17 +179,47 @@ class BaseScraper(ABC):
             time.sleep(pause_time)
 
             # Calculate new scroll height and compare with the last height
-            new_height = self._driver.execute_script(
-                "return document.body.scrollHeight"
-            )
+            new_height = self._driver.execute_script("return document.body.scrollHeight")
             if new_height == last_height:
                 break
             last_height = new_height
 
         # Get the fully rendered HTML and pass it to BeautifulSoup
-        html = self._driver.page_source
+        return self._driver.page_source
 
+    def _scrape_url_by_bs4(self, url: str, pause_time: int = 2) -> BeautifulSoup:
+        """
+        Scrape the URL using BeautifulSoup.
+
+        Args:
+            url (str): url contains volume and issue number. Eg: https://www.mdpi.com/2072-4292/1/3
+            pause_time (int): time to pause between scrolls
+
+        Returns:
+            BeautifulSoup: the fully rendered HTML of the URL.
+        """
+        html = self._scrape_url_by_selenium(url, pause_time)
         return BeautifulSoup(html, "html.parser")
+
+    def _wait_and_get_elements(self, selector: str, by: str = By.CLASS_NAME) -> List[WebElement]:
+        """
+        Wait for the elements to be present in the page and return them.
+
+        Args:
+            selector (str): The selector to find the elements.
+            by (str): The method to find the elements. Default is By.CLASS_NAME.
+
+        Returns:
+            List: The list of elements
+        """
+        try:
+            WebDriverWait(self._driver, 10).until(
+                EC.presence_of_all_elements_located((by, selector))
+            )
+            return self._driver.find_elements(by, selector)
+        except TimeoutException:
+            self._logger.warning(f"Timeout waiting for elements with selector: {selector}")
+            return []
 
     def _upload_to_s3(self, sources_links: List[str], model: BaseConfigScraper) -> bool:
         """

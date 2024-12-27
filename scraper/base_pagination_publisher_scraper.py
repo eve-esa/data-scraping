@@ -64,7 +64,7 @@ class BasePaginationPublisherScraper(BaseScraper):
     @abstractmethod
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> List[Tag] | None:
         """
-        Scrape the landing page.
+        Scrape the landing page. This method must be implemented in the derived class.
 
         Args:
             landing_page_url (str): The landing page URL.
@@ -78,7 +78,7 @@ class BasePaginationPublisherScraper(BaseScraper):
     @abstractmethod
     def _scrape_page(self, url: str) -> ResultSet | None:
         """
-        Scrape the page.
+        Scrape the page. This method must be implemented in the derived class.
 
         Args:
             url (str): The URL to scrape.
