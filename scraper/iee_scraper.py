@@ -6,35 +6,35 @@ from scraper.base_scraper import BaseConfigScraper
 from utils import get_scraped_url
 
 
-class CambridgeUniversityPressConfig(BaseConfigScraper):
+class IEEEConfig(BaseConfigScraper):
     sources: List[BasePaginationPublisherSource]
 
 
-class CambridgeUniversityPressScraper(BasePaginationPublisherScraper):
+class IEEEScraper(BasePaginationPublisherScraper):
     @property
-    def config_model_type(self) -> Type[CambridgeUniversityPressConfig]:
+    def config_model_type(self) -> Type[IEEEConfig]:
         """
         Return the configuration model type.
 
         Returns:
-            Type[CambridgeUniversityPressConfig]: The configuration model type
+            Type[IEEEConfig]: The configuration model type
         """
-        return CambridgeUniversityPressConfig
+        return IEEEConfig
 
     @property
     def cookie_selector(self) -> str:
-        return "a.cookie-close"
+        return "button.osano-cm-accept-all"
 
     @property
     def base_url(self) -> str:
-        return "https://www.cambridge.org"
+        return "https://ieeexplore.ieee.org"
 
-    def scrape(self, model: CambridgeUniversityPressConfig) -> List[Tag] | None:
+    def scrape(self, model: IEEEConfig) -> List[Tag] | None:
         """
-        Scrape the Cambridge University Press sources for PDF links.
+        Scrape the IEEE sources for PDF links.
 
         Args:
-            model (CambridgeUniversityPressConfig): The configuration model.
+            model (IEEEConfig): The configuration model.
 
         Returns:
             List[Tag] | None: A list of Tag objects containing the tags to the PDF links. If no tag was found, return None.
@@ -44,7 +44,7 @@ class CambridgeUniversityPressScraper(BasePaginationPublisherScraper):
             for idx, source in enumerate(model.sources)
             for tag in self._scrape_landing_page(source.landing_page_url, idx + 1)
             for pdf_tag in self._scrape_pagination(
-                f"{get_scraped_url(tag, self.base_url)}?pageNum={{page_number}}",
+                f"{get_scraped_url(tag, self.base_url)}&sortType=vol-only-seq&rowsPerPage=100&pageNumber={{page_number}}",
                 idx + 1
             )
         ]
@@ -69,7 +69,7 @@ class CambridgeUniversityPressScraper(BasePaginationPublisherScraper):
             scraper = self._scrape_url(landing_page_url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
-            return scraper.find_all("a", href=lambda href: href and "/core/" in href and "/issue/" in href, class_="row")
+            return scraper.find_all("a", href=lambda href: href and "/tocresult" in href and "punumber=" in href)
         except Exception as e:
             self._logger.error(f"Failed to process URL {landing_page_url}. Error: {e}")
             return []
@@ -88,7 +88,11 @@ class CambridgeUniversityPressScraper(BasePaginationPublisherScraper):
             scraper = self._scrape_url(url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
-            pdf_tag_list = scraper.find_all("a", href=lambda href: href and ".pdf" in href)
+            pdf_tag_list = scraper.find_all(
+                "a",
+                href=lambda href: href and "/stamp/stamp.jsp" in href,
+                class_=lambda class_: class_ and "u-flex-display-flex" in class_
+            )
 
             self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
