@@ -86,9 +86,7 @@ class S3Storage:
             content = get_content_response(source_url, referer_url=referer_url, with_tor=with_tor)
 
             # Upload to S3
-            self.client.put_object(
-                Bucket=self.bucket_name, Key=s3_key, Body=content, ContentType="application/pdf"
-            )
+            self.client.put_object(Bucket=self.bucket_name, Key=s3_key, Body=content)
             self.logger.info(f"Successfully uploaded to S3: {s3_key}")
 
             return True
