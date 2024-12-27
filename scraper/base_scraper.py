@@ -73,29 +73,6 @@ class BaseScraper(ABC):
 
         self._s3_client = S3Storage()
 
-    def _rotate_user_agent(self) -> None:
-        self._driver.execute_cdp_cmd(
-            "Page.addScriptToEvaluateOnNewDocument",
-            {
-                "source": """
-                    Object.defineProperty(navigator, 'webdriver', {
-                        get: () => undefined
-                    })
-                """
-            },
-        )
-        self._driver.execute_cdp_cmd(
-            "Network.enable",
-            {}
-        )
-
-        self._driver.execute_cdp_cmd(
-            "Network.setUserAgentOverride",
-            {
-                "userAgent": f"{random.choice(USER_AGENT_LIST)}",
-            }
-        )
-
     def __call__(self, config_model: BaseConfigScraper):
         self._logger.info(f"Running scraper {self.__class__.__name__}")
 
@@ -122,6 +99,29 @@ class BaseScraper(ABC):
             )
 
         self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")
+
+    def _rotate_user_agent(self) -> None:
+        self._driver.execute_cdp_cmd(
+            "Page.addScriptToEvaluateOnNewDocument",
+            {
+                "source": """
+                    Object.defineProperty(navigator, 'webdriver', {
+                        get: () => undefined
+                    })
+                """
+            },
+        )
+        self._driver.execute_cdp_cmd(
+            "Network.enable",
+            {}
+        )
+
+        self._driver.execute_cdp_cmd(
+            "Network.setUserAgentOverride",
+            {
+                "userAgent": f"{random.choice(USER_AGENT_LIST)}",
+            }
+        )
 
     def _scrape_url(self, url: str, pause_time: int = 2) -> BeautifulSoup:
         """
