@@ -7,7 +7,7 @@ import requests
 from botocore.exceptions import ClientError
 from pydantic import BaseModel
 
-from constants import AGENT_LIST
+from constants import USER_AGENT_LIST
 from singleton import singleton
 
 
@@ -82,7 +82,7 @@ class S3Storage:
         try:
             # Download PDF content from the URL
             response = requests.get(source_url, headers={
-                "User-Agent": random.choice(AGENT_LIST),
+                "User-Agent": random.choice(USER_AGENT_LIST),
                 "Accept": "application/pdf,*/*",
                 "Accept-Language": "en-US,en;q=0.9",
                 "Referer": referer_url,

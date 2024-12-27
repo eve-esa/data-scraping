@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 import time
 import logging
 
-from constants import OUTPUT_FOLDER, AGENT_LIST
+from constants import OUTPUT_FOLDER, USER_AGENT_LIST, ROTATE_USER_AGENT_EVERY
 from storage import S3Storage
 
 
@@ -30,7 +30,7 @@ class BaseScraper(ABC):
         chrome_options.add_experimental_option("useAutomationExtension", False)
 
         chrome_options.add_argument(
-            f"user-agent={random.choice(AGENT_LIST)}"  # Randomly select a user agent from the list
+            f"user-agent={random.choice(USER_AGENT_LIST)}"  # Randomly select a user agent from the list
         )
 
         chrome_options.add_argument(
@@ -69,8 +69,32 @@ class BaseScraper(ABC):
 
         self._logger = logging.getLogger(self.__class__.__name__)
         self._cookie_handled = False
+        self._num_requests = 0
 
         self._s3_client = S3Storage()
+
+    def _rotate_user_agent(self) -> None:
+        self._driver.execute_cdp_cmd(
+            "Page.addScriptToEvaluateOnNewDocument",
+            {
+                "source": """
+                    Object.defineProperty(navigator, 'webdriver', {
+                        get: () => undefined
+                    })
+                """
+            },
+        )
+        self._driver.execute_cdp_cmd(
+            "Network.enable",
+            {}
+        )
+
+        self._driver.execute_cdp_cmd(
+            "Network.setUserAgentOverride",
+            {
+                "userAgent": f"{random.choice(USER_AGENT_LIST)}",
+            }
+        )
 
     def __call__(self, config_model: BaseConfigScraper):
         self._logger.info(f"Running scraper {self.__class__.__name__}")
@@ -104,11 +128,14 @@ class BaseScraper(ABC):
         Get a URL.
 
         Args:
-            url (str): url contains volume and issue number. Eg:https://www.mdpi.com/2072-4292/1/3
+            url (str): url contains volume and issue number. Eg: https://www.mdpi.com/2072-4292/1/3
 
         Returns:
             BeautifulSoup: A BeautifulSoup object containing the fully rendered HTML of the URL.
         """
+        self._num_requests += 1
+        if self._num_requests % ROTATE_USER_AGENT_EVERY == 0:
+            self._rotate_user_agent()
 
         self._driver.get(url)
         time.sleep(5)  # Give the page time to load
