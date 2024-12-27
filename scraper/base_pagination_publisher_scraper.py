@@ -40,7 +40,7 @@ class BasePaginationPublisherScraper(BaseScraper):
 
             self._logger.info(f"Processing Pagination {page_url}")
 
-            page_tag_list = self._scrape_page(page_url, page_number, source_number)
+            page_tag_list = self._scrape_page(page_url)
             if not page_tag_list:
                 break
 
@@ -76,17 +76,14 @@ class BasePaginationPublisherScraper(BaseScraper):
         pass
 
     @abstractmethod
-    def _scrape_page(self, url: str, page_number: int, source_number: int, show_logs: bool = True) -> ResultSet | None:
+    def _scrape_page(self, url: str) -> ResultSet | None:
         """
         Scrape the page.
 
         Args:
             url (str): The URL to scrape.
-            page_number (int): The page number.
-            source_number (int): The source number.
-            show_logs (bool): Whether to show logs.
 
         Returns:
-            ResultSet | None: A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF links. If something went wrong, return None.
+            ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
         """
         pass

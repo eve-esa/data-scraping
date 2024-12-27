@@ -42,8 +42,8 @@ class IOPScraper(BaseUrlPublisherScraper):
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             pdf_tag_list = scraper.find_all("a", href=lambda href: href and "/article/" in href and "/pdf" in href)
-            self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
 
+            self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
             self._logger.error(f"Failed to process Issue {source.url}. Error: {e}")

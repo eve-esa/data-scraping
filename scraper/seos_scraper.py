@@ -36,7 +36,7 @@ class SeosScraper(BaseScraper):
 
     def scrape(self, model: SeosConfig) -> Dict[str, List[Tag]] | None:
         """
-        Scrape the source URLs for HTML links.
+        Scrape the Seos sources for HTML links.
 
         Args:
             model (SeosConfig): The configuration model.
@@ -67,14 +67,10 @@ class SeosScraper(BaseScraper):
         for i in range(1, source.chapters + 1):
             self._logger.info(f"Processing Chapter {i}")
             try:
-
                 i_str = f"-c{i}" if i >= 10 else f"-c0{i}"
                 scraper = self._scrape_url(source.url.format(**{"chapter": i_str[2:]}))
 
-                html_tags_chapter = scraper.find_all(
-                    "a", href=lambda href: href and i_str in href
-                )
-                html_tags.extend(html_tags_chapter)
+                html_tags.extend(scraper.find_all("a", href=lambda href: href and i_str in href))
             except Exception as e:
                 self._logger.error(f"Failed to process Chapter {i}. Error: {e}")
 

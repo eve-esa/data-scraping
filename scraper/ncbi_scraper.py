@@ -34,7 +34,7 @@ class NCBIScraper(BasePaginationPublisherScraper):
 
     def scrape(self, model: NCBIConfig) -> List[Tag] | None:
         """
-        Scrape the source URLs of for PDF links.
+        Scrape the NCBI sources for PDF links.
 
         Args:
             model (NCBIConfig): The configuration model.
@@ -57,26 +57,19 @@ class NCBIScraper(BasePaginationPublisherScraper):
 
         Args:
             landing_page_url (str): The landing page to scrape.
-
-        Returns:
-            List[Tag]: A list of Tag objects containing the tags to the PDF links, if the source has a landing page and the `should_store` is True. Otherwise, an empty list.
         """
         self._logger.info(f"Processing Landing Page {landing_page_url}")
+        self._scrape_url(landing_page_url)
 
-        self._scrape_page(landing_page_url, 0, source_number, False)
-
-    def _scrape_page(self, url: str, page_number: int, source_number: int, show_logs: bool = True) -> ResultSet | None:
+    def _scrape_page(self, url: str) -> ResultSet | None:
         """
         Scrape the PubMed page of the collection from pagination for PDF links.
 
         Args:
             url (str): The URL to scrape.
-            page_number (int): The page number.
-            source_number (int): The source number.
-            show_logs (bool): Whether to show logs.
 
         Returns:
-            ResultSet: A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF links, or None if something went wrong.
+            ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
         """
         try:
             scraper = self._scrape_url(url)
@@ -84,8 +77,7 @@ class NCBIScraper(BasePaginationPublisherScraper):
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             pdf_tag_list = scraper.find_all("a", href=lambda href: href and "/articles/" in href and ".pdf" in href, class_="view")
 
-            if show_logs:
-                self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
+            self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
             self._logger.error(f"Failed to process URL {url}. Error: {e}")

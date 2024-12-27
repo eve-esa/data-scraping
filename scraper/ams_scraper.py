@@ -133,17 +133,14 @@ class AMSScraper(BaseIterativePublisherScraper):
                 class_="c-Button--link",
                 href=lambda href: href and f"/view/journals/{journal_code}/{volume_num}/{issue_num}/" in href
             )
-            article_urls = [get_scraped_url(tag, self.base_url) for tag in tags]
 
-            pdf_links = [self._scrape_article(article_url) for article_url in article_urls]
-            pdf_links = [link for link in pdf_links if link]
+            pdf_links = [
+                pdf_link
+                for pdf_link in map(lambda tag: self._scrape_article(get_scraped_url(tag, self.base_url)), tags)
+                if pdf_link
+            ]
 
             self._logger.info(f"PDF links found: {len(pdf_links)}")
-            if not pdf_links:
-                self._logger.info(
-                    f"No PDF links found for Issue {issue_num} in Volume {volume_num}. Skipping to the next volume."
-                )
-
             return pdf_links
         except Exception as e:
             self._logger.error(f"Failed to process Issue {issue_num} in Volume {volume_num}. Error: {e}")
