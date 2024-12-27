@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from typing import Dict, List, TypeAlias
+from pydantic import BaseModel
 
 from scraper.base_scraper import BaseScraper, BaseConfigScraper
 
@@ -10,7 +11,29 @@ IterativePublisherScrapeVolumeOutput: TypeAlias = Dict[int, List[str]]
 IterativePublisherScrapeIssueOutput: TypeAlias = List[str]
 
 
+class BaseIterativePublisherConfig(BaseConfigScraper):
+    journals: List
+
+
 class BaseIterativePublisherScraper(BaseScraper):
+    def scrape(self, model: BaseIterativePublisherConfig) -> IterativePublisherScrapeOutput | None:
+        """
+        Scrape the journals for PDF links.
+
+        Args:
+            model (BaseIterativePublisherConfig): The configuration model.
+
+        Returns:
+            IterativePublisherScrapeOutput | None: A dictionary containing the PDF links, or None if no link was found.
+        """
+        links = {}
+
+        for journal in model.journals:
+            if scraped_tags := self._scrape_journal(journal):
+                links[self.journal_identifier(journal)] = scraped_tags
+
+        return links if links else None
+
     def post_process(self, scrape_output: IterativePublisherScrapeOutput) -> List[str]:
         """
         Extract the PDF links from the dictionary.
@@ -69,5 +92,18 @@ class BaseIterativePublisherScraper(BaseScraper):
 
         Returns:
             str | None: The string containing the PDF link.
+        """
+        pass
+
+    @abstractmethod
+    def journal_identifier(self, model: BaseModel) -> str:
+        """
+        Return the journal identifier.
+
+        Args:
+            model (BaseModel): The configuration model.
+
+        Returns:
+            str: The journal identifier
         """
         pass
