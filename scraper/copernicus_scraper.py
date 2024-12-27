@@ -1,3 +1,4 @@
+import os
 from typing import List, Type
 from pydantic import BaseModel
 
@@ -6,9 +7,8 @@ from scraper.base_iterative_publisher_scraper import (
     IterativePublisherScrapeJournalOutput,
     IterativePublisherScrapeVolumeOutput,
     IterativePublisherScrapeIssueOutput,
-    IterativePublisherScrapeOutput,
+    BaseIterativePublisherConfig,
 )
-from scraper.base_scraper import BaseConfigScraper
 from utils import get_scraped_url
 
 
@@ -23,7 +23,7 @@ class CopernicusJournal(BaseModel):
     consecutive_missing_issues_threshold: int | None = 3
 
 
-class CopernicusConfig(BaseConfigScraper):
+class CopernicusConfig(BaseIterativePublisherConfig):
     journals: List[CopernicusJournal]
 
 
@@ -51,23 +51,17 @@ class CopernicusScraper(BaseIterativePublisherScraper):
     def base_url(self) -> str:
         return ""
 
-    def scrape(self, model: CopernicusConfig) -> IterativePublisherScrapeOutput | None:
+    def journal_identifier(self, model: CopernicusJournal) -> str:
         """
-        Scrape the Copernicus journals for PDF links.
+        Return the journal identifier.
 
         Args:
-            model (CopernicusConfig): The configuration model.
+            model (CopernicusJournal): The configuration model.
 
         Returns:
-            IterativePublisherScrapeOutput | None: A dictionary containing the PDF links, or None if no link was found.
+            str: The journal identifier
         """
-        links = {}
-
-        for journal in model.journals:
-            if scraped_tags := self._scrape_journal(journal):
-                links[journal.name] = scraped_tags
-
-        return links if links else None
+        return model.name
 
     def _scrape_journal(self, journal: CopernicusJournal) -> IterativePublisherScrapeJournalOutput:
         """
@@ -163,7 +157,7 @@ class CopernicusScraper(BaseIterativePublisherScraper):
         Returns:
             IterativePublisherScrapeIssueOutput | None: A list of PDF links found in the issue, or None is something went wrong.
         """
-        issue_url = f"{journal_url}/articles/{volume_num}/issue{issue_num}.html"
+        issue_url = os.path.join(journal_url, "articles", str(volume_num), f"issue{issue_num}.html")
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
         try:

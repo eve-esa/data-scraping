@@ -492,5 +492,19 @@
                 "landing_page_url": "https://www.cambridge.org/core/journals/environmental-data-science/all-issues"
             }
         ]
+    },
+    "OxfordAcademicScraper": {
+        "bucket_key": "oxford_academic",
+        "journals": [
+            {
+                "url": "https://academic.oup.com/oocc",
+                "name": "Oxford Open Climate Change",
+                "code": "oocc",
+                "start_volume": 1,
+                "end_volume": 4,
+                "start_issue": 1,
+                "end_issue": 1
+            }
+        ]
     }
 }

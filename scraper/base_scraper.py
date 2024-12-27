@@ -44,6 +44,11 @@ class BaseScraper(ABC):
         chrome_options.add_argument("--disable-extensions")
         chrome_options.add_argument("--disable-background-networking")
         chrome_options.add_argument("--ignore-certificate-errors")
+        chrome_options.add_argument("--incognito")
+        chrome_options.add_argument("--disable-cache")
+        chrome_options.add_argument("--disable-application-cache")
+        chrome_options.add_argument("--disable-offline-load-stale-cache")
+        chrome_options.add_argument("--disk-cache-size=0")
 
         # Create a new Chrome browser instance
         self._driver = webdriver.Chrome(
@@ -55,10 +60,10 @@ class BaseScraper(ABC):
             "Page.addScriptToEvaluateOnNewDocument",
             {
                 "source": """
-            Object.defineProperty(navigator, 'webdriver', {
-              get: () => undefined
-            })
-          """
+                    Object.defineProperty(navigator, 'webdriver', {
+                        get: () => undefined
+                    })
+                """
             },
         )
 

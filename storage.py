@@ -90,9 +90,7 @@ class S3Storage:
             response.raise_for_status()  # Check for request errors
 
             # Upload to S3
-            self.client.put_object(
-                Bucket=self.bucket_name, Key=s3_key, Body=response.content, ContentType="application/pdf"
-            )
+            self.client.put_object(Bucket=self.bucket_name, Key=s3_key, Body=response.content)
             self.logger.info(f"Successfully uploaded to S3: {s3_key}")
 
             return True

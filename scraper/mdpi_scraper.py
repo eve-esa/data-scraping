@@ -1,14 +1,14 @@
+import os
 from typing import List, Type
 from pydantic import BaseModel
 
 from scraper.base_iterative_publisher_scraper import (
-    IterativePublisherScrapeOutput,
     BaseIterativePublisherScraper,
     IterativePublisherScrapeJournalOutput,
     IterativePublisherScrapeVolumeOutput,
     IterativePublisherScrapeIssueOutput,
+    BaseIterativePublisherConfig,
 )
-from scraper.base_scraper import BaseConfigScraper
 from utils import get_scraped_url
 
 
@@ -21,7 +21,7 @@ class MDPIJournal(BaseModel):
     end_issue: int | None = 30
 
 
-class MDPIConfig(BaseConfigScraper):
+class MDPIConfig(BaseIterativePublisherConfig):
     journals: List[MDPIJournal]
 
 
@@ -44,23 +44,17 @@ class MDPIScraper(BaseIterativePublisherScraper):
     def base_url(self) -> str:
         return "https://www.mdpi.com"
 
-    def scrape(self, model: MDPIConfig) -> IterativePublisherScrapeOutput | None:
+    def journal_identifier(self, model: MDPIJournal) -> str:
         """
-        Scrape the MDPI journals for PDF links.
+        Return the journal identifier.
 
         Args:
-            model (MDPIConfig): The configuration model.
+            model (MDPIJournal): The configuration model.
 
         Returns:
-            IterativePublisherScrapeOutput | None: A dictionary containing the PDF links, or None if no link was found.
+            str: The journal identifier
         """
-        links = {}
-
-        for journal in model.journals:
-            if scraped_tags := self._scrape_journal(journal):
-                links[journal.name] = scraped_tags
-
-        return links if links else None
+        return model.name
 
     def _scrape_journal(self, journal: MDPIJournal) -> IterativePublisherScrapeJournalOutput:
         """
@@ -123,7 +117,7 @@ class MDPIScraper(BaseIterativePublisherScraper):
         Returns:
             IterativePublisherScrapeIssueOutput | None: A list of PDF links found in the issue, or None is something went wrong.
         """
-        issue_url = f"{journal_url}/{volume_num}/{issue_num}"
+        issue_url = os.path.join(journal_url, str(volume_num), str(issue_num))
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
         try:
