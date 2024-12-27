@@ -481,5 +481,16 @@
                 "pagination_url": "https://www.ncbi.nlm.nih.gov/pmc/?term=\"Remote+Sensing\"&EntrezSystem2.PEntrez.PMC.Pmc_PageController.PreviousPageName=results&EntrezSystem2.PEntrez.PMC.Pmc_ResultsPanel.Pmc_DisplayBar.PageSize=100&EntrezSystem2.PEntrez.PMC.Pmc_ResultsPanel.Entrez_Pager.CurrPage={page_number}&EntrezSystem2.PEntrez.DbConnector.LastQueryKey={source_number}&EntrezSystem2.PEntrez.DbConnector.Cmd=PageChanged"
             }
         ]
+    },
+    "CambridgeUniversityPressScraper": {
+        "bucket_key": "cambridge_university_press",
+        "sources": [
+            {
+                "landing_page_url": "https://www.cambridge.org/core/journals/journal-of-glaciology/all-issues"
+            },
+            {
+                "landing_page_url": "https://www.cambridge.org/core/journals/environmental-data-science/all-issues"
+            }
+        ]
     }
 }

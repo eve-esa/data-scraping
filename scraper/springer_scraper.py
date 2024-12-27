@@ -42,7 +42,6 @@ class SpringerScraper(BaseUrlPublisherScraper):
             except Exception as e:
                 self._logger.error(f"Failed to process Journal {source.url}. Error: {e}")
                 break
-
         try:
             # For each tag of articles previously collected, scrape the article
             pdf_tag_list = [

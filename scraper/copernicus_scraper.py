@@ -53,7 +53,7 @@ class CopernicusScraper(BaseIterativePublisherScraper):
 
     def scrape(self, model: CopernicusConfig) -> IterativePublisherScrapeOutput | None:
         """
-        Scrape the AMS journals for PDF links.
+        Scrape the Copernicus journals for PDF links.
 
         Args:
             model (CopernicusConfig): The configuration model.
@@ -172,10 +172,12 @@ class CopernicusScraper(BaseIterativePublisherScraper):
             # find all the URLs to the articles where I can grab the PDF links (one per article URL, if lambda returns
             # True, it will be included in the list)
             tags = scraper.find_all("a", class_="article-title", href=lambda href: href and "/articles/" in href)
-            article_urls = [get_scraped_url(tag, journal_url) for tag in tags]
 
-            pdf_links = [self._scrape_article(article_url, journal_url) for article_url in article_urls]
-            pdf_links = [link for link in pdf_links if link]
+            pdf_links = [
+                pdf_link
+                for pdf_link in map(lambda tag: self._scrape_article(get_scraped_url(tag, journal_url), journal_url), tags)
+                if pdf_link
+            ]
 
             self._logger.info(f"PDF links found: {len(pdf_links)}")
             return pdf_links
