@@ -7,9 +7,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
-from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
 from abc import ABC, abstractmethod
 import time
@@ -27,17 +25,18 @@ class BaseScraper(ABC):
     def __init__(self) -> None:
         chrome_options = Options()
 
-        chrome_options.add_argument("--disable-blink-features=AutomationControlled")
-        chrome_options.add_argument("--disable-infobars")
+        # Basic configuration
         chrome_options.add_argument("--start-maximized")
-        chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        chrome_options.add_experimental_option("useAutomationExtension", False)
-
-        chrome_options.add_argument(f"user-agent={random.choice(USER_AGENT_LIST)}")  # Randomly select a user agent
+        chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+        chrome_options.add_argument(f"user-agent={random.choice(USER_AGENT_LIST)}")
         chrome_options.add_argument("--headless")  # Run in headless mode (no browser UI)
+
+        # Performance options
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
+
+        # TODO should these be kept?
         chrome_options.add_argument("--disable-popup-blocking")
         chrome_options.add_argument("--disable-notifications")
         chrome_options.add_argument("--disable-extensions")
@@ -49,18 +48,42 @@ class BaseScraper(ABC):
         chrome_options.add_argument("--disable-offline-load-stale-cache")
         chrome_options.add_argument("--disk-cache-size=0")
 
-        # Create a new Chrome browser instance
+        # Disable automation flags
+        chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        chrome_options.add_experimental_option("useAutomationExtension", False)
+
+        # Create WebDriver instance
         self._driver = webdriver.Chrome(
-            service=Service(ChromeDriverManager().install()), options=chrome_options
+            service=Service(ChromeDriverManager().install()),
+            options=chrome_options
         )
 
+        # Mask Selenium's presence
         self._driver.execute_cdp_cmd(
             "Page.addScriptToEvaluateOnNewDocument",
             {
                 "source": """
                     Object.defineProperty(navigator, 'webdriver', {
                         get: () => undefined
-                    })
+                    });
+
+                    // Override the default fetch behavior
+                    const originalFetch = window.fetch;
+                    window.fetch = async (...args) => {
+                        const response = await originalFetch(...args);
+                        return response;
+                    };
+
+                    // Override XHR
+                    const originalXHR = window.XMLHttpRequest;
+                    window.XMLHttpRequest = function() {
+                        const xhr = new originalXHR();
+                        const originalOpen = xhr.open;
+                        xhr.open = function() {
+                            originalOpen.apply(xhr, arguments);
+                        };
+                        return xhr;
+                    };
                 """
             },
         )
@@ -136,32 +159,18 @@ class BaseScraper(ABC):
             self._rotate_user_agent()
 
         self._driver.get(url)
-        time.sleep(5)  # Give the page time to load
+        # Wait for initial page load
+        WebDriverWait(self._driver, 20).until(
+            lambda d: d.execute_script("return document.readyState") == "complete"
+        )
 
         # Handle cookie popup only once, for the first request
         if not self._cookie_handled and self.cookie_selector:
-            # Handle the cookie popup by interacting with the 'Accept All' button using JavaScript.
             try:
-                # Wait for the page to fully load
-                WebDriverWait(self._driver, 15).until(
-                    lambda d: d.execute_script("return document.readyState") == "complete"
+                cookie_button = WebDriverWait(self._driver, 10).until(
+                    EC.element_to_be_clickable((By.CSS_SELECTOR, self.cookie_selector))
                 )
-                self._logger.info(
-                    "Page fully loaded. Attempting to locate the 'Accept All' button using JavaScript."
-                )
-
-                # Execute JavaScript to find and click the "Accept All" button
-                self._driver.execute_script(
-                    f"""
-                        let acceptButton = document.querySelector("{self.cookie_selector}");
-                        if (acceptButton) {{
-                            acceptButton.click();
-                        }}
-                    """
-                )
-                self._logger.info(
-                    "'Accept All' button clicked successfully using JavaScript."
-                )
+                self._driver.execute_script("arguments[0].click();", cookie_button)
                 self._cookie_handled = True
             except Exception as e:
                 self._logger.error(
@@ -184,7 +193,7 @@ class BaseScraper(ABC):
                 break
             last_height = new_height
 
-        # Get the fully rendered HTML and pass it to BeautifulSoup
+        # Get the fully rendered HTML
         return self._driver.page_source
 
     def _scrape_url_by_bs4(self, url: str, pause_time: int = 2) -> BeautifulSoup:
@@ -200,26 +209,6 @@ class BaseScraper(ABC):
         """
         html = self._scrape_url_by_selenium(url, pause_time)
         return BeautifulSoup(html, "html.parser")
-
-    def _wait_and_get_elements(self, selector: str, by: str = By.CLASS_NAME) -> List[WebElement]:
-        """
-        Wait for the elements to be present in the page and return them.
-
-        Args:
-            selector (str): The selector to find the elements.
-            by (str): The method to find the elements. Default is By.CLASS_NAME.
-
-        Returns:
-            List: The list of elements
-        """
-        try:
-            WebDriverWait(self._driver, 10).until(
-                EC.presence_of_all_elements_located((by, selector))
-            )
-            return self._driver.find_elements(by, selector)
-        except TimeoutException:
-            self._logger.warning(f"Timeout waiting for elements with selector: {selector}")
-            return []
 
     def _upload_to_s3(self, sources_links: List[str], model: BaseConfigScraper) -> bool:
         """

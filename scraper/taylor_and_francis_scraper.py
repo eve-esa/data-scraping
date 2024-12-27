@@ -1,6 +1,9 @@
-from typing import List
 import time
+from typing import List
 from bs4 import Tag, ResultSet, BeautifulSoup
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper, BaseUrlPublisherSource, SourceType
 from utils import get_scraped_url
@@ -9,7 +12,7 @@ from utils import get_scraped_url
 class TaylorAndFrancisSectionScraper(BaseUrlPublisherScraper):
     @property
     def cookie_selector(self) -> str:
-        return "button.onetrust-accept-btn-handler"
+        return "[id='onetrust-accept-btn-handler']"
 
     @property
     def base_url(self) -> str:
@@ -103,15 +106,19 @@ class TaylorAndFrancisJournalScraper(TaylorAndFrancisSectionScraper):
         try:
             self._scrape_url_by_selenium(source.url)
 
+            volume_buttons = WebDriverWait(self._driver, 15).until(
+                EC.presence_of_all_elements_located((By.CSS_SELECTOR, "button.volume_link"))
+            )
+
             # Click on all the buttons by means of Selenium
-            volume_buttons = self._wait_and_get_elements("volume_link")
             for button in volume_buttons:
-                try:
-                    button.click()
-                    time.sleep(0.1)  # Keep a delay for being safe
-                except Exception as e:
-                    self._logger.warning(f"Failed to click button: {e}")
-                    continue
+                self._driver.execute_script("""
+                    arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});
+                    arguments[0].click();
+                """, button)
+
+                # Wait for dynamic content to load
+                time.sleep(0.1)  # Keep a delay for being safe
 
             # Now that all the clicks are completed, we can get the updated source
             scraper = BeautifulSoup(self._driver.page_source, "html.parser")
