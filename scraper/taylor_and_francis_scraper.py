@@ -1,9 +1,5 @@
-import time
 from typing import List
 from bs4 import Tag, ResultSet, BeautifulSoup
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
 
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper, BaseUrlPublisherSource, SourceType
 from utils import get_scraped_url
@@ -106,19 +102,17 @@ class TaylorAndFrancisJournalScraper(TaylorAndFrancisSectionScraper):
         try:
             self._scrape_url_by_selenium(source.url)
 
-            volume_buttons = WebDriverWait(self._driver, 15).until(
-                EC.presence_of_all_elements_located((By.CSS_SELECTOR, "button.volume_link"))
-            )
-
-            # Click on all the buttons by means of Selenium
-            for button in volume_buttons:
-                self._driver.execute_script("""
-                    arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});
-                    arguments[0].click();
-                """, button)
-
-                # Wait for dynamic content to load
-                time.sleep(0.1)  # Keep a delay for being safe
+            # Click all the volume links to load all the issues
+            self._driver.execute_script("""
+                async function clickButtons() {
+                    const buttons = document.querySelectorAll('button.volume_link');
+                    for (const button of buttons) {
+                        button.click();
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                }
+                return clickButtons();
+            """)
 
             # Now that all the clicks are completed, we can get the updated source
             scraper = BeautifulSoup(self._driver.page_source, "html.parser")

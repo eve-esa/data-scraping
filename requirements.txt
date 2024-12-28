@@ -3,4 +3,5 @@ boto3
 pydantic
 PyYAML==6.0.2
 selenium==4.27.1
+undetected-chromedriver
 webdriver-manager==4.0.2

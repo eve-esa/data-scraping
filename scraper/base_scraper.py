@@ -1,19 +1,16 @@
+import undetected_chromedriver as uc
 import random
 from typing import List, Type, Any
 from bs4 import BeautifulSoup
 from pydantic import BaseModel
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
 from abc import ABC, abstractmethod
 import time
 import logging
 
-from constants import OUTPUT_FOLDER, USER_AGENT_LIST, ROTATE_USER_AGENT_EVERY
+from constants import OUTPUT_FOLDER, USER_AGENT_LIST, ROTATE_USER_AGENT_EVERY, SECONDS_TO_SLEEP
 from storage import S3Storage
 
 
@@ -23,7 +20,7 @@ class BaseConfigScraper(ABC, BaseModel):
 
 class BaseScraper(ABC):
     def __init__(self) -> None:
-        chrome_options = Options()
+        chrome_options = uc.ChromeOptions()
 
         # Basic configuration
         chrome_options.add_argument("--start-maximized")
@@ -36,57 +33,13 @@ class BaseScraper(ABC):
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
 
-        # TODO should these be kept?
-        chrome_options.add_argument("--disable-popup-blocking")
-        chrome_options.add_argument("--disable-notifications")
-        chrome_options.add_argument("--disable-extensions")
-        chrome_options.add_argument("--disable-background-networking")
+        # Cookies and security
+        chrome_options.add_argument("--enable-cookies")
+        chrome_options.add_argument("--disable-web-security")
         chrome_options.add_argument("--ignore-certificate-errors")
-        chrome_options.add_argument("--incognito")
-        chrome_options.add_argument("--disable-cache")
-        chrome_options.add_argument("--disable-application-cache")
-        chrome_options.add_argument("--disable-offline-load-stale-cache")
-        chrome_options.add_argument("--disk-cache-size=0")
-
-        # Disable automation flags
-        chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        chrome_options.add_experimental_option("useAutomationExtension", False)
 
         # Create WebDriver instance
-        self._driver = webdriver.Chrome(
-            service=Service(ChromeDriverManager().install()),
-            options=chrome_options
-        )
-
-        # Mask Selenium's presence
-        self._driver.execute_cdp_cmd(
-            "Page.addScriptToEvaluateOnNewDocument",
-            {
-                "source": """
-                    Object.defineProperty(navigator, 'webdriver', {
-                        get: () => undefined
-                    });
-
-                    // Override the default fetch behavior
-                    const originalFetch = window.fetch;
-                    window.fetch = async (...args) => {
-                        const response = await originalFetch(...args);
-                        return response;
-                    };
-
-                    // Override XHR
-                    const originalXHR = window.XMLHttpRequest;
-                    window.XMLHttpRequest = function() {
-                        const xhr = new originalXHR();
-                        const originalOpen = xhr.open;
-                        xhr.open = function() {
-                            originalOpen.apply(xhr, arguments);
-                        };
-                        return xhr;
-                    };
-                """
-            },
-        )
+        self._driver = uc.Chrome(options=chrome_options)
 
         self._logger = logging.getLogger(self.__class__.__name__)
         self._cookie_handled = False
@@ -121,29 +74,6 @@ class BaseScraper(ABC):
 
         self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")
 
-    def _rotate_user_agent(self) -> None:
-        self._driver.execute_cdp_cmd(
-            "Page.addScriptToEvaluateOnNewDocument",
-            {
-                "source": """
-                    Object.defineProperty(navigator, 'webdriver', {
-                        get: () => undefined
-                    })
-                """
-            },
-        )
-        self._driver.execute_cdp_cmd(
-            "Network.enable",
-            {}
-        )
-
-        self._driver.execute_cdp_cmd(
-            "Network.setUserAgentOverride",
-            {
-                "userAgent": f"{random.choice(USER_AGENT_LIST)}",
-            }
-        )
-
     def _scrape_url_by_selenium(self, url: str, pause_time: int = 2) -> str:
         """
         Scrape the URL using Selenium.
@@ -154,9 +84,13 @@ class BaseScraper(ABC):
         Returns:
             str: the fully rendered HTML of the URL.
         """
+        self._driver.get("about:blank")
+
         self._num_requests += 1
         if self._num_requests % ROTATE_USER_AGENT_EVERY == 0:
-            self._rotate_user_agent()
+            self._driver.execute_cdp_cmd("Network.setUserAgentOverride", {
+                "userAgent": random.choice(USER_AGENT_LIST)
+            })
 
         self._driver.get(url)
         # Wait for initial page load
@@ -167,7 +101,7 @@ class BaseScraper(ABC):
         # Handle cookie popup only once, for the first request
         if not self._cookie_handled and self.cookie_selector:
             try:
-                cookie_button = WebDriverWait(self._driver, 10).until(
+                cookie_button = WebDriverWait(self._driver, 5).until(
                     EC.element_to_be_clickable((By.CSS_SELECTOR, self.cookie_selector))
                 )
                 self._driver.execute_script("arguments[0].click();", cookie_button)
@@ -192,6 +126,9 @@ class BaseScraper(ABC):
             if new_height == last_height:
                 break
             last_height = new_height
+
+        # Sleep for some time to avoid being blocked by the server on the next request
+        time.sleep(SECONDS_TO_SLEEP)
 
         # Get the fully rendered HTML
         return self._driver.page_source
