@@ -13,6 +13,16 @@ class IOPScraper(BaseUrlPublisherScraper):
     def base_url(self) -> str:
         return "https://iopscience.iop.org"
 
+    @property
+    def file_extension(self) -> str:
+        """
+        Return the file extension of the source files.
+
+        Returns:
+            str: The file extension of the source files
+        """
+        return ".pdf"
+
     def _scrape_journal(self, source: BaseUrlPublisherSource) -> ResultSet | List[Tag]:
         """
         Scrape all articles of a journal. This method is called when the journal_url is provided in the config.

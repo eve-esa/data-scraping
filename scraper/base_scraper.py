@@ -209,7 +209,7 @@ class BaseScraper(ABC):
 
         all_done = True
         for link in sources_links:
-            result = self._s3_client.upload(model.bucket_key, link)
+            result = self._s3_client.upload(model.bucket_key, link, self.file_extension)
             if not result:
                 all_done = False
 
@@ -275,5 +275,16 @@ class BaseScraper(ABC):
 
         Returns:
             str: The base URL of the publisher
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def file_extension(self) -> str:
+        """
+        Return the file extension of the source files. This property must be implemented in the derived class.
+
+        Returns:
+            str: The file extension of the source files
         """
         pass

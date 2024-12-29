@@ -32,6 +32,16 @@ class NCBIScraper(BasePaginationPublisherScraper):
     def base_url(self) -> str:
         return "https://www.ncbi.nlm.nih.gov"
 
+    @property
+    def file_extension(self) -> str:
+        """
+        Return the file extension of the source files.
+
+        Returns:
+            str: The file extension of the source files
+        """
+        return ".pdf"
+
     def scrape(self, model: NCBIConfig) -> List[Tag] | None:
         """
         Scrape the NCBI sources for PDF links.

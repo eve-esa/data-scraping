@@ -13,6 +13,16 @@ class SpringerScraper(BaseUrlPublisherScraper):
     def base_url(self) -> str:
         return "https://link.springer.com"
 
+    @property
+    def file_extension(self) -> str:
+        """
+        Return the file extension of the source files.
+
+        Returns:
+            str: The file extension of the source files
+        """
+        return ".pdf"
+
     def _scrape_journal(self, source: BaseUrlPublisherSource) -> List[Tag] | None:
         """
         Scrape all articles of a journal. This method is called when the journal_url is provided in the config.

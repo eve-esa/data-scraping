@@ -40,6 +40,16 @@ class AMSScraper(BaseIterativePublisherScraper):
     def base_url(self) -> str:
         return "https://journals.ametsoc.org"
 
+    @property
+    def file_extension(self) -> str:
+        """
+        Return the file extension of the source files.
+
+        Returns:
+            str: The file extension of the source files
+        """
+        return ".pdf"
+
     def journal_identifier(self, model: AMSJournal) -> str:
         """
         Return the journal identifier.
@@ -68,7 +78,7 @@ class AMSScraper(BaseIterativePublisherScraper):
 
         links = {}
         while True:
-            if not (res := self._scrape_volume(journal.code, volume)):
+            if not (res := self._scrape_volume(journal, volume)):
                 break
 
             links[volume] = res
@@ -76,12 +86,12 @@ class AMSScraper(BaseIterativePublisherScraper):
 
         return links
 
-    def _scrape_volume(self, journal_code: str, volume_num: int) -> IterativePublisherScrapeVolumeOutput:
+    def _scrape_volume(self, journal: AMSJournal, volume_num: int) -> IterativePublisherScrapeVolumeOutput:
         """
         Scrape all issues of a volume.
 
         Args:
-            journal_code (str): The journal code.
+            journal (AMSJournal): The journal to scrape.
             volume_num (int): The volume number.
 
         Returns:
@@ -92,7 +102,7 @@ class AMSScraper(BaseIterativePublisherScraper):
         issue = 1
         links = {}
         while True:
-            if not (res := self._scrape_issue(journal_code, volume_num, issue)):
+            if not (res := self._scrape_issue(journal, volume_num, issue)):
                 break
 
             links[issue] = res
@@ -101,20 +111,20 @@ class AMSScraper(BaseIterativePublisherScraper):
         return links
 
     def _scrape_issue(
-        self, journal_code: str, volume_num: int, issue_num: int
+        self, journal: AMSJournal, volume_num: int, issue_num: int
     ) -> IterativePublisherScrapeIssueOutput | None:
         """
         Scrape the issue URL for PDF links.
 
         Args:
-            journal_code (str): The journal code.
+            journal (AMSJournal): The journal to scrape.
             volume_num (int): The volume number.
             issue_num (int): The issue number.
 
         Returns:
             IterativePublisherScrapeIssueOutput | None: A list of PDF links found in the issue, or None is something went wrong.
         """
-        issue_url = os.path.join(self.base_url, "view/journals", str(journal_code), str(volume_num), str(issue_num), f"{journal_code}.{volume_num}.issue-{issue_num}.xml")
+        issue_url = os.path.join(self.base_url, "view/journals", journal.code, str(volume_num), str(issue_num), f"{journal.code}.{volume_num}.issue-{issue_num}.xml")
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
         try:
@@ -125,7 +135,7 @@ class AMSScraper(BaseIterativePublisherScraper):
             tags = scraper.find_all(
                 "a",
                 class_="c-Button--link",
-                href=lambda href: href and f"/view/journals/{journal_code}/{volume_num}/{issue_num}/" in href
+                href=lambda href: href and f"/view/journals/{journal.code}/{volume_num}/{issue_num}/" in href
             )
 
             pdf_links = [

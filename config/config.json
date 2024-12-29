@@ -293,7 +293,6 @@
                 "end_volume": 30,
                 "start_issue": 1,
                 "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
                 "consecutive_missing_issues_threshold": 3
             },
             {
@@ -303,7 +302,6 @@
                 "end_volume": 30,
                 "start_issue": 1,
                 "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
                 "consecutive_missing_issues_threshold": 3
             },
             {
@@ -313,7 +311,6 @@
                 "end_volume": 30,
                 "start_issue": 1,
                 "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
                 "consecutive_missing_issues_threshold": 3
             },
             {
@@ -323,7 +320,6 @@
                 "end_volume": 30,
                 "start_issue": 1,
                 "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
                 "consecutive_missing_issues_threshold": 3
             },
             {
@@ -333,7 +329,6 @@
                 "end_volume": 30,
                 "start_issue": 1,
                 "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
                 "consecutive_missing_issues_threshold": 3
             },
             {
@@ -343,7 +338,6 @@
                 "end_volume": 30,
                 "start_issue": 1,
                 "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
                 "consecutive_missing_issues_threshold": 3
             },
             {
@@ -353,7 +347,6 @@
                 "end_volume": 30,
                 "start_issue": 1,
                 "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
                 "consecutive_missing_issues_threshold": 3
             },
             {
@@ -363,7 +356,6 @@
                 "end_volume": 30,
                 "start_issue": 1,
                 "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
                 "consecutive_missing_issues_threshold": 3
             },
             {
@@ -373,7 +365,6 @@
                 "end_volume": 30,
                 "start_issue": 1,
                 "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
                 "consecutive_missing_issues_threshold": 3
             },
             {
@@ -383,7 +374,6 @@
                 "end_volume": 30,
                 "start_issue": 1,
                 "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
                 "consecutive_missing_issues_threshold": 3
             },
             {
@@ -393,7 +383,6 @@
                 "end_volume": 30,
                 "start_issue": 1,
                 "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
                 "consecutive_missing_issues_threshold": 3
             },
             {
@@ -403,7 +392,6 @@
                 "end_volume": 30,
                 "start_issue": 1,
                 "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
                 "consecutive_missing_issues_threshold": 3
             },
             {
@@ -413,7 +401,6 @@
                 "end_volume": 30,
                 "start_issue": 1,
                 "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
                 "consecutive_missing_issues_threshold": 3
             },
             {
@@ -423,7 +410,6 @@
                 "end_volume": 30,
                 "start_issue": 1,
                 "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
                 "consecutive_missing_issues_threshold": 3
             },
             {
@@ -433,7 +419,6 @@
                 "end_volume": 30,
                 "start_issue": 1,
                 "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
                 "consecutive_missing_issues_threshold": 3
             },
             {
@@ -443,7 +428,6 @@
                 "end_volume": 30,
                 "start_issue": 1,
                 "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
                 "consecutive_missing_issues_threshold": 3
             }
         ]

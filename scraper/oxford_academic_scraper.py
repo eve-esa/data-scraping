@@ -1,6 +1,5 @@
 import os
 from typing import List, Type
-from pydantic import BaseModel
 
 from scraper.base_iterative_publisher_scraper import (
     BaseIterativePublisherScraper,
@@ -8,13 +7,12 @@ from scraper.base_iterative_publisher_scraper import (
     IterativePublisherScrapeVolumeOutput,
     IterativePublisherScrapeIssueOutput,
     BaseIterativePublisherConfig,
+    BaseIterativePublisherJournal,
 )
 from utils import get_scraped_url
 
 
-class OxfordAcademicJournal(BaseModel):
-    url: str
-    name: str
+class OxfordAcademicJournal(BaseIterativePublisherJournal):
     code: str
     start_volume: int
     end_volume: int
@@ -45,6 +43,16 @@ class OxfordAcademicScraper(BaseIterativePublisherScraper):
     def base_url(self) -> str:
         return "https://academic.oup.com"
 
+    @property
+    def file_extension(self) -> str:
+        """
+        Return the file extension of the source files.
+
+        Returns:
+            str: The file extension of the source files
+        """
+        return ".pdf"
+
     def journal_identifier(self, model: OxfordAcademicJournal) -> str:
         """
         Return the journal identifier.
@@ -62,63 +70,43 @@ class OxfordAcademicScraper(BaseIterativePublisherScraper):
         Scrape all volumes of a journal.
 
         Args:
-            journal (CopernicusJournal): The journal to scrape.
+            journal (OxfordAcademicJournal): The journal to scrape.
 
         Returns:
             IterativePublisherScrapeJournalOutput: A dictionary containing the PDF links.
         """
         self._logger.info(f"Processing Journal {journal.name}")
+        return self._build_journal_links(journal)
 
-        start_volume = journal.start_volume
-        end_volume = journal.end_volume
-
-        start_issue = journal.start_issue
-        end_issue = journal.end_issue
-
-        journal_code = journal.code
-
-        return {
-            volume_num: self._scrape_volume(journal_code, start_issue, end_issue, volume_num)
-            for volume_num in range(start_volume, end_volume + 1)
-        }
-
-    def _scrape_volume(
-        self, journal_code: str, start_issue: int, end_issue: int, volume_num: int,
-    ) -> IterativePublisherScrapeVolumeOutput:
+    def _scrape_volume(self, journal: OxfordAcademicJournal, volume_num: int) -> IterativePublisherScrapeVolumeOutput:
         """
         Scrape all issues of a volume.
 
         Args:
-            journal_code (str): The journal code.
-            start_issue (int): The starting issue number.
-            end_issue (int): The ending issue number.
+            journal (OxfordAcademicJournal): The journal to scrape.
             volume_num (int): The volume number.
 
         Returns:
             IterativePublisherScrapeVolumeOutput: A dictionary containing the PDF links.
         """
         self._logger.info(f"Processing Volume {volume_num}")
-        return {
-            issue_num: scrape_issue_result
-            for issue_num in range(start_issue, end_issue + 1)
-            if (scrape_issue_result := self._scrape_issue(journal_code, volume_num, issue_num))
-        }
+        return self._build_volume_links(journal, volume_num)
 
     def _scrape_issue(
-        self, journal_code: str, volume_num: int, issue_num: int
+        self, journal: OxfordAcademicJournal, volume_num: int, issue_num: int
     ) -> IterativePublisherScrapeIssueOutput | None:
         """
         Scrape the issue URL for PDF links.
 
         Args:
-            journal_code (str): The journal code.
+            journal (OxfordAcademicJournal): The journal to scrape.
             volume_num (int): The volume number.
             issue_num (int): The issue number.
 
         Returns:
             IterativePublisherScrapeIssueOutput | None: A list of PDF links found in the issue, or None is something went wrong.
         """
-        issue_url = os.path.join(self.base_url, journal_code, "issue", str(volume_num), str(issue_num))
+        issue_url = os.path.join(self.base_url, journal.code, "issue", str(volume_num), str(issue_num))
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
         try:

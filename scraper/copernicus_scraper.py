@@ -1,38 +1,22 @@
 import os
 from typing import List, Type
-from pydantic import BaseModel
 
 from scraper.base_iterative_publisher_scraper import (
-    BaseIterativePublisherScraper,
+    BaseIterativeWithConstraintPublisherScraper,
     IterativePublisherScrapeJournalOutput,
     IterativePublisherScrapeVolumeOutput,
     IterativePublisherScrapeIssueOutput,
     BaseIterativePublisherConfig,
+    BaseIterativeWithConstraintPublisherJournal,
 )
 from utils import get_scraped_url
 
 
-class CopernicusJournal(BaseModel):
-    url: str
-    name: str
-    start_volume: int | None = 1
-    end_volume: int | None = 30
-    start_issue: int | None = 1
-    end_issue: int | None = 30
-    consecutive_missing_volumes_threshold: int | None = 3
-    consecutive_missing_issues_threshold: int | None = 3
-
-
 class CopernicusConfig(BaseIterativePublisherConfig):
-    journals: List[CopernicusJournal]
+    journals: List[BaseIterativeWithConstraintPublisherJournal]
 
 
-class CopernicusScraper(BaseIterativePublisherScraper):
-    def __init__(self):
-        super().__init__()
-
-        self.__all_issues_missing = 0  # Track if all issues are missing for the volume
-
+class CopernicusScraper(BaseIterativeWithConstraintPublisherScraper):
     @property
     def config_model_type(self) -> Type[CopernicusConfig]:
         """
@@ -51,113 +35,74 @@ class CopernicusScraper(BaseIterativePublisherScraper):
     def base_url(self) -> str:
         return ""
 
-    def journal_identifier(self, model: CopernicusJournal) -> str:
+    @property
+    def file_extension(self) -> str:
+        """
+        Return the file extension of the source files.
+
+        Returns:
+            str: The file extension of the source files
+        """
+        return ".pdf"
+
+    def journal_identifier(self, model: BaseIterativeWithConstraintPublisherJournal) -> str:
         """
         Return the journal identifier.
 
         Args:
-            model (CopernicusJournal): The configuration model.
+            model (BaseIterativeWithConstraintPublisherJournal): The configuration model.
 
         Returns:
             str: The journal identifier
         """
         return model.name
 
-    def _scrape_journal(self, journal: CopernicusJournal) -> IterativePublisherScrapeJournalOutput:
+    def _scrape_journal(
+        self, journal: BaseIterativeWithConstraintPublisherJournal
+    ) -> IterativePublisherScrapeJournalOutput:
         """
         Scrape all volumes of a journal.
 
         Args:
-            journal (CopernicusJournal): The journal to scrape.
+            journal (BaseIterativeWithConstraintPublisherJournal): The journal to scrape.
 
         Returns:
             IterativePublisherScrapeJournalOutput: A dictionary containing the PDF links.
         """
         self._logger.info(f"Processing Journal {journal.name}")
-
-        start_volume = journal.start_volume
-        end_volume = journal.end_volume
-
-        start_issue = journal.start_issue
-        end_issue = journal.end_issue
-
-        journal_url = journal.url
-
-        consecutive_missing_issues_threshold = journal.consecutive_missing_issues_threshold
-
-        links = {}
-        for volume_num in range(start_volume, end_volume + 1):
-            self.__all_issues_missing = 0
-
-            res = self._scrape_volume(
-                journal_url, start_issue, end_issue, volume_num, consecutive_missing_issues_threshold
-            )
-
-            if self.__all_issues_missing == end_issue - start_issue + 1:
-                self._logger.warning(f"No issues found for Volume {volume_num}. Moving to next journal.")
-                break  # Exit loop and move to the next journal
-
-            links[volume_num] = res
-
-        return links
+        return self._build_journal_links(journal)
 
     def _scrape_volume(
-        self,
-        journal_url: str,
-        start_issue: int,
-        end_issue: int,
-        volume_num: int,
-        consecutive_missing_issues_threshold: int,
+        self, journal: BaseIterativeWithConstraintPublisherJournal, volume_num: int
     ) -> IterativePublisherScrapeVolumeOutput:
         """
         Scrape all issues of a volume.
 
         Args:
-            journal_url (str): The URL of the journal.
-            start_issue (int): The starting issue number.
-            end_issue (int): The ending issue number.
+            journal (BaseIterativeWithConstraintPublisherJournal): The journal to scrape.
             volume_num (int): The volume number.
-            consecutive_missing_issues_threshold (int): The number of consecutive missing issues to allow before moving to the next volume.
 
         Returns:
             IterativePublisherScrapeVolumeOutput: A dictionary containing the PDF links.
         """
         self._logger.info(f"Processing Volume {volume_num}")
-
-        missing_issue_count = 0  # Track consecutive missing issues
-        links = {}
-
-        # Iterate over each issue in the specified range
-        for issue_num in range(start_issue, end_issue + 1):
-            res = self._scrape_issue(journal_url, volume_num, issue_num)
-            if res:
-                missing_issue_count = 0
-                links[issue_num] = res
-            else:
-                missing_issue_count += 1
-                self.__all_issues_missing += 1
-
-            if missing_issue_count >= consecutive_missing_issues_threshold:
-                self._logger.warning(f"Consecutive missing issues for Volume {volume_num}. Moving to the next volume.")
-                break  # Exit loop and move to the next volume
-
-        return links
+        return self._build_volume_links(journal, volume_num)
 
     def _scrape_issue(
-        self, journal_url: str, volume_num: int, issue_num: int
+        self, journal: BaseIterativeWithConstraintPublisherJournal, volume_num: int, issue_num: int
     ) -> IterativePublisherScrapeIssueOutput | None:
         """
         Scrape the issue URL for PDF links.
 
         Args:
-            journal_url (str): The journal code.
+            journal (BaseIterativeWithConstraintPublisherJournal): The journal to scrape.
             volume_num (int): The volume number.
             issue_num (int): The issue number.
 
         Returns:
             IterativePublisherScrapeIssueOutput | None: A list of PDF links found in the issue, or None is something went wrong.
         """
-        issue_url = os.path.join(journal_url, "articles", str(volume_num), f"issue{issue_num}.html")
+        issue_url = os.path.join(journal.url, "articles", str(volume_num), f"issue{issue_num}.html")
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
         try:
@@ -169,7 +114,7 @@ class CopernicusScraper(BaseIterativePublisherScraper):
 
             pdf_links = [
                 pdf_link
-                for pdf_link in map(lambda tag: self._scrape_article(get_scraped_url(tag, journal_url), journal_url), tags)
+                for pdf_link in map(lambda tag: self._scrape_article(get_scraped_url(tag, journal.url), journal.url), tags)
                 if pdf_link
             ]
 

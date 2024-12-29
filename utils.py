@@ -128,12 +128,13 @@ def get_scraped_url(tag: Tag, base_url: str) -> str:
     return tag.get("href") if tag.get("href").startswith("http") else base_url + tag.get("href")
 
 
-def get_pdf_name(pdf_url: str) -> str:
+def get_pdf_name(pdf_url: str, file_extension: str) -> str:
     """
     Get the PDF name from the URL.
 
     Args:
         pdf_url (str): The URL of the PDF.
+        file_extension (str): The type of the file.
 
     Returns:
         str: The name of the PDF.
@@ -141,9 +142,9 @@ def get_pdf_name(pdf_url: str) -> str:
     parsed = urlparse(pdf_url)
 
     path = parsed.path.lstrip("/")
-    # if the `path` contains `.pdf`, return the last part of the URL
-    if ".pdf" in path:
+    # if the `path` contains the file extension, return the last part of the URL
+    if file_extension in path:
         return path.split("/")[-1]
 
-    # otherwise, replace `/` with `_` and add `.pdf`
-    return path.replace("/", "_") + ".pdf"
+    # otherwise, replace `/` with `_` and add the file extension
+    return path.replace("/", "_") + file_extension

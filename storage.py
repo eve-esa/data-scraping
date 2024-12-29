@@ -57,11 +57,11 @@ class S3Storage:
             location = {"LocationConstraint": region}
             self.client.create_bucket(Bucket=self.bucket_name, CreateBucketConfiguration=location)
 
-    def upload(self, root_key: str, source_url: str, referer_url: str | None = None) -> bool:
+    def upload(self, root_key: str, source_url: str, file_extension: str, referer_url: str | None = None) -> bool:
         from utils import get_pdf_name
 
         referer_url = referer_url if referer_url is not None else "https://www.google.com"
-        s3_key = os.path.join(root_key, get_pdf_name(source_url))  # Construct S3 key
+        s3_key = os.path.join(root_key, get_pdf_name(source_url, file_extension))  # Construct S3 key
 
         self.logger.info(f"Uploading Source: {source_url} to {s3_key}")
 
