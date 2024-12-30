@@ -7,24 +7,6 @@ from utils import get_scraped_url
 
 
 class FrontiersScraper(BaseUrlPublisherScraper):
-    @property
-    def cookie_selector(self) -> str:
-        return "[id='onetrust-accept-btn-handler']"
-
-    @property
-    def base_url(self) -> str:
-        return "https://www.frontiersin.org/"
-
-    @property
-    def file_extension(self) -> str:
-        """
-        Return the file extension of the source files.
-
-        Returns:
-            str: The file extension of the source files
-        """
-        return ".pdf"
-
     def _scrape_journal(self, source: BaseUrlPublisherSource) -> ResultSet | List[Tag] | None:
         """
         Scrape all articles of a journal.

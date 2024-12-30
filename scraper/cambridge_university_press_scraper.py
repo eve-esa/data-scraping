@@ -17,24 +17,6 @@ class CambridgeUniversityPressScraper(BasePaginationPublisherScraper):
         """
         return CambridgeUniversityPressConfig
 
-    @property
-    def cookie_selector(self) -> str:
-        return "a.cookie-close"
-
-    @property
-    def base_url(self) -> str:
-        return "https://www.cambridge.org"
-
-    @property
-    def file_extension(self) -> str:
-        """
-        Return the file extension of the source files.
-
-        Returns:
-            str: The file extension of the source files
-        """
-        return ".pdf"
-
     def scrape(self, model: CambridgeUniversityPressConfig) -> List[Tag] | None:
         """
         Scrape the Cambridge University Press sources for PDF links.

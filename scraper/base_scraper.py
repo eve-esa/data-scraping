@@ -40,11 +40,13 @@ class BaseScraper(ABC):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._cookie_handled = False
         self._num_requests = 0
+        self._config_model = None
 
         self._s3_client = S3Storage()
 
     def __call__(self, config_model: BaseConfigScraper):
         self._logger.info(f"Running scraper {self.__class__.__name__}")
+        self._config_model = config_model
 
         scraping_results = self.scrape(config_model)
         self._driver.quit()
@@ -53,7 +55,7 @@ class BaseScraper(ABC):
             return
 
         links = self.post_process(scraping_results)
-        all_done = self._upload_to_s3(links, config_model)
+        all_done = self._upload_to_s3(links)
 
         if all_done:
             from utils import write_json_file, is_json_serializable
@@ -71,6 +73,7 @@ class BaseScraper(ABC):
 
         Args:
             url (str): url contains volume and issue number. Eg: https://www.mdpi.com/2072-4292/1/3
+            pause_time (int): time to pause between scrolls
 
         Returns:
             str: the fully rendered HTML of the URL.
@@ -138,13 +141,12 @@ class BaseScraper(ABC):
         html = self._scrape_url_by_selenium(url, pause_time)
         return BeautifulSoup(html, "html.parser")
 
-    def _upload_to_s3(self, sources_links: List[str], model: BaseConfigScraper) -> bool:
+    def _upload_to_s3(self, sources_links: List[str]) -> bool:
         """
         Upload the source files to S3.
 
         Args:
             sources_links (List[str]): The list of links of the various sources.
-            model (BaseUrlPublisherConfig): The configuration model.
 
         Returns:
             bool: True if the upload was successful, False otherwise.
@@ -153,7 +155,7 @@ class BaseScraper(ABC):
 
         all_done = True
         for link in sources_links:
-            result = self._s3_client.upload(model.bucket_key, link, self.file_extension)
+            result = self._s3_client.upload(self._config_model.bucket_key, link, self.file_extension)
             if not result:
                 all_done = False
 
@@ -161,6 +163,36 @@ class BaseScraper(ABC):
             time.sleep(random.uniform(2, 5))  # random between 2 and 5 seconds
 
         return all_done
+
+    @property
+    def cookie_selector(self) -> str:
+        """
+        Return the CSS selector for the cookie popup. This property must be implemented in the derived class.
+
+        Returns:
+            str: The CSS selector for the cookie popup.
+        """
+        return self._config_model.cookie_selector
+
+    @property
+    def base_url(self) -> str:
+        """
+        Return the base URL of the publisher. This property must be implemented in the derived class.
+
+        Returns:
+            str: The base URL of the publisher
+        """
+        return self._config_model.base_url
+
+    @property
+    def file_extension(self) -> str:
+        """
+        Return the file extension of the source files. This property must be implemented in the derived class.
+
+        Returns:
+            str: The file extension of the source files
+        """
+        return self._config_model.file_extension
 
     @abstractmethod
     def scrape(self, model: BaseConfigScraper) -> Any | None:
@@ -197,38 +229,5 @@ class BaseScraper(ABC):
 
         Returns:
             Type[BaseConfigScraper]: The configuration model type
-        """
-        pass
-
-    @property
-    @abstractmethod
-    def cookie_selector(self) -> str:
-        """
-        Return the CSS selector for the cookie popup. This property must be implemented in the derived class.
-
-        Returns:
-            str: The CSS selector for the cookie popup.
-        """
-        pass
-
-    @property
-    @abstractmethod
-    def base_url(self) -> str:
-        """
-        Return the base URL of the publisher. This property must be implemented in the derived class.
-
-        Returns:
-            str: The base URL of the publisher
-        """
-        pass
-
-    @property
-    @abstractmethod
-    def file_extension(self) -> str:
-        """
-        Return the file extension of the source files. This property must be implemented in the derived class.
-
-        Returns:
-            str: The file extension of the source files
         """
         pass

@@ -12,7 +12,6 @@ from scraper.base_iterative_publisher_scraper import BaseIterativeWithConstraint
 from utils import get_scraped_url
 
 
-
 class CopernicusScraper(BaseIterativeWithConstraintPublisherScraper):
     @property
     def config_model_type(self) -> Type[CopernicusConfig]:
@@ -23,24 +22,6 @@ class CopernicusScraper(BaseIterativeWithConstraintPublisherScraper):
             Type[CopernicusConfig]: The configuration model type
         """
         return CopernicusConfig
-
-    @property
-    def cookie_selector(self) -> str:
-        return ""
-
-    @property
-    def base_url(self) -> str:
-        return ""
-
-    @property
-    def file_extension(self) -> str:
-        """
-        Return the file extension of the source files.
-
-        Returns:
-            str: The file extension of the source files
-        """
-        return ".pdf"
 
     def journal_identifier(self, model: BaseIterativeWithConstraintPublisherJournal) -> str:
         """

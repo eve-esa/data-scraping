@@ -17,24 +17,6 @@ class IEEEScraper(BasePaginationPublisherScraper):
         """
         return IEEEConfig
 
-    @property
-    def cookie_selector(self) -> str:
-        return "button.osano-cm-accept-all"
-
-    @property
-    def base_url(self) -> str:
-        return "https://ieeexplore.ieee.org"
-
-    @property
-    def file_extension(self) -> str:
-        """
-        Return the file extension of the source files.
-
-        Returns:
-            str: The file extension of the source files
-        """
-        return ".pdf"
-
     def scrape(self, model: IEEEConfig) -> List[Tag] | None:
         """
         Scrape the IEEE sources for PDF links.

@@ -5,24 +5,6 @@ from scraper.base_url_publisher_scraper import BaseUrlPublisherSource, BaseUrlPu
 
 
 class IOPScraper(BaseUrlPublisherScraper):
-    @property
-    def cookie_selector(self) -> str:
-        return "body > div.cky-consent-container.cky-classic-bottom > div.cky-consent-bar > div > div > div.cky-notice-btn-wrapper > button.cky-btn.cky-btn-accept"
-
-    @property
-    def base_url(self) -> str:
-        return "https://iopscience.iop.org"
-
-    @property
-    def file_extension(self) -> str:
-        """
-        Return the file extension of the source files.
-
-        Returns:
-            str: The file extension of the source files
-        """
-        return ".pdf"
-
     def _scrape_journal(self, source: BaseUrlPublisherSource) -> ResultSet | List[Tag] | None:
         """
         Scrape all articles of a journal.

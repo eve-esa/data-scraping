@@ -65,15 +65,20 @@ Then, you can run the ETL pipeline as described in the previous section.
 ## HowTo: add a new Scraper
 In order to add a new scraper, the following steps are required:
 1. Create a new file in the `scraper` folder with the name of the scraper. E.g.: `new_editor_scraper.py`
-2. If you need to add Pydantic model(s), please create a Python file in the `model` folder. E.g.: `new_editor_models.py`
+2. If you need to add custom Pydantic model(s), please create a Python file in the `model` folder. E.g.: `new_editor_models.py`
 3. Implement a new Pydantic model, representing the configuration of the new scraper, in the Python file previously
 created (point 2.) by extending the `BaseConfigScraper` class. If you need enumerators, please extend `Enum` from the `base_enum` module.
 4. Implement a new class in the file created at the 1st step. The class must inherit from the `BaseScraper` class and
 implement the due methods / properties:
    - `config_model_type`: a `@property` returning the Pydantic model of the configuration of the scraper
    - `cookie_selector`: a `@property` returning the CSS selector of the cookie banner to be clicked, if any, or an empty string if the website does not have a cookie banner
-   - `base_url`: a `@property` returning the base URL of the website to be scraped
    - `file_extension`: a `@property` returning the expected extension of the files to be downloaded / uploaded to the storage
    - `scrape`: a method that scrapes the website and returns the data
    - `post_process`: a method that post-processes the data scraped and returns a list of strings representing the URLs of the files to be downloaded / uploaded to the storage
-5. Enrich the `config/config.json` file with the JSON-formatted configuration of the new scraper.
+5. Enrich the `config/config.json` file with the JSON-formatted configuration of the new scraper. Please, pay attention
+that the key of the JSON object must be the name of the scraper and the value must be the Pydantic model of the configuration. Specifically, the JSON object must contain the following
+keys:
+   - `bucket_key`: the key of the bucket where the data will be stored
+   - `base_url`: the key returning the base URL of the website to be scraped (optional)
+   - `cookie_selector`: the key containing the CSS selector of the cookie banner to be clicked, if any, or an empty string if the website does not have a cookie banner (optional)
+   - `file_extension`: the key returning the expected extension of the files to be downloaded / uploaded to the storage (optional, default ".pdf")

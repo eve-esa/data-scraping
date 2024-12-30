@@ -6,24 +6,6 @@ from utils import get_scraped_url
 
 
 class SpringerScraper(BaseUrlPublisherScraper):
-    @property
-    def cookie_selector(self) -> str:
-        return "button.cc-banner__button-accept"
-
-    @property
-    def base_url(self) -> str:
-        return "https://link.springer.com"
-
-    @property
-    def file_extension(self) -> str:
-        """
-        Return the file extension of the source files.
-
-        Returns:
-            str: The file extension of the source files
-        """
-        return ".pdf"
-
     def _scrape_journal(self, source: BaseUrlPublisherSource) -> List[Tag] | None:
         """
         Scrape all articles of a journal.

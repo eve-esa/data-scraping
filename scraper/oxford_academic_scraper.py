@@ -22,24 +22,6 @@ class OxfordAcademicScraper(BaseIterativePublisherScraper):
         """
         return OxfordAcademicConfig
 
-    @property
-    def cookie_selector(self) -> str:
-        return "[id='accept-button']"
-
-    @property
-    def base_url(self) -> str:
-        return "https://academic.oup.com"
-
-    @property
-    def file_extension(self) -> str:
-        """
-        Return the file extension of the source files.
-
-        Returns:
-            str: The file extension of the source files
-        """
-        return ".pdf"
-
     def journal_identifier(self, model: OxfordAcademicJournal) -> str:
         """
         Return the journal identifier.

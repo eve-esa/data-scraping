@@ -6,24 +6,6 @@ from utils import get_scraped_url
 
 
 class TaylorAndFrancisSectionScraper(BaseUrlPublisherScraper):
-    @property
-    def cookie_selector(self) -> str:
-        return "[id='onetrust-accept-btn-handler']"
-
-    @property
-    def base_url(self) -> str:
-        return "https://www.tandfonline.com"
-
-    @property
-    def file_extension(self) -> str:
-        """
-        Return the file extension of the source files.
-
-        Returns:
-            str: The file extension of the source files
-        """
-        return ".pdf"
-
     def _scrape_journal(self, source: BaseUrlPublisherSource) -> ResultSet | List[Tag] | None:
         """
         Scrape all articles of a journal.
@@ -134,9 +116,9 @@ class TaylorAndFrancisJournalScraper(TaylorAndFrancisSectionScraper):
             pdf_tag_list = []
             for tag in issues_tag_list:
                 pdf_tag_list.extend(
-                    self._scrape_issue_or_collection(
-                        BaseUrlPublisherSource(url=get_scraped_url(tag, self.base_url), type=str(SourceType.ISSUE_OR_COLLECTION))
-                    )
+                    self._scrape_issue_or_collection(BaseUrlPublisherSource(
+                        url=get_scraped_url(tag, self.base_url), type=str(SourceType.ISSUE_OR_COLLECTION)
+                    ))
                 )
             self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
 

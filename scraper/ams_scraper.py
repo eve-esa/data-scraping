@@ -22,24 +22,6 @@ class AMSScraper(BaseIterativePublisherScraper):
         """
         return AMSConfig
 
-    @property
-    def cookie_selector(self) -> str:
-        return ""
-
-    @property
-    def base_url(self) -> str:
-        return "https://journals.ametsoc.org"
-
-    @property
-    def file_extension(self) -> str:
-        """
-        Return the file extension of the source files.
-
-        Returns:
-            str: The file extension of the source files
-        """
-        return ".pdf"
-
     def journal_identifier(self, model: AMSJournal) -> str:
         """
         Return the journal identifier.

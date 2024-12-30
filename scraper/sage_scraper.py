@@ -17,24 +17,6 @@ class SageScraper(BasePaginationPublisherScraper):
         """
         return SageConfig
 
-    @property
-    def cookie_selector(self) -> str:
-        return "div.qc-cmp2-summary-buttons > button.css-1pdnrb0"
-
-    @property
-    def base_url(self) -> str:
-        return "https://journals.sagepub.com"
-
-    @property
-    def file_extension(self) -> str:
-        """
-        Return the file extension of the source files.
-
-        Returns:
-            str: The file extension of the source files
-        """
-        return ".pdf"
-
     def scrape(self, model: SageConfig) -> List[Tag] | None:
         """
         Scrape the Sage sources for PDF links.

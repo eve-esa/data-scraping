@@ -22,24 +22,6 @@ class MDPIScraper(BaseIterativePublisherScraper):
         """
         return MDPIConfig
 
-    @property
-    def cookie_selector(self) -> str:
-        return ""
-
-    @property
-    def base_url(self) -> str:
-        return "https://www.mdpi.com"
-
-    @property
-    def file_extension(self) -> str:
-        """
-        Return the file extension of the source files.
-
-        Returns:
-            str: The file extension of the source files
-        """
-        return ".pdf"
-
     def journal_identifier(self, model: MDPIJournal) -> str:
         """
         Return the journal identifier.

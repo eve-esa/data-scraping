@@ -8,10 +8,6 @@ from scraper.base_scraper import BaseScraper
 
 class SeosScraper(BaseScraper):
     @property
-    def cookie_selector(self) -> str:
-        return ""
-
-    @property
     def config_model_type(self) -> Type[SeosConfig]:
         """
         Return the configuration model type.
@@ -20,20 +16,6 @@ class SeosScraper(BaseScraper):
             Type[SeosConfig]: The configuration model type
         """
         return SeosConfig
-
-    @property
-    def base_url(self) -> str:
-        return "https://seos-project.eu"
-
-    @property
-    def file_extension(self) -> str:
-        """
-        Return the file extension of the source files.
-
-        Returns:
-            str: The file extension of the source files
-        """
-        return ".html"
 
     def scrape(self, model: SeosConfig) -> Dict[str, List[Tag]] | None:
         """
