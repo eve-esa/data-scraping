@@ -76,7 +76,7 @@ class IEEEScraper(BasePaginationPublisherScraper):
         self._logger.info(f"Processing Landing Page {landing_page_url}")
 
         try:
-            scraper = self._scrape_url(landing_page_url)
+            scraper = self._scrape_url_by_bs4(landing_page_url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             return scraper.find_all("a", href=lambda href: href and "/tocresult" in href and "punumber=" in href)
@@ -95,7 +95,7 @@ class IEEEScraper(BasePaginationPublisherScraper):
             ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
         """
         try:
-            scraper = self._scrape_url(url)
+            scraper = self._scrape_url_by_bs4(url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             pdf_tag_list = scraper.find_all(
