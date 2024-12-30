@@ -1,23 +1,14 @@
 import os
-from typing import List, Type
+from typing import Type
 
-from scraper.base_iterative_publisher_scraper import (
-    BaseIterativePublisherScraper,
+from model.base_iterative_publisher_models import (
     IterativePublisherScrapeJournalOutput,
     IterativePublisherScrapeVolumeOutput,
     IterativePublisherScrapeIssueOutput,
-    BaseIterativePublisherConfig,
-    BaseIterativePublisherJournal,
 )
+from model.mdpi_models import MDPIConfig, MDPIJournal
+from scraper.base_iterative_publisher_scraper import BaseIterativePublisherScraper
 from utils import get_scraped_url
-
-
-class MDPIJournal(BaseIterativePublisherJournal):
-    end_volume: int | None = 16
-
-
-class MDPIConfig(BaseIterativePublisherConfig):
-    journals: List[MDPIJournal]
 
 
 class MDPIScraper(BaseIterativePublisherScraper):

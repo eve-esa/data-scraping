@@ -1,13 +1,9 @@
 from typing import List, Type
 from bs4 import Tag, ResultSet
 
-from scraper.base_pagination_publisher_scraper import BasePaginationPublisherSource, BasePaginationPublisherScraper
-from scraper.base_scraper import BaseConfigScraper
+from model.ieee_models import IEEEConfig
+from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
 from utils import get_scraped_url
-
-
-class IEEEConfig(BaseConfigScraper):
-    sources: List[BasePaginationPublisherSource]
 
 
 class IEEEScraper(BasePaginationPublisherScraper):

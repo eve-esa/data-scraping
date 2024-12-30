@@ -531,5 +531,14 @@
                 "type": "journal"
             }
         ]
+    },
+    "FrontiersScraper": {
+        "bucket_key": "frontiers",
+        "sources": [
+            {
+                "url": "https://www.frontiersin.org/journals/remote-sensing/articles?sort=3",
+                "type": "issue_or_collection"
+            }
+        ]
     }
 }

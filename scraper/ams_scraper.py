@@ -1,24 +1,14 @@
 import os
-from typing import List, Type
-from pydantic import BaseModel
+from typing import Type
 
-from scraper.base_iterative_publisher_scraper import (
-    BaseIterativePublisherScraper,
+from model.ams_models import AMSConfig, AMSJournal
+from model.base_iterative_publisher_models import (
     IterativePublisherScrapeJournalOutput,
     IterativePublisherScrapeVolumeOutput,
     IterativePublisherScrapeIssueOutput,
-    BaseIterativePublisherConfig,
 )
+from scraper.base_iterative_publisher_scraper import BaseIterativePublisherScraper
 from utils import get_scraped_url
-
-
-class AMSJournal(BaseModel):
-    name: str
-    code: str
-
-
-class AMSConfig(BaseIterativePublisherConfig):
-    journals: List[AMSJournal]
 
 
 class AMSScraper(BaseIterativePublisherScraper):

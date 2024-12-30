@@ -47,6 +47,17 @@ def write_json_file(file_path: str, data: Dict | List):
         json.dump(data, file, indent=4)
 
 
+def is_json_serializable(data) -> bool:
+    """
+    Check if an object can be serialized to JSON
+    """
+    try:
+        json.dumps(data)
+        return True
+    except (TypeError, ValueError):
+        return False
+
+
 def discover_scrapers(base_package: str) -> Dict[str, Type[BaseScraper]]:
     """
     Find all scraper classes in the specified package and run them in separate threads.

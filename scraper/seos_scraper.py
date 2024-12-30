@@ -1,18 +1,9 @@
 from typing import List, Type, Dict
 from bs4 import Tag
 import os
-from pydantic import BaseModel
 
-from scraper.base_scraper import BaseConfigScraper, BaseScraper
-
-
-class SeosSource(BaseModel):
-    url: str
-    chapters: int
-
-
-class SeosConfig(BaseConfigScraper):
-    sources: List[SeosSource]
+from model.seos_models import SeosConfig, SeosSource
+from scraper.base_scraper import BaseScraper
 
 
 class SeosScraper(BaseScraper):

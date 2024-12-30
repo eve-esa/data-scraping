@@ -1,19 +1,16 @@
 import os
-from typing import List, Type
+from typing import Type
 
-from scraper.base_iterative_publisher_scraper import (
-    BaseIterativeWithConstraintPublisherScraper,
+from model.base_iterative_publisher_models import (
+    BaseIterativeWithConstraintPublisherJournal,
     IterativePublisherScrapeJournalOutput,
     IterativePublisherScrapeVolumeOutput,
     IterativePublisherScrapeIssueOutput,
-    BaseIterativePublisherConfig,
-    BaseIterativeWithConstraintPublisherJournal,
 )
+from model.copernicus_models import CopernicusConfig
+from scraper.base_iterative_publisher_scraper import BaseIterativeWithConstraintPublisherScraper
 from utils import get_scraped_url
 
-
-class CopernicusConfig(BaseIterativePublisherConfig):
-    journals: List[BaseIterativeWithConstraintPublisherJournal]
 
 
 class CopernicusScraper(BaseIterativeWithConstraintPublisherScraper):

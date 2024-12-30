@@ -1,17 +1,19 @@
 from typing import List
-from bs4 import ResultSet, Tag
+from bs4 import Tag, ResultSet
 
-from scraper.base_url_publisher_scraper import BaseUrlPublisherSource, BaseUrlPublisherScraper
+from model.base_url_publisher_models import BaseUrlPublisherSource, SourceType
+from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
+from utils import get_scraped_url
 
 
-class IOPScraper(BaseUrlPublisherScraper):
+class FrontiersScraper(BaseUrlPublisherScraper):
     @property
     def cookie_selector(self) -> str:
-        return "body > div.cky-consent-container.cky-classic-bottom > div.cky-consent-bar > div > div > div.cky-notice-btn-wrapper > button.cky-btn.cky-btn-accept"
+        return "[id='onetrust-accept-btn-handler']"
 
     @property
     def base_url(self) -> str:
-        return "https://iopscience.iop.org"
+        return "https://www.frontiersin.org/"
 
     @property
     def file_extension(self) -> str:
@@ -35,7 +37,7 @@ class IOPScraper(BaseUrlPublisherScraper):
         """
         pass
 
-    def _scrape_issue_or_collection(self, source: BaseUrlPublisherSource) -> ResultSet | None:
+    def _scrape_issue_or_collection(self, source: BaseUrlPublisherSource) -> List[Tag] | None:
         """
         Scrape the issue (or collection) URL for PDF links.
 
@@ -43,7 +45,7 @@ class IOPScraper(BaseUrlPublisherScraper):
             source (BaseUrlPublisherSource): The issue / collection to scrape.
 
         Returns:
-            ResultSet | None: A ResultSet (i.e., list) object containing the tags to the PDF links, or None if no tag was found.
+            List[Tag] | None: A list of Tag objects containing the tags to the PDF links, or None if no tag was found.
         """
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
@@ -51,9 +53,21 @@ class IOPScraper(BaseUrlPublisherScraper):
             scraper = self._scrape_url_by_bs4(source.url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
-            pdf_tag_list = scraper.find_all("a", href=lambda href: href and "/article/" in href and "/pdf" in href)
+            article_tag_list = scraper.find_all(
+                "a", href=lambda href: href and "/articles/" in href and "full" in href, class_="CardArticle__wrapper"
+            )
 
+            # For each tag of articles previously collected, scrape the article
+            pdf_tag_list = [
+                tag for tag in (
+                    self._scrape_article(
+                        BaseUrlPublisherSource(url=get_scraped_url(tag, self.base_url), type=str(SourceType.ARTICLE))
+                    )
+                    for tag in article_tag_list
+                ) if tag
+            ]
             self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
+
             return pdf_tag_list
         except Exception as e:
             self._logger.error(f"Failed to process Issue {source.url}. Error: {e}")
@@ -69,4 +83,13 @@ class IOPScraper(BaseUrlPublisherScraper):
         Returns:
             Tag | None: The tag containing the PDF link found in the article, or None if no tag was found.
         """
-        pass
+        self._logger.info(f"Processing Article {source.url}")
+
+        try:
+            scraper = self._scrape_url_by_bs4(source.url)
+
+            # Find the PDF link using appropriate class or tag (if lambda returns True, it will be included in the list)
+            return scraper.find("a", href=lambda href: href and "/pdf" in href, class_="ActionsDropDown__option")
+        except Exception as e:
+            self._logger.error(f"Failed to process Article {source.url}. Error: {e}")
+            return None

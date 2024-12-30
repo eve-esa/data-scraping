@@ -1,27 +1,14 @@
 import os
-from typing import List, Type
+from typing import Type
 
-from scraper.base_iterative_publisher_scraper import (
-    BaseIterativePublisherScraper,
+from model.base_iterative_publisher_models import (
     IterativePublisherScrapeJournalOutput,
     IterativePublisherScrapeVolumeOutput,
     IterativePublisherScrapeIssueOutput,
-    BaseIterativePublisherConfig,
-    BaseIterativePublisherJournal,
 )
+from model.oxford_academic_models import OxfordAcademicConfig, OxfordAcademicJournal
+from scraper.base_iterative_publisher_scraper import BaseIterativePublisherScraper
 from utils import get_scraped_url
-
-
-class OxfordAcademicJournal(BaseIterativePublisherJournal):
-    code: str
-    start_volume: int
-    end_volume: int
-    start_issue: int
-    end_issue: int
-
-
-class OxfordAcademicConfig(BaseIterativePublisherConfig):
-    journals: List[OxfordAcademicJournal]
 
 
 class OxfordAcademicScraper(BaseIterativePublisherScraper):

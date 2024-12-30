@@ -2,7 +2,6 @@ import undetected_chromedriver as uc
 import random
 from typing import List, Type, Any
 from bs4 import BeautifulSoup
-from pydantic import BaseModel
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -11,11 +10,8 @@ import time
 import logging
 
 from constants import OUTPUT_FOLDER, USER_AGENT_LIST, ROTATE_USER_AGENT_EVERY, SECONDS_TO_SLEEP
+from model.base_models import BaseConfigScraper
 from storage import S3Storage
-
-
-class BaseConfigScraper(ABC, BaseModel):
-    bucket_key: str
 
 
 class BaseScraper(ABC):
@@ -60,16 +56,11 @@ class BaseScraper(ABC):
         all_done = self._upload_to_s3(links, config_model)
 
         if all_done:
-            from utils import write_json_file
+            from utils import write_json_file, is_json_serializable
 
             write_json_file(
                 f"{OUTPUT_FOLDER}/{self.__class__.__name__}.json",
-                (
-                    scraping_results
-                    if isinstance(scraping_results, list)
-                    or isinstance(scraping_results, dict)
-                    else links
-                ),
+                scraping_results if is_json_serializable(scraping_results) else links,
             )
 
         self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")

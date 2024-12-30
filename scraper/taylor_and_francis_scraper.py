@@ -46,7 +46,7 @@ class TaylorAndFrancisSectionScraper(BaseUrlPublisherScraper):
         Returns:
             List[Tag] | None: A list of Tag objects containing the tags to the PDF links, or None if no tag was found.
         """
-        self._logger.info(f"Processing Issue {source.url}")
+        self._logger.info(f"Processing Issue / Collection {source.url}")
 
         try:
             scraper = self._scrape_url_by_bs4(source.url)
@@ -67,7 +67,7 @@ class TaylorAndFrancisSectionScraper(BaseUrlPublisherScraper):
                     for tag in article_tag_list
                 ) if tag
             ]
-            self._logger.info(f"PDF links found: {pdf_tag_list}")
+            self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
 
             return pdf_tag_list
         except Exception as e:
@@ -138,7 +138,7 @@ class TaylorAndFrancisJournalScraper(TaylorAndFrancisSectionScraper):
                         BaseUrlPublisherSource(url=get_scraped_url(tag, self.base_url), type=str(SourceType.ISSUE_OR_COLLECTION))
                     )
                 )
-            self._logger.info(f"PDF links found: {pdf_tag_list}")
+            self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
 
             return pdf_tag_list
         except Exception as e:

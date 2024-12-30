@@ -1,16 +1,8 @@
 from typing import Type, List
 from bs4 import ResultSet, Tag
 
-from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper, BasePaginationPublisherSource
-from scraper.base_scraper import BaseConfigScraper
-
-
-class NCBISource(BasePaginationPublisherSource):
-    pagination_url: str
-
-
-class NCBIConfig(BaseConfigScraper):
-    sources: List[NCBISource]
+from model.ncbi_models import NCBIConfig
+from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
 
 
 class NCBIScraper(BasePaginationPublisherScraper):

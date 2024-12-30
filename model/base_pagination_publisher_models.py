@@ -1,0 +1,12 @@
+from pydantic import BaseModel
+
+
+class BasePaginationPublisherSource(BaseModel):
+    """
+    Configuration model for the base pagination publisher scraper source. The `landing_page_url` is the URL to scrape to
+    get the initial pagination URL.
+
+    Variables:
+        landing_page_url (str): The landing URL to scrape
+    """
+    landing_page_url: str

@@ -63,7 +63,7 @@ class SpringerScraper(BaseUrlPublisherScraper):
                     for tag in article_tag_list
                 ) if tag
             ]
-            self._logger.info(f"PDF links found: {pdf_tag_list}")
+            self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
 
             return pdf_tag_list
         except Exception as e:
@@ -80,7 +80,7 @@ class SpringerScraper(BaseUrlPublisherScraper):
         Returns:
             ResultSet | None: A ResultSet (i.e., list) object containing the tags to the PDF links, or None if no tag was found.
         """
-        self._logger.info(f"Processing Issue {source.url}")
+        self._logger.info(f"Processing Issue / Collection {source.url}")
 
         try:
             scraper = self._scrape_url_by_bs4(source.url)

@@ -1,34 +1,10 @@
 from abc import abstractmethod
 from typing import List, Type
 from bs4 import ResultSet, Tag
-from pydantic import BaseModel, field_validator
 
-from base_enum import Enum
-from scraper.base_scraper import BaseScraper, BaseConfigScraper
+from model.base_url_publisher_models import BaseUrlPublisherConfig, BaseUrlPublisherSource, SourceType
+from scraper.base_scraper import BaseScraper
 from utils import get_scraped_url
-
-
-class SourceType(Enum):
-    JOURNAL = "journal"
-    ISSUE_OR_COLLECTION = "issue_or_collection"
-    ARTICLE = "article"
-
-
-class BaseUrlPublisherSource(BaseModel):
-    url: str
-    type: str
-
-    @field_validator("type")
-    def validate_type(cls, v):
-        if not v:
-            raise ValueError("Type cannot be empty")
-        if v not in SourceType:
-            raise ValueError(f"Invalid type: {v}")
-        return v
-
-
-class BaseUrlPublisherConfig(BaseConfigScraper):
-    sources: List[BaseUrlPublisherSource]
 
 
 class BaseUrlPublisherScraper(BaseScraper):

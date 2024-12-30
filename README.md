@@ -64,10 +64,11 @@ Then, you can run the ETL pipeline as described in the previous section.
 
 ## HowTo: add a new Scraper
 In order to add a new scraper, the following steps are required:
-1. Create a new file in the `scrapers` folder with the name of the scraper. E.g.: `new_editor_scraper.py`
-2. Implement a new Pydantic model, representing the configuration of the new scraper, in the Python file previously
-created by extending the `BaseConfigScraper` class. If you need enumerators, please extend `Enum` from the `base_enum` module.
-3. Implement a new class in the file created at the 1st step. The class must inherit from the `BaseScraper` class and
+1. Create a new file in the `scraper` folder with the name of the scraper. E.g.: `new_editor_scraper.py`
+2. If you need to add Pydantic model(s), please create a Python file in the `model` folder. E.g.: `new_editor_models.py`
+3. Implement a new Pydantic model, representing the configuration of the new scraper, in the Python file previously
+created (point 2.) by extending the `BaseConfigScraper` class. If you need enumerators, please extend `Enum` from the `base_enum` module.
+4. Implement a new class in the file created at the 1st step. The class must inherit from the `BaseScraper` class and
 implement the due methods / properties:
    - `config_model_type`: a `@property` returning the Pydantic model of the configuration of the scraper
    - `cookie_selector`: a `@property` returning the CSS selector of the cookie banner to be clicked, if any, or an empty string if the website does not have a cookie banner
@@ -75,4 +76,4 @@ implement the due methods / properties:
    - `file_extension`: a `@property` returning the expected extension of the files to be downloaded / uploaded to the storage
    - `scrape`: a method that scrapes the website and returns the data
    - `post_process`: a method that post-processes the data scraped and returns a list of strings representing the URLs of the files to be downloaded / uploaded to the storage
-4. Enrich the `config/config.json` file with the JSON-formatted configuration of the new scraper.
+5. Enrich the `config/config.json` file with the JSON-formatted configuration of the new scraper.
