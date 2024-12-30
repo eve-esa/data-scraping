@@ -540,5 +540,13 @@
                 "type": "issue_or_collection"
             }
         ]
+    },
+    "SageScraper": {
+        "bucket_key": "sage",
+        "sources": [
+            {
+                "landing_page_url": "https://journals.sagepub.com/action/doSearch?AllField=%22remote+sensing%22&startPage={page_number}&rel=&access=18&pageSize=500"
+            }
+        ]
     }
 }

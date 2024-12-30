@@ -7,17 +7,19 @@ from utils import get_scraped_url
 
 
 class BasePaginationPublisherScraper(BaseScraper):
-    def _scrape_pagination(self, base_url: str, source_number: int) -> List[Tag]:
+    def _scrape_pagination(self, base_url: str, source_number: int, starting_page_number: int | None = 1) -> List[Tag]:
         """
         Scrape the pagination URL for PDF links.
 
         Args:
             base_url (str): The base URL to scrape.
+            source_number (int): The source number.
+            starting_page_number (int | None): The starting page number. Defaults to 1.
 
         Returns:
             List[Tag]: A list of Tag objects containing the tags to the PDF links.
         """
-        page_number = 1
+        page_number = starting_page_number
 
         pdf_tag_list = []
         while True:
@@ -64,7 +66,7 @@ class BasePaginationPublisherScraper(BaseScraper):
         pass
 
     @abstractmethod
-    def _scrape_page(self, url: str) -> ResultSet | None:
+    def _scrape_page(self, url: str) -> ResultSet | List[Tag] | None:
         """
         Scrape the page. This method must be implemented in the derived class.
 
@@ -72,6 +74,6 @@ class BasePaginationPublisherScraper(BaseScraper):
             url (str): The URL to scrape.
 
         Returns:
-            ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
+            ResultSet | List[Tag] | None: A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF links. If something went wrong, return None.
         """
         pass
