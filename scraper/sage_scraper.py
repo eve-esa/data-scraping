@@ -68,12 +68,16 @@ class SageScraper(BasePaginationPublisherScraper):
             )]
 
             # Now, visit each article link and find the PDF link
-            pdf_tag_list = [tag for article_link in articles_links if (tag := self._scrape_url_by_bs4(article_link).find(
-                "a",
-                id="favourite-download",
-                href=lambda href: href and "/doi/pdf/" in href,
-                class_=lambda class_: class_ and "download" in class_,
-            ))]
+            pdf_tag_list = [
+                Tag(name="a", attrs={"href": tag.get("href", "").replace("?download=true", "")})
+                for article_link in articles_links
+                if (tag := self._scrape_url_by_bs4(article_link).find(
+                    "a",
+                    id="favourite-download",
+                    href=lambda href: href and "/doi/pdf/" in href,
+                    class_=lambda class_: class_ and "download" in class_,
+                ))
+            ]
 
             self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
