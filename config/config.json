@@ -587,6 +587,54 @@
             {
                 "landing_page_url": "https://zslpublications.onlinelibrary.wiley.com/action/doSearch?SeriesKey=20563485&sortBy=Earliest&pageSize=100&startPage={page_number}",
                 "base_url": "https://zslpublications.onlinelibrary.wiley.com"
+            },
+            {
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=2576604x&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+            },
+            {
+                "landing_page_url": "https://onlinelibrary.wiley.com/action/doSearch?SeriesKey=26929430&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "base_url": "https://onlinelibrary.wiley.com"
+            },
+            {
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=23284277&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+            },
+            {
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=23335084&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+            },
+            {
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=15252027&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+            },
+            {
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=24711403&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+            },
+            {
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=19448007&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+            },
+            {
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=19422466&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+            },
+            {
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=26376989&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+            },
+            {
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=15427390&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+            },
+            {
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=19447973&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+            },
+            {
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=29935210&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "base_url": "https://agupubs.onlinelibrary.wiley.com"
             }
         ]
     }
