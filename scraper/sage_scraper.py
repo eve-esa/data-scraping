@@ -57,7 +57,7 @@ class SageScraper(BasePaginationPublisherScraper):
             url (str): The URL to scrape.
 
         Returns:
-            ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
+            List[Tag] | None: A list of Tag objects containing the tags to the PDF links. If something went wrong, return None.
         """
         try:
             scraper = self._scrape_url_by_bs4(url)
