@@ -22,7 +22,7 @@ class BaseScraper(ABC):
         chrome_options.add_argument("--start-maximized")
         chrome_options.add_argument("--disable-blink-features=AutomationControlled")
         chrome_options.add_argument(f"user-agent={random.choice(USER_AGENT_LIST)}")
-        chrome_options.add_argument("--headless")  # Run in headless mode (no browser UI)
+        chrome_options.add_argument("--headless=new")  # Run in headless mode (no browser UI)
 
         # Performance options
         chrome_options.add_argument("--disable-gpu")

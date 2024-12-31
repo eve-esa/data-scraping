@@ -136,8 +136,16 @@ def get_scraped_url(tag: Tag, base_url: str) -> str:
     Returns:
         List[str]: A list of URLs of the articles in the issue.
     """
-    final_url = tag.get("href") if tag.get("href").startswith("http") else os.path.join(base_url, tag.get("href"))
-    return final_url.replace("/./", "/")
+    if tag.get("href").startswith("http"):
+        return tag.get("href")
+
+    # Remove trailing/leading slashes except in http(s)://
+    prefix = base_url.rstrip("/")
+    if prefix.endswith(":"):
+        prefix += "//"
+
+    # Join with single slash
+    return f"{prefix}/{tag.get('href').lstrip('/')}"
 
 
 def get_pdf_name(pdf_url: str, file_extension: str) -> str:

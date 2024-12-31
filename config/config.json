@@ -517,7 +517,7 @@
             }
         ]
     },
-    "TaylorAndFrancisSectionScraper": {
+    "TaylorAndFrancisScraper": {
         "bucket_key": "taylor_and_francis",
         "base_url": "https://www.tandfonline.com",
         "cookie_selector": "[id='onetrust-accept-btn-handler']",
@@ -525,14 +525,7 @@
             {
                 "url": "https://www.tandfonline.com/journals/tgda21/sections/earth-observations?startPage=0&pageSize=1000",
                 "type": "issue_or_collection"
-            }
-        ]
-    },
-    "TaylorAndFrancisJournalScraper": {
-        "bucket_key": "taylor_and_francis",
-        "base_url": "https://www.tandfonline.com",
-        "cookie_selector": "[id='onetrust-accept-btn-handler']",
-        "sources": [
+            },
             {
                 "url": "https://www.tandfonline.com/loi/tbed20",
                 "type": "journal"
