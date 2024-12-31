@@ -29,7 +29,7 @@ class SageScraper(BasePaginationPublisherScraper):
         """
         pdf_tags = []
         for idx, source in enumerate(model.sources):
-            pdf_tags.extend(self._scrape_landing_page(model.landing_page_url, idx + 1))
+            pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
 
         return pdf_tags if pdf_tags else None
 
