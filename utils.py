@@ -136,7 +136,7 @@ def get_scraped_url(tag: Tag, base_url: str) -> str:
     Returns:
         List[str]: A list of URLs of the articles in the issue.
     """
-    return tag.get("href") if tag.get("href").startswith("http") else base_url + tag.get("href")
+    return tag.get("href") if tag.get("href").startswith("http") else os.path.join(base_url, tag.get("href"))
 
 
 def get_pdf_name(pdf_url: str, file_extension: str) -> str:
