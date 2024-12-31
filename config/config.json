@@ -568,7 +568,7 @@
         "cookie_selector": "div.qc-cmp2-summary-buttons > button.css-1pdnrb0",
         "sources": [
             {
-                "landing_page_url": "https://journals.sagepub.com/action/doSearch?AllField=%22remote+sensing%22&startPage={page_number}&rel=&access=18&pageSize=500"
+                "landing_page_url": "https://journals.sagepub.com/action/doSearch?AllField=\"remote+sensing\"&startPage={page_number}&rel=&access=18&pageSize=500"
             }
         ]
     },
