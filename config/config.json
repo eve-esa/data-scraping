@@ -574,5 +574,20 @@
                 "type": "journal"
             }
         ]
+    },
+    "WileyScraper": {
+        "bucket_key": "wiley",
+        "base_url": "https://onlinelibrary.wiley.com",
+        "cookie_selector": "button.osano-cm-accept-all",
+        "sources": [
+            {
+                "landing_page_url": "https://rmets.onlinelibrary.wiley.com/action/doSearch?SeriesKey=1530261x&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "base_url": "https://rmets.onlinelibrary.wiley.com"
+            },
+            {
+                "landing_page_url": "https://zslpublications.onlinelibrary.wiley.com/action/doSearch?SeriesKey=20563485&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "base_url": "https://zslpublications.onlinelibrary.wiley.com"
+            }
+        ]
     }
 }
