@@ -1,6 +1,7 @@
 beautifulsoup4==4.12.3
-boto3
-pydantic
+boto3==1.35.90
+pydantic==2.10.4
 PyYAML==6.0.2
 selenium==4.27.1
+undetected-chromedriver==3.5.5
 webdriver-manager==4.0.2

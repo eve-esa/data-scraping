@@ -1,31 +1,17 @@
 from abc import ABC, abstractmethod
-from typing import Dict, List, TypeAlias
+from typing import List
 from pydantic import BaseModel
 
-from scraper.base_scraper import BaseScraper, BaseConfigScraper
-
-
-IterativePublisherScrapeOutput: TypeAlias = Dict[str, Dict[int, Dict[int, List[str]]]]
-IterativePublisherScrapeJournalOutput: TypeAlias = Dict[int, Dict[int, List[str]]]
-IterativePublisherScrapeVolumeOutput: TypeAlias = Dict[int, List[str]]
-IterativePublisherScrapeIssueOutput: TypeAlias = List[str]
-
-
-class BaseIterativePublisherJournal(BaseModel):
-    url: str
-    name: str
-    start_volume: int | None = 1
-    end_volume: int | None = 30
-    start_issue: int | None = 1
-    end_issue: int | None = 30
-
-
-class BaseIterativeWithConstraintPublisherJournal(BaseIterativePublisherJournal):
-    consecutive_missing_issues_threshold: int | None = 3
-
-
-class BaseIterativePublisherConfig(BaseConfigScraper):
-    journals: List[BaseIterativePublisherJournal]
+from model.base_iterative_publisher_models import (
+    BaseIterativePublisherConfig,
+    BaseIterativePublisherJournal,
+    BaseIterativeWithConstraintPublisherJournal,
+    IterativePublisherScrapeJournalOutput,
+    IterativePublisherScrapeVolumeOutput,
+    IterativePublisherScrapeIssueOutput,
+    IterativePublisherScrapeOutput,
+)
+from scraper.base_scraper import BaseScraper
 
 
 class BaseIterativePublisherScraper(BaseScraper):
@@ -83,7 +69,7 @@ class BaseIterativePublisherScraper(BaseScraper):
     @abstractmethod
     def _scrape_journal(self, journal: BaseIterativePublisherJournal) -> IterativePublisherScrapeJournalOutput:
         """
-        Scrape all volumes of a journal.
+        Scrape all volumes of a journal. This method must be implemented in the derived class.
 
         Args:
             journal (BaseIterativePublisherJournal): The journal to scrape.
@@ -96,7 +82,7 @@ class BaseIterativePublisherScraper(BaseScraper):
     @abstractmethod
     def _scrape_volume(self, journal: BaseIterativePublisherJournal, volume_num: int) -> IterativePublisherScrapeVolumeOutput:
         """
-        Scrape all issues of a volume.
+        Scrape all issues of a volume. This method must be implemented in the derived class.
 
         Args:
             journal (BaseIterativePublisherJournal): The journal to scrape.
@@ -112,7 +98,7 @@ class BaseIterativePublisherScraper(BaseScraper):
         self, journal: BaseIterativePublisherJournal, volume_num: int, issue_num: int
     ) -> IterativePublisherScrapeIssueOutput | None:
         """
-        Scrape the issue URL for PDF links.
+        Scrape the issue URL for PDF links. This method must be implemented in the derived class.
 
         Args:
             journal (BaseIterativePublisherJournal): The journal to scrape.
@@ -127,7 +113,7 @@ class BaseIterativePublisherScraper(BaseScraper):
     @abstractmethod
     def _scrape_article(self, *args, **kwargs) -> str | None:
         """
-        Scrape a single article.
+        Scrape a single article. This method must be implemented in the derived class.
 
         Returns:
             str | None: The string containing the PDF link.
@@ -137,7 +123,7 @@ class BaseIterativePublisherScraper(BaseScraper):
     @abstractmethod
     def journal_identifier(self, model: BaseModel) -> str:
         """
-        Return the journal identifier.
+        Return the journal identifier. This method must be implemented in the derived class.
 
         Args:
             model (BaseModel): The configuration model.

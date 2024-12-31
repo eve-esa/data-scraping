@@ -1,35 +1,25 @@
 from abc import abstractmethod
 from typing import List
 from bs4 import ResultSet, Tag
-from pydantic import BaseModel
 
 from scraper.base_scraper import BaseScraper
 from utils import get_scraped_url
 
 
-class BasePaginationPublisherSource(BaseModel):
-    """
-    Configuration model for the base pagination publisher scraper source. The `landing_page_url` is the URL to scrape to
-    get the initial pagination URL.
-
-    Variables:
-        landing_page_url (str): The landing URL to scrape
-    """
-    landing_page_url: str
-
-
 class BasePaginationPublisherScraper(BaseScraper):
-    def _scrape_pagination(self, base_url: str, source_number: int) -> List[Tag]:
+    def _scrape_pagination(self, base_url: str, source_number: int, starting_page_number: int | None = 1) -> List[Tag]:
         """
         Scrape the pagination URL for PDF links.
 
         Args:
             base_url (str): The base URL to scrape.
+            source_number (int): The source number.
+            starting_page_number (int | None): The starting page number. Defaults to 1.
 
         Returns:
             List[Tag]: A list of Tag objects containing the tags to the PDF links.
         """
-        page_number = 1
+        page_number = starting_page_number
 
         pdf_tag_list = []
         while True:
@@ -64,7 +54,7 @@ class BasePaginationPublisherScraper(BaseScraper):
     @abstractmethod
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> List[Tag] | None:
         """
-        Scrape the landing page.
+        Scrape the landing page. This method must be implemented in the derived class.
 
         Args:
             landing_page_url (str): The landing page URL.
@@ -76,14 +66,14 @@ class BasePaginationPublisherScraper(BaseScraper):
         pass
 
     @abstractmethod
-    def _scrape_page(self, url: str) -> ResultSet | None:
+    def _scrape_page(self, url: str) -> ResultSet | List[Tag] | None:
         """
-        Scrape the page.
+        Scrape the page. This method must be implemented in the derived class.
 
         Args:
             url (str): The URL to scrape.
 
         Returns:
-            ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
+            ResultSet | List[Tag] | None: A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF links. If something went wrong, return None.
         """
         pass

@@ -1,83 +1,86 @@
 {
     "IOPScraper": {
         "bucket_key": "iopscience",
+        "base_url": "https://iopscience.iop.org",
+        "cookie_selector": "body > div.cky-consent-container.cky-classic-bottom > div.cky-consent-bar > div > div > div.cky-notice-btn-wrapper > button.cky-btn.cky-btn-accept",
         "sources": [
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/169/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/540/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/18/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/500/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/37/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/17/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/20/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/1/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/57/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/1064/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/34/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/280/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/165/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/1170/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/74/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/1164/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/932/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/13/1",
-                "type": "issue"
+                "type": "issue_or_collection"
             }
         ]
     },
     "MDPIScraper": {
         "bucket_key": "mdpi",
+        "base_url": "https://www.mdpi.com",
         "journals": [
             {
                 "url": "https://www.mdpi.com/2072-4292",
@@ -187,6 +190,8 @@
     },
     "SpringerScraper": {
         "bucket_key": "springer",
+        "cookie_selector": "button.cc-banner__button-accept",
+        "base_url": "https://link.springer.com",
         "sources": [
             {
                 "url": "https://link.springer.com/journal/44288/articles",
@@ -194,44 +199,45 @@
             },
             {
                 "url": "https://link.springer.com/book/10.1007/978-3-319-65633-5",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://link.springer.com/book/10.1007/978-3-030-33157-3",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://link.springer.com/book/10.1007/978-3-030-90998-7",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://link.springer.com/book/10.1007/978-3-031-15988-6",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://link.springer.com/book/10.1007/978-3-030-80767-2",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://link.springer.com/book/10.1007/978-981-15-8983-6",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://link.springer.com/book/10.1007/978-981-99-9375-8",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://link.springer.com/book/10.1007/978-981-10-3713-9",
-                "type": "issue"
+                "type": "issue_or_collection"
             },
             {
                 "url": "https://link.springer.com/book/10.1007/978-3-642-25643-1",
-                "type": "issue"
+                "type": "issue_or_collection"
             }
         ]
     },
     "AMSScraper": {
         "bucket_key": "ams",
+        "base_url": "https://journals.ametsoc.org",
         "journals": [
             {
                 "name": "Artificial Intelligence for the Earth Systems",
@@ -434,6 +440,8 @@
     },
     "SeosScraper": {
         "bucket_key": "seos",
+        "base_url": "https://seos-project.eu",
+        "file_extension": ".html",
         "sources": [
             {
                 "url": "https://seos-project.eu/remotesensing/remotesensing-c{chapter}-p02.html",
@@ -455,6 +463,7 @@
     },
     "NCBIScraper": {
         "bucket_key": "ncbi",
+        "base_url": "https://www.ncbi.nlm.nih.gov",
         "sources": [
             {
                 "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/?term=\"earth+observation\"",
@@ -468,6 +477,8 @@
     },
     "CambridgeUniversityPressScraper": {
         "bucket_key": "cambridge_university_press",
+        "base_url": "https://www.cambridge.org",
+        "cookie_selector": "a.cookie-close",
         "sources": [
             {
                 "landing_page_url": "https://www.cambridge.org/core/journals/journal-of-glaciology/all-issues"
@@ -479,6 +490,8 @@
     },
     "OxfordAcademicScraper": {
         "bucket_key": "oxford_academic",
+        "base_url": "https://academic.oup.com",
+        "cookie_selector": "[id='accept-button']",
         "journals": [
             {
                 "url": "https://academic.oup.com/oocc",
@@ -493,12 +506,79 @@
     },
     "IEEEScraper": {
         "bucket_key": "ieee",
+        "base_url": "https://ieeexplore.ieee.org",
+        "cookie_selector": "button.osano-cm-accept-all",
         "sources": [
             {
                 "landing_page_url": "https://ieeexplore.ieee.org/xpl/issues?punumber=4609443&isnumber=10766875"
             },
             {
                 "landing_page_url": "https://ieeexplore.ieee.org/xpl/issues?punumber=6287639&isnumber=10380310"
+            }
+        ]
+    },
+    "TaylorAndFrancisSectionScraper": {
+        "bucket_key": "taylor_and_francis",
+        "base_url": "https://www.tandfonline.com",
+        "cookie_selector": "[id='onetrust-accept-btn-handler']",
+        "sources": [
+            {
+                "url": "https://www.tandfonline.com/journals/tgda21/sections/earth-observations?startPage=0&pageSize=1000",
+                "type": "issue_or_collection"
+            }
+        ]
+    },
+    "TaylorAndFrancisJournalScraper": {
+        "bucket_key": "taylor_and_francis",
+        "base_url": "https://www.tandfonline.com",
+        "cookie_selector": "[id='onetrust-accept-btn-handler']",
+        "sources": [
+            {
+                "url": "https://www.tandfonline.com/loi/tbed20",
+                "type": "journal"
+            },
+            {
+                "url": "https://www.tandfonline.com/loi/tejr20",
+                "type": "journal"
+            },
+            {
+                "url": "https://www.tandfonline.com/loi/tres20",
+                "type": "journal"
+            },
+            {
+                "url": "https://www.tandfonline.com/loi/tgei20",
+                "type": "journal"
+            }
+        ]
+    },
+    "FrontiersScraper": {
+        "bucket_key": "frontiers",
+        "base_url": "https://www.frontiersin.org/",
+        "cookie_selector": "[id='onetrust-accept-btn-handler']",
+        "sources": [
+            {
+                "url": "https://www.frontiersin.org/journals/remote-sensing/articles?sort=3",
+                "type": "issue_or_collection"
+            }
+        ]
+    },
+    "SageScraper": {
+        "bucket_key": "sage",
+        "base_url": "https://journals.sagepub.com",
+        "cookie_selector": "div.qc-cmp2-summary-buttons > button.css-1pdnrb0",
+        "sources": [
+            {
+                "landing_page_url": "https://journals.sagepub.com/action/doSearch?AllField=\"remote+sensing\"&startPage={page_number}&rel=&access=18&pageSize=500"
+            }
+        ]
+    },
+    "EOGEScraper": {
+        "bucket_key": "eoge",
+        "base_url": "https://eoge.ut.ac.ir",
+        "sources": [
+            {
+                "url": "https://eoge.ut.ac.ir/",
+                "type": "journal"
             }
         ]
     }

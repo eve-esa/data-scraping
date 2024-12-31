@@ -18,3 +18,4 @@ USER_AGENT_LIST = [
 ]
 
 ROTATE_USER_AGENT_EVERY: Final[int] = 5
+SECONDS_TO_SLEEP: Final[float] = 1.5

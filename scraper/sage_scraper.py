@@ -1,41 +1,35 @@
-from typing import List, Type
-from bs4 import Tag, ResultSet
+from typing import Type, List
+from bs4 import ResultSet, Tag
 
-from model.cambridge_university_press_models import CambridgeUniversityPressConfig
+from model.sage_models import SageConfig
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
 from utils import get_scraped_url
 
 
-class CambridgeUniversityPressScraper(BasePaginationPublisherScraper):
+class SageScraper(BasePaginationPublisherScraper):
     @property
-    def config_model_type(self) -> Type[CambridgeUniversityPressConfig]:
+    def config_model_type(self) -> Type[SageConfig]:
         """
         Return the configuration model type.
 
         Returns:
-            Type[CambridgeUniversityPressConfig]: The configuration model type
+            Type[SageConfig]: The configuration model type
         """
-        return CambridgeUniversityPressConfig
+        return SageConfig
 
-    def scrape(self, model: CambridgeUniversityPressConfig) -> List[Tag] | None:
+    def scrape(self, model: SageConfig) -> List[Tag] | None:
         """
-        Scrape the Cambridge University Press sources for PDF links.
+        Scrape the Sage sources for PDF links.
 
         Args:
-            model (CambridgeUniversityPressConfig): The configuration model.
+            model (SageConfig): The configuration model.
 
         Returns:
             List[Tag] | None: A list of Tag objects containing the tags to the PDF links. If no tag was found, return None.
         """
-        pdf_tags = [
-            pdf_tag
-            for idx, source in enumerate(model.sources)
-            for tag in self._scrape_landing_page(source.landing_page_url, idx + 1)
-            for pdf_tag in self._scrape_pagination(
-                f"{get_scraped_url(tag, self.base_url)}?pageNum={{page_number}}",
-                idx + 1
-            )
-        ]
+        pdf_tags = []
+        for idx, source in enumerate(model.sources):
+            pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
 
         return pdf_tags if pdf_tags else None
 
@@ -53,16 +47,9 @@ class CambridgeUniversityPressScraper(BasePaginationPublisherScraper):
         """
         self._logger.info(f"Processing Landing Page {landing_page_url}")
 
-        try:
-            scraper = self._scrape_url_by_bs4(landing_page_url)
+        return self._scrape_pagination(landing_page_url, source_number, starting_page_number=0)
 
-            # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
-            return scraper.find_all("a", href=lambda href: href and "/core/" in href and "/issue/" in href, class_="row")
-        except Exception as e:
-            self._logger.error(f"Failed to process URL {landing_page_url}. Error: {e}")
-            return []
-
-    def _scrape_page(self, url: str) -> ResultSet | None:
+    def _scrape_page(self, url: str) -> List[Tag] | None:
         """
         Scrape the PubMed page of the collection from pagination for PDF links.
 
@@ -75,8 +62,22 @@ class CambridgeUniversityPressScraper(BasePaginationPublisherScraper):
         try:
             scraper = self._scrape_url_by_bs4(url)
 
-            # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
-            pdf_tag_list = scraper.find_all("a", href=lambda href: href and ".pdf" in href)
+            # Find all article links in the pagination URL, using the appropriate class or tag (if lambda returns True, it will be included in the list)
+            articles_links = [get_scraped_url(tag, self.base_url) for tag in scraper.find_all(
+                "a", href=lambda href: href and "/doi/reader" in href, data_id="srp-article-button",
+            )]
+
+            # Now, visit each article link and find the PDF link
+            pdf_tag_list = [
+                Tag(name="a", attrs={"href": tag.get("href", "").replace("?download=true", "")})
+                for article_link in articles_links
+                if (tag := self._scrape_url_by_bs4(article_link).find(
+                    "a",
+                    id="favourite-download",
+                    href=lambda href: href and "/doi/pdf/" in href,
+                    class_=lambda class_: class_ and "download" in class_,
+                ))
+            ]
 
             self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list

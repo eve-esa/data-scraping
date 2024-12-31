@@ -1,27 +1,14 @@
 import os
-from typing import List, Type
+from typing import Type
 
-from scraper.base_iterative_publisher_scraper import (
-    BaseIterativePublisherScraper,
+from model.base_iterative_publisher_models import (
     IterativePublisherScrapeJournalOutput,
     IterativePublisherScrapeVolumeOutput,
     IterativePublisherScrapeIssueOutput,
-    BaseIterativePublisherConfig,
-    BaseIterativePublisherJournal,
 )
+from model.oxford_academic_models import OxfordAcademicConfig, OxfordAcademicJournal
+from scraper.base_iterative_publisher_scraper import BaseIterativePublisherScraper
 from utils import get_scraped_url
-
-
-class OxfordAcademicJournal(BaseIterativePublisherJournal):
-    code: str
-    start_volume: int
-    end_volume: int
-    start_issue: int
-    end_issue: int
-
-
-class OxfordAcademicConfig(BaseIterativePublisherConfig):
-    journals: List[OxfordAcademicJournal]
 
 
 class OxfordAcademicScraper(BaseIterativePublisherScraper):
@@ -34,24 +21,6 @@ class OxfordAcademicScraper(BaseIterativePublisherScraper):
             Type[OxfordAcademicConfig]: The configuration model type
         """
         return OxfordAcademicConfig
-
-    @property
-    def cookie_selector(self) -> str:
-        return "[id='accept-button']"
-
-    @property
-    def base_url(self) -> str:
-        return "https://academic.oup.com"
-
-    @property
-    def file_extension(self) -> str:
-        """
-        Return the file extension of the source files.
-
-        Returns:
-            str: The file extension of the source files
-        """
-        return ".pdf"
 
     def journal_identifier(self, model: OxfordAcademicJournal) -> str:
         """
@@ -110,7 +79,7 @@ class OxfordAcademicScraper(BaseIterativePublisherScraper):
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
         try:
-            scraper = self._scrape_url(issue_url)
+            scraper = self._scrape_url_by_bs4(issue_url)
 
             # find all the URLs to the articles where I can grab the PDF links (one per article URL, if lambda returns
             # True, it will be included in the list)
@@ -142,7 +111,7 @@ class OxfordAcademicScraper(BaseIterativePublisherScraper):
         self._logger.info(f"Processing Article URL: {article_url}")
 
         try:
-            scraper = self._scrape_url(article_url)
+            scraper = self._scrape_url_by_bs4(article_url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             pdf_tag = scraper.find("a", href=lambda href: href and ".pdf" in href, class_="al-link pdf article-pdfLink")

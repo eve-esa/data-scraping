@@ -1,24 +1,14 @@
 import os
-from typing import List, Type
-from pydantic import BaseModel
+from typing import Type
 
-from scraper.base_iterative_publisher_scraper import (
-    BaseIterativePublisherScraper,
+from model.ams_models import AMSConfig, AMSJournal
+from model.base_iterative_publisher_models import (
     IterativePublisherScrapeJournalOutput,
     IterativePublisherScrapeVolumeOutput,
     IterativePublisherScrapeIssueOutput,
-    BaseIterativePublisherConfig,
 )
+from scraper.base_iterative_publisher_scraper import BaseIterativePublisherScraper
 from utils import get_scraped_url
-
-
-class AMSJournal(BaseModel):
-    name: str
-    code: str
-
-
-class AMSConfig(BaseIterativePublisherConfig):
-    journals: List[AMSJournal]
 
 
 class AMSScraper(BaseIterativePublisherScraper):
@@ -31,24 +21,6 @@ class AMSScraper(BaseIterativePublisherScraper):
             Type[AMSConfig]: The configuration model type
         """
         return AMSConfig
-
-    @property
-    def cookie_selector(self) -> str:
-        return ""
-
-    @property
-    def base_url(self) -> str:
-        return "https://journals.ametsoc.org"
-
-    @property
-    def file_extension(self) -> str:
-        """
-        Return the file extension of the source files.
-
-        Returns:
-            str: The file extension of the source files
-        """
-        return ".pdf"
 
     def journal_identifier(self, model: AMSJournal) -> str:
         """
@@ -128,7 +100,7 @@ class AMSScraper(BaseIterativePublisherScraper):
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
         try:
-            scraper = self._scrape_url(issue_url)
+            scraper = self._scrape_url_by_bs4(issue_url)
 
             # find all the URLs to the articles where I can grab the PDF links (one per article URL, if lambda returns
             # True, it will be included in the list)
@@ -163,7 +135,7 @@ class AMSScraper(BaseIterativePublisherScraper):
         self._logger.info(f"Processing Article URL: {article_url}")
 
         try:
-            scraper = self._scrape_url(article_url)
+            scraper = self._scrape_url_by_bs4(article_url)
 
             pdf_tag = scraper.find("a", href=True, class_="pdf-download")  # Update 'pdf-download' as needed
             if pdf_tag:

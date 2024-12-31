@@ -1,34 +1,10 @@
 from abc import abstractmethod
 from typing import List, Type
 from bs4 import ResultSet, Tag
-from pydantic import BaseModel, field_validator
 
-from base_enum import Enum
-from scraper.base_scraper import BaseScraper, BaseConfigScraper
+from model.base_url_publisher_models import BaseUrlPublisherConfig, BaseUrlPublisherSource, SourceType
+from scraper.base_scraper import BaseScraper
 from utils import get_scraped_url
-
-
-class SourceType(Enum):
-    ISSUE = "issue"
-    JOURNAL = "journal"
-    ARTICLE = "article"
-
-
-class BaseUrlPublisherSource(BaseModel):
-    url: str
-    type: str
-
-    @field_validator("type")
-    def validate_type(cls, v):
-        if not v:
-            raise ValueError("Type cannot be empty")
-        if v not in SourceType:
-            raise ValueError(f"Invalid type: {v}")
-        return v
-
-
-class BaseUrlPublisherConfig(BaseConfigScraper):
-    sources: List[BaseUrlPublisherSource]
 
 
 class BaseUrlPublisherScraper(BaseScraper):
@@ -54,10 +30,10 @@ class BaseUrlPublisherScraper(BaseScraper):
         """
         pdf_tags = []
         for source in model.sources:
-            if source.type == SourceType.ISSUE:
-                scraped_tags = self._scrape_issue(source)
-            elif source.type == SourceType.JOURNAL:
+            if source.type == SourceType.JOURNAL:
                 scraped_tags = self._scrape_journal(source)
+            elif source.type == SourceType.ISSUE_OR_COLLECTION:
+                scraped_tags = self._scrape_issue_or_collection(source)
             else:
                 scraped_tag = self._scrape_article(source)
                 scraped_tags = [scraped_tag] if scraped_tag is not None else None
@@ -82,36 +58,36 @@ class BaseUrlPublisherScraper(BaseScraper):
     @abstractmethod
     def _scrape_journal(self, source: BaseUrlPublisherSource) -> ResultSet | List[Tag] | None:
         """
-        Scrape all articles of a journal. This method is called when the journal_url is provided in the config.
+        Scrape all articles of a journal. This method must be implemented in the derived class.
 
         Args:
             source (BaseUrlPublisherSource): The journal to scrape.
 
         Returns:
-            ResultSet | List[Tag]: A ResultSet (i.e., a list) or a list of Tag objects containing the PDF links. If no tag was found, return None.
+            ResultSet | List[Tag] | None: A ResultSet (i.e., a list) or a list of Tag objects containing the PDF links. If no tag was found, return None.
         """
         pass
 
     @abstractmethod
-    def _scrape_issue(self, source: BaseUrlPublisherSource) -> ResultSet | None:
+    def _scrape_issue_or_collection(self, source: BaseUrlPublisherSource) -> ResultSet | List[Tag] | None:
         """
-        Scrape the issue URL for PDF links.
+        Scrape the issue (or collection) URL for PDF links. This method must be implemented in the derived class.
 
         Args:
-            source (BaseUrlPublisherSource): The issue to scrape.
+            source (BaseUrlPublisherSource): The issue / collection to scrape.
 
         Returns:
-            ResultSet: A ResultSet (i.e., list) object containing the tags to the PDF links, or None if no tag was found.
+            ResultSet | List[Tag] | None: A ResultSet (i.e., a list) or a list of Tag objects containing the PDF links. If no tag was found, return None.
         """
         pass
 
     @abstractmethod
-    def _scrape_article(self, element: BaseUrlPublisherSource) -> Tag | None:
+    def _scrape_article(self, source: BaseUrlPublisherSource) -> Tag | None:
         """
-        Scrape a single article.
+        Scrape a single article. This method must be implemented in the derived class.
 
         Args:
-            element (BaseUrlPublisherSource): The article to scrape.
+            source (BaseUrlPublisherSource): The article to scrape.
 
         Returns:
             Tag | None: The tag containing the PDF link found in the article, or None if no tag was found.

@@ -1,23 +1,14 @@
 import os
-from typing import List, Type
+from typing import Type
 
-from scraper.base_iterative_publisher_scraper import (
-    BaseIterativePublisherScraper,
+from model.base_iterative_publisher_models import (
     IterativePublisherScrapeJournalOutput,
     IterativePublisherScrapeVolumeOutput,
     IterativePublisherScrapeIssueOutput,
-    BaseIterativePublisherConfig,
-    BaseIterativePublisherJournal,
 )
+from model.mdpi_models import MDPIConfig, MDPIJournal
+from scraper.base_iterative_publisher_scraper import BaseIterativePublisherScraper
 from utils import get_scraped_url
-
-
-class MDPIJournal(BaseIterativePublisherJournal):
-    end_volume: int | None = 16
-
-
-class MDPIConfig(BaseIterativePublisherConfig):
-    journals: List[MDPIJournal]
 
 
 class MDPIScraper(BaseIterativePublisherScraper):
@@ -30,24 +21,6 @@ class MDPIScraper(BaseIterativePublisherScraper):
             Type[MDPIConfig]: The configuration model type
         """
         return MDPIConfig
-
-    @property
-    def cookie_selector(self) -> str:
-        return ""
-
-    @property
-    def base_url(self) -> str:
-        return "https://www.mdpi.com"
-
-    @property
-    def file_extension(self) -> str:
-        """
-        Return the file extension of the source files.
-
-        Returns:
-            str: The file extension of the source files
-        """
-        return ".pdf"
 
     def journal_identifier(self, model: MDPIJournal) -> str:
         """
@@ -106,7 +79,7 @@ class MDPIScraper(BaseIterativePublisherScraper):
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
         try:
-            scraper = self._scrape_url(issue_url)
+            scraper = self._scrape_url_by_bs4(issue_url)
 
             # Get all PDF links using Selenium to scroll and handle cookie popup once
             # Now find all PDF links using the class_="UD_Listings_ArticlePDF"

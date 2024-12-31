@@ -47,6 +47,17 @@ def write_json_file(file_path: str, data: Dict | List):
         json.dump(data, file, indent=4)
 
 
+def is_json_serializable(data) -> bool:
+    """
+    Check if an object can be serialized to JSON
+    """
+    try:
+        json.dumps(data)
+        return True
+    except (TypeError, ValueError):
+        return False
+
+
 def discover_scrapers(base_package: str) -> Dict[str, Type[BaseScraper]]:
     """
     Find all scraper classes in the specified package and run them in separate threads.
@@ -125,7 +136,8 @@ def get_scraped_url(tag: Tag, base_url: str) -> str:
     Returns:
         List[str]: A list of URLs of the articles in the issue.
     """
-    return tag.get("href") if tag.get("href").startswith("http") else base_url + tag.get("href")
+    final_url = tag.get("href") if tag.get("href").startswith("http") else os.path.join(base_url, tag.get("href"))
+    return final_url.replace("/./", "/")
 
 
 def get_pdf_name(pdf_url: str, file_extension: str) -> str:

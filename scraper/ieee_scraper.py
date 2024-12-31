@@ -1,13 +1,9 @@
 from typing import List, Type
 from bs4 import Tag, ResultSet
 
-from scraper.base_pagination_publisher_scraper import BasePaginationPublisherSource, BasePaginationPublisherScraper
-from scraper.base_scraper import BaseConfigScraper
+from model.ieee_models import IEEEConfig
+from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
 from utils import get_scraped_url
-
-
-class IEEEConfig(BaseConfigScraper):
-    sources: List[BasePaginationPublisherSource]
 
 
 class IEEEScraper(BasePaginationPublisherScraper):
@@ -20,24 +16,6 @@ class IEEEScraper(BasePaginationPublisherScraper):
             Type[IEEEConfig]: The configuration model type
         """
         return IEEEConfig
-
-    @property
-    def cookie_selector(self) -> str:
-        return "button.osano-cm-accept-all"
-
-    @property
-    def base_url(self) -> str:
-        return "https://ieeexplore.ieee.org"
-
-    @property
-    def file_extension(self) -> str:
-        """
-        Return the file extension of the source files.
-
-        Returns:
-            str: The file extension of the source files
-        """
-        return ".pdf"
 
     def scrape(self, model: IEEEConfig) -> List[Tag] | None:
         """
@@ -76,7 +54,7 @@ class IEEEScraper(BasePaginationPublisherScraper):
         self._logger.info(f"Processing Landing Page {landing_page_url}")
 
         try:
-            scraper = self._scrape_url(landing_page_url)
+            scraper = self._scrape_url_by_bs4(landing_page_url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             return scraper.find_all("a", href=lambda href: href and "/tocresult" in href and "punumber=" in href)
@@ -95,7 +73,7 @@ class IEEEScraper(BasePaginationPublisherScraper):
             ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
         """
         try:
-            scraper = self._scrape_url(url)
+            scraper = self._scrape_url_by_bs4(url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             pdf_tag_list = scraper.find_all(

@@ -1,25 +1,12 @@
 from typing import List, Type, Dict
 from bs4 import Tag
 import os
-from pydantic import BaseModel
 
-from scraper.base_scraper import BaseConfigScraper, BaseScraper
-
-
-class SeosSource(BaseModel):
-    url: str
-    chapters: int
-
-
-class SeosConfig(BaseConfigScraper):
-    sources: List[SeosSource]
+from model.seos_models import SeosConfig, SeosSource
+from scraper.base_scraper import BaseScraper
 
 
 class SeosScraper(BaseScraper):
-    @property
-    def cookie_selector(self) -> str:
-        return ""
-
     @property
     def config_model_type(self) -> Type[SeosConfig]:
         """
@@ -29,20 +16,6 @@ class SeosScraper(BaseScraper):
             Type[SeosConfig]: The configuration model type
         """
         return SeosConfig
-
-    @property
-    def base_url(self) -> str:
-        return "https://seos-project.eu"
-
-    @property
-    def file_extension(self) -> str:
-        """
-        Return the file extension of the source files.
-
-        Returns:
-            str: The file extension of the source files
-        """
-        return ".html"
 
     def scrape(self, model: SeosConfig) -> Dict[str, List[Tag]] | None:
         """
@@ -78,7 +51,7 @@ class SeosScraper(BaseScraper):
             self._logger.info(f"Processing Chapter {i}")
             try:
                 i_str = f"-c{i}" if i >= 10 else f"-c0{i}"
-                scraper = self._scrape_url(source.url.format(**{"chapter": i_str[2:]}))
+                scraper = self._scrape_url_by_bs4(source.url.format(**{"chapter": i_str[2:]}))
 
                 html_tags.extend(scraper.find_all("a", href=lambda href: href and i_str in href))
             except Exception as e:

@@ -24,7 +24,7 @@ stop:  ## Stop docker containers
 	docker compose ${docker-compose-files} stop
 
 sync-requirements: ## Update the local virtual environment with the latest requirements.
-	$(PYTHON) -m pip install -r requirements.txt -U
+	$(PYTHON) -m pip install -r requirements.txt
 
 run:  ## Run the application
 	$(PYTHON) -m main ${args}
