@@ -7,7 +7,7 @@ from utils import get_scraped_url
 
 
 class EOGEScraper(BaseUrlPublisherScraper):
-    def _scrape_journal(self, source: BaseUrlPublisherSource) -> ResultSet | List[Tag] | None:
+    def _scrape_journal(self, source: BaseUrlPublisherSource) -> List[Tag] | None:
         """
         Scrape all articles of a journal.
 
@@ -41,13 +41,15 @@ class EOGEScraper(BaseUrlPublisherScraper):
             issues_tag_list = scraper.find_all("a", href=lambda href: href and "issue_" in href and ".html" in href)
 
             # For each tag of issues previously collected, scrape the issue as a collection of articles
-            pdf_tag_list = []
-            for tag in issues_tag_list:
-                pdf_tag_list.extend(
+            pdf_tag_list = [
+                tag
+                for tags in (
                     self._scrape_issue_or_collection(BaseUrlPublisherSource(
                         url=get_scraped_url(tag, self.base_url), type=str(SourceType.ISSUE_OR_COLLECTION)
                     ))
+                    for tag in issues_tag_list
                 )
+                if tags for tag in tags]
             self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
 
             return pdf_tag_list
@@ -55,7 +57,7 @@ class EOGEScraper(BaseUrlPublisherScraper):
             self._logger.error(f"Failed to process Issue {source.url}. Error: {e}")
             return None
 
-    def _scrape_issue_or_collection(self, source: BaseUrlPublisherSource) -> ResultSet | List[Tag] | None:
+    def _scrape_issue_or_collection(self, source: BaseUrlPublisherSource) -> ResultSet | None:
         """
         Scrape the issue (or collection) URL for PDF links.
 
@@ -63,7 +65,7 @@ class EOGEScraper(BaseUrlPublisherScraper):
             source (BaseUrlPublisherSource): The issue / collection to scrape.
 
         Returns:
-            List[Tag] | None: A list of Tag objects containing the tags to the PDF links, or None if no tag was found.
+            ResultSet | None: A Result (i.e., a list) of Tag objects containing the tags to the PDF links, or None if no tag was found.
         """
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
