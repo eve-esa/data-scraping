@@ -100,7 +100,7 @@ class AMSScraper(BaseIterativePublisherScraper):
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
         try:
-            scraper = self._scrape_url_by_bs4(issue_url)
+            scraper = self._scrape_url(issue_url)
 
             # find all the URLs to the articles where I can grab the PDF links (one per article URL, if lambda returns
             # True, it will be included in the list)
@@ -135,7 +135,7 @@ class AMSScraper(BaseIterativePublisherScraper):
         self._logger.info(f"Processing Article URL: {article_url}")
 
         try:
-            scraper = self._scrape_url_by_bs4(article_url)
+            scraper = self._scrape_url(article_url)
 
             pdf_tag = scraper.find("a", href=True, class_="pdf-download")  # Update 'pdf-download' as needed
             if pdf_tag:

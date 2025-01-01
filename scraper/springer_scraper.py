@@ -23,7 +23,7 @@ class SpringerScraper(BaseUrlPublisherScraper):
         article_tag_list = []
         while True:
             try:
-                scraper = self._scrape_url_by_bs4(f"{source.url}?filterOpenAccess=false&page={counter}")
+                scraper = self._scrape_url(f"{source.url}?filterOpenAccess=false&page={counter}")
 
                 # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
                 tags = scraper.find_all("a", href=lambda href: href and "/article/" in href)
@@ -65,7 +65,7 @@ class SpringerScraper(BaseUrlPublisherScraper):
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
         try:
-            scraper = self._scrape_url_by_bs4(source.url)
+            scraper = self._scrape_url(source.url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             pdf_tag_list = scraper.find_all("a", href=lambda href: href and "/pdf/" in href)
@@ -89,7 +89,7 @@ class SpringerScraper(BaseUrlPublisherScraper):
         self._logger.info(f"Processing Article {source.url}")
 
         try:
-            scraper = self._scrape_url_by_bs4(source.url)
+            scraper = self._scrape_url(source.url)
 
             # Find the PDF link using appropriate class or tag (if lambda returns True, it will be included in the list)
             return scraper.find("a", href=lambda href: href and "/pdf/" in href)

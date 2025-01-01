@@ -19,7 +19,7 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
         self._logger.info(f"Processing Journal {source.url}")
 
         try:
-            self._scrape_url_by_selenium(source.url)
+            self._scrape_url(source.url)
 
             # Click all the volume links to load all the issues
             self._driver.execute_script("""
@@ -33,11 +33,8 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
                 return clickButtons();
             """)
 
-            # Now that all the clicks are completed, we can get the updated source
-            scraper = BeautifulSoup(self._driver.page_source, "html.parser")
-
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
-            issues_tag_list = scraper.find_all("a", href=True, class_="issue-link")
+            issues_tag_list = self._get_parsed_page_source().find_all("a", href=True, class_="issue-link")
 
             # For each tag of issues previously collected, scrape the issue as a collection of articles
             pdf_tag_list = [
@@ -72,7 +69,7 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
         try:
-            scraper = self._scrape_url_by_bs4(source.url)
+            scraper = self._scrape_url(source.url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             article_tag_list = scraper.find_all(
@@ -111,7 +108,7 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
         self._logger.info(f"Processing Article {source.url}")
 
         try:
-            scraper = self._scrape_url_by_bs4(source.url)
+            scraper = self._scrape_url(source.url)
 
             # Find the PDF link using appropriate class or tag (if lambda returns True, it will be included in the list)
             return scraper.find("a", href=lambda href: href and "/doi/" in href and "/pdf/" in href, class_="show-pdf")

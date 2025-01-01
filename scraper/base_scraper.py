@@ -67,16 +67,16 @@ class BaseScraper(ABC):
 
         self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")
 
-    def _scrape_url_by_selenium(self, url: str, pause_time: int = 2) -> str:
+    def _scrape_url(self, url: str, pause_time: int = 2) -> BeautifulSoup:
         """
-        Scrape the URL using Selenium.
+        Scrape the URL using Selenium and BeautifulSoup.
 
         Args:
             url (str): url contains volume and issue number. Eg: https://www.mdpi.com/2072-4292/1/3
             pause_time (int): time to pause between scrolls
 
         Returns:
-            str: the fully rendered HTML of the URL.
+            BeautifulSoup: the fully rendered HTML of the URL.
         """
         self._driver.get("about:blank")
 
@@ -125,21 +125,16 @@ class BaseScraper(ABC):
         time.sleep(SECONDS_TO_SLEEP)
 
         # Get the fully rendered HTML
-        return self._driver.page_source
+        return self._get_parsed_page_source()
 
-    def _scrape_url_by_bs4(self, url: str, pause_time: int = 2) -> BeautifulSoup:
+    def _get_parsed_page_source(self) -> BeautifulSoup:
         """
-        Scrape the URL using BeautifulSoup.
-
-        Args:
-            url (str): url contains volume and issue number. Eg: https://www.mdpi.com/2072-4292/1/3
-            pause_time (int): time to pause between scrolls
+        Get the page source parsed by BeautifulSoup.
 
         Returns:
-            BeautifulSoup: the fully rendered HTML of the URL.
+            BeautifulSoup: The parsed page source.
         """
-        html = self._scrape_url_by_selenium(url, pause_time)
-        return BeautifulSoup(html, "html.parser")
+        return BeautifulSoup(self._driver.page_source, "html.parser")
 
     def _upload_to_s3(self, sources_links: List[str]) -> bool:
         """

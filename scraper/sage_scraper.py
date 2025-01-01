@@ -60,7 +60,7 @@ class SageScraper(BasePaginationPublisherScraper):
             List[Tag] | None: A list of Tag objects containing the tags to the PDF links. If something went wrong, return None.
         """
         try:
-            scraper = self._scrape_url_by_bs4(url)
+            scraper = self._scrape_url(url)
 
             # Find all article links in the pagination URL, using the appropriate class or tag (if lambda returns True, it will be included in the list)
             articles_links = [get_scraped_url(tag, self.base_url) for tag in scraper.find_all(
@@ -71,7 +71,7 @@ class SageScraper(BasePaginationPublisherScraper):
             pdf_tag_list = [
                 Tag(name="a", attrs={"href": tag.get("href", "").replace("?download=true", "")})
                 for article_link in articles_links
-                if (tag := self._scrape_url_by_bs4(article_link).find(
+                if (tag := self._scrape_url(article_link).find(
                     "a",
                     id="favourite-download",
                     href=lambda href: href and "/doi/pdf/" in href,
