@@ -1,3 +1,4 @@
+import os
 import undetected_chromedriver as uc
 import random
 from typing import List, Type, Any
@@ -45,6 +46,12 @@ class BaseScraper(ABC):
         self._s3_client = S3Storage()
 
     def __call__(self, config_model: BaseConfig):
+        name_scraper = self.__class__.__name__
+        path_file_results = os.path.join(OUTPUT_FOLDER, f"{name_scraper}.json")
+        if os.path.exists(path_file_results):
+            self._logger.warning(f"Scraper {name_scraper} already done")
+            return
+
         self._logger.info(f"Running scraper {self.__class__.__name__}")
         self._config_model = config_model
 
@@ -59,11 +66,7 @@ class BaseScraper(ABC):
 
         if all_done:
             from utils import write_json_file, is_json_serializable
-
-            write_json_file(
-                f"{OUTPUT_FOLDER}/{self.__class__.__name__}.json",
-                scraping_results if is_json_serializable(scraping_results) else links,
-            )
+            write_json_file(path_file_results, scraping_results if is_json_serializable(scraping_results) else links)
 
         self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")
 

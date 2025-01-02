@@ -98,11 +98,6 @@ def run_scrapers(discovered_scrapers: Dict[str, Type[BaseScraper]], config: Dict
     """
     threads = []
     for name_scraper, class_type_scraper in discovered_scrapers.items():
-        is_done = os.path.exists(os.path.join(OUTPUT_FOLDER, f"{name_scraper}.json"))
-        if is_done:
-            logger.warning(f"Scraper {name_scraper} already done")
-            continue
-
         config_scraper = config.get(name_scraper, None)
         if config_scraper is None:
             logger.error(f"Scraper {name_scraper} not found in configured scrapers")
