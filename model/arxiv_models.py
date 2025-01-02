@@ -1,12 +1,11 @@
 from typing import List
 
-from model.base_models import BaseConfig
-from model.base_pagination_publisher_models import BasePaginationPublisherSource
+from model.base_pagination_publisher_models import BasePaginationPublisherSource, BasePaginationPublisherConfig
 
 
 class ArxivSource(BasePaginationPublisherSource):
     page_size: int
 
 
-class ArxivConfig(BaseConfig):
+class ArxivConfig(BasePaginationPublisherConfig):
     sources: List[ArxivSource]
