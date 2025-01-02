@@ -5,6 +5,7 @@ from model.base_pagination_publisher_models import BasePaginationPublisherSource
 
 
 class WileySource(BasePaginationPublisherSource):
+    name: str
     base_url: str
 
 

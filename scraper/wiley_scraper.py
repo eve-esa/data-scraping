@@ -1,6 +1,10 @@
 from typing import Type, List
 from bs4 import ResultSet, Tag
+from selenium.common import NoSuchElementException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
 
+from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from model.wiley_models import WileyConfig
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
 from utils import get_scraped_url
@@ -21,7 +25,7 @@ class WileyScraper(BasePaginationPublisherScraper):
         """
         return WileyConfig
 
-    def scrape(self, model: WileyConfig) -> List[Tag] | None:
+    def scrape(self, model: WileyConfig) -> BasePaginationPublisherScrapeOutput:
         """
         Scrape the Sage sources for PDF links.
 
@@ -29,14 +33,16 @@ class WileyScraper(BasePaginationPublisherScraper):
             model (WileyConfig): The configuration model.
 
         Returns:
-            List[Tag] | None: A list of Tag objects containing the tags to the PDF links. If no tag was found, return None.
+            BasePaginationPublisherScrapeOutput: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.
         """
-        pdf_tags = []
+        pdf_tags = {}
         for idx, source in enumerate(model.sources):
             self.__base_url = source.base_url
-            pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
+            pdf_tags_journal = self._scrape_landing_page(source.landing_page_url, idx + 1)
+            if pdf_tags_journal:
+                pdf_tags[source.name] = [get_scraped_url(tag, self.__base_url) for tag in pdf_tags_journal]
 
-        return pdf_tags if pdf_tags else None
+        return pdf_tags
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> List[Tag]:
         """
@@ -65,22 +71,50 @@ class WileyScraper(BasePaginationPublisherScraper):
             ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
         """
         try:
-            scraper = self._scrape_url_by_bs4(url)
+            self._scrape_url(url)
 
             # Find all article links in the pagination URL, using the appropriate class or tag (if lambda returns True, it will be included in the list)
-            articles_links = [get_scraped_url(tag, self.__base_url) for tag in scraper.find_all(
-                "a",
-                href=lambda href: href and "/doi/" in href,
-                class_=lambda class_: class_ and "publication_title" in class_ and "visitable" in class_,
-            )]
+            article_tags = self._driver.find_elements(
+                By.XPATH,
+                "//a[contains(@class, 'publication_title') and contains(@class, 'visitable') and contains(@href, '/doi/')]"
+            )
+            articles_links = [
+                link for article_tag in article_tags if (link := self.__get_link_for_accessible_article(article_tag))
+            ]
 
             # Now, visit each article link and find the PDF link
-            pdf_tag_list = [tag for article_link in articles_links if (tag := self.__scrape_article(article_link))]
+            pdf_tag_list = [
+                tag for article_link in articles_links if (tag := self.__scrape_article(article_link))
+            ]
 
             self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
             self._logger.error(f"Failed to process URL {url}. Error: {e}")
+            return None
+
+    def __get_link_for_accessible_article(self, article_tag: WebElement) -> str | None:
+        """
+        Check if the article is accessible (i.e., not behind a paywall) and return the URL. The method checks if the
+        article tag has a lock-open icon, which indicates that the article is not behind a paywall. If the article is
+        accessible, return the URL to the article. Otherwise, return None.
+
+        Args:
+            article_tag (WebElement): The article tag.
+
+        Returns:
+            str | None: The URL to the article if it is accessible, otherwise None.
+        """
+        try:
+            icon = article_tag.find_element(
+                By.XPATH,
+                "../../preceding-sibling::div[contains(@class, 'meta__header')]//i[contains(@class, 'icon-icon-lock_open')]"
+            )
+            if icon:
+                return get_scraped_url(
+                    Tag(name="a", attrs={"href": article_tag.get_attribute("href")}), self.__base_url
+                )
+        except NoSuchElementException:
             return None
 
     def __scrape_article(self, url: str) -> Tag | None:
@@ -94,7 +128,7 @@ class WileyScraper(BasePaginationPublisherScraper):
             Tag | None: A Tag object containing the tag to the PDF link. If something went wrong, return None.
         """
         try:
-            scraper = self._scrape_url_by_bs4(url)
+            scraper = self._scrape_url(url)
 
             # look for the ePDF link in the article page
             epdf_tag = scraper.find(
@@ -106,7 +140,7 @@ class WileyScraper(BasePaginationPublisherScraper):
                 return None
 
             # now, scrape the ePDF page to get the final PDF link, and return this latter tag
-            direct_pdf_tag = self._scrape_url_by_bs4(
+            direct_pdf_tag = self._scrape_url(
                 get_scraped_url(epdf_tag, self.__base_url)
             ).find("a", href=lambda href: href and "/doi/pdfdirect/" in href)
             if not direct_pdf_tag:
