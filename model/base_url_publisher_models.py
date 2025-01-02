@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, TypeAlias, Dict
 from pydantic import BaseModel, field_validator
 
 from base_enum import Enum
@@ -26,3 +26,6 @@ class BaseUrlPublisherSource(BaseModel):
 
 class BaseUrlPublisherConfig(BaseConfig):
     sources: List[BaseUrlPublisherSource]
+
+
+BaseUrlPublisherScrapeOutput: TypeAlias = Dict[str, List[str]]

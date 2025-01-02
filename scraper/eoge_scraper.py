@@ -53,7 +53,7 @@ class EOGEScraper(BaseUrlPublisherScraper):
 
             return pdf_tag_list
         except Exception as e:
-            self._logger.error(f"Failed to process Issue {source.url}. Error: {e}")
+            self._logger.error(f"Failed to process Journal {source.url}. Error: {e}")
             return None
 
     def _scrape_issue_or_collection(self, source: BaseUrlPublisherSource) -> ResultSet | None:
@@ -79,7 +79,7 @@ class EOGEScraper(BaseUrlPublisherScraper):
 
             return pdf_tag_list
         except Exception as e:
-            self._logger.error(f"Failed to process Issue {source.url}. Error: {e}")
+            self._logger.error(f"Failed to process Issue / Collection {source.url}. Error: {e}")
             return None
 
     def _scrape_article(self, source: BaseUrlPublisherSource) -> Tag | None:

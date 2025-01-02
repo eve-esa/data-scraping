@@ -52,7 +52,7 @@ class FrontiersScraper(BaseUrlPublisherScraper):
 
             return pdf_tag_list
         except Exception as e:
-            self._logger.error(f"Failed to process Issue {source.url}. Error: {e}")
+            self._logger.error(f"Failed to process Issue / Collection {source.url}. Error: {e}")
             return None
 
     def _scrape_article(self, source: BaseUrlPublisherSource) -> Tag | None:
