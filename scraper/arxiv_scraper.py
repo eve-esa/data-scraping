@@ -55,7 +55,7 @@ class ArxivScraper(BasePaginationPublisherScraper):
 
     def _scrape_page(self, url: str) -> ResultSet | None:
         """
-        Scrape the PubMed page of the collection from pagination for PDF links.
+        Scrape the Arxiv page of the collection from pagination for PDF links.
 
         Args:
             url (str): The URL to scrape.
@@ -64,7 +64,7 @@ class ArxivScraper(BasePaginationPublisherScraper):
             ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
         """
         try:
-            scraper = self._scrape_url_by_bs4(url)
+            scraper = self._scrape_url(url)
 
             # Now, visit each article link and find the PDF link
             pdf_tag_list = scraper.find_all("a", href=lambda href: href and "/pdf/" in href)
