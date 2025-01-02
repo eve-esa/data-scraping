@@ -9,26 +9,32 @@ from utils import get_unique
 
 
 class BasePaginationPublisherScraper(BaseScraper):
-    def _scrape_pagination(self, base_url: str, source_number: int, starting_page_number: int | None = 1) -> List[Tag]:
+    def _scrape_pagination(
+        self, base_url: str, source_number: int, base_zero: bool = False, **kwargs
+    ) -> List[Tag]:
         """
         Scrape the pagination URL for PDF links.
 
         Args:
             base_url (str): The base URL to scrape.
             source_number (int): The source number.
-            starting_page_number (int | None): The starting page number. Defaults to 1.
+            base_zero (bool): If the page number is base zero. Default is False.
 
         Returns:
             List[Tag]: A list of Tag objects containing the tags to the PDF links.
         """
-        page_number = starting_page_number
+        page_number = 0 if base_zero else 1
 
         pdf_tag_list = []
         while True:
+            start_index = (page_number if base_zero else page_number - 1) * kwargs.get("page_size", 50)
+
             # parse the query with parameters
             # they are enclosed in curly braces, must be replaced with the actual values
-            # "page_number" and "source_number" are reserved keywords
-            page_url = base_url.format(**{"page_number": page_number, "source_number": source_number})
+            # "page_number", "source_number" and "start_index" are reserved keywords
+            page_url = base_url.format(**(
+                kwargs | {"page_number": page_number, "source_number": source_number, "start_index": start_index}
+            ))
 
             self._logger.info(f"Processing Pagination {page_url}")
 
