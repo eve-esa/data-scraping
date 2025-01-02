@@ -12,6 +12,7 @@ from model.base_iterative_publisher_models import (
     IterativePublisherScrapeOutput,
 )
 from scraper.base_scraper import BaseScraper
+from utils import get_unique
 
 
 class BaseIterativePublisherScraper(BaseScraper):
@@ -43,13 +44,13 @@ class BaseIterativePublisherScraper(BaseScraper):
         Returns:
             List[str]: A list of strings containing the PDF links
         """
-        return [
+        return get_unique([
             issue_link
             for journal_links in scrape_output.values()
             for volume_links in journal_links.values()
             for issues_links in volume_links.values()
             for issue_link in issues_links
-        ]
+        ])
 
     def _build_journal_links(self, journal: BaseIterativePublisherJournal) -> IterativePublisherScrapeJournalOutput:
         return {

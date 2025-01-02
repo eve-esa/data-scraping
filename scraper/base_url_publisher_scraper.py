@@ -4,7 +4,7 @@ from bs4 import ResultSet, Tag
 
 from model.base_url_publisher_models import BaseUrlPublisherConfig, BaseUrlPublisherSource, SourceType
 from scraper.base_scraper import BaseScraper
-from utils import get_scraped_url
+from utils import get_scraped_url, get_unique
 
 
 class BaseUrlPublisherScraper(BaseScraper):
@@ -53,7 +53,7 @@ class BaseUrlPublisherScraper(BaseScraper):
         Returns:
             List[str]: A list of strings containing the PDF links
         """
-        return [get_scraped_url(tag, self.base_url) for tag in scrape_output]
+        return get_unique([get_scraped_url(tag, self.base_url) for tag in scrape_output])
 
     @abstractmethod
     def _scrape_journal(self, source: BaseUrlPublisherSource) -> ResultSet | List[Tag] | None:

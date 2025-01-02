@@ -1,6 +1,7 @@
 from typing import List, Type
 from bs4 import Tag, ResultSet
 
+from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from model.ieee_models import IEEEConfig
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
 from utils import get_scraped_url
@@ -17,7 +18,7 @@ class IEEEScraper(BasePaginationPublisherScraper):
         """
         return IEEEConfig
 
-    def scrape(self, model: IEEEConfig) -> List[Tag] | None:
+    def scrape(self, model: IEEEConfig) -> BasePaginationPublisherScrapeOutput:
         """
         Scrape the IEEE sources for PDF links.
 
@@ -25,10 +26,10 @@ class IEEEScraper(BasePaginationPublisherScraper):
             model (IEEEConfig): The configuration model.
 
         Returns:
-            List[Tag] | None: A list of Tag objects containing the tags to the PDF links. If no tag was found, return None.
+            BasePaginationPublisherScrapeOutput: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.
         """
-        pdf_tags = [
-            pdf_tag
+        pdf_links = [
+            get_scraped_url(pdf_tag, self.base_url)
             for idx, source in enumerate(model.sources)
             for tag in self._scrape_landing_page(source.landing_page_url, idx + 1)
             for pdf_tag in self._scrape_pagination(
@@ -37,9 +38,9 @@ class IEEEScraper(BasePaginationPublisherScraper):
             )
         ]
 
-        return pdf_tags if pdf_tags else None
+        return {"IEEE": pdf_links}
 
-    def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> List[Tag]:
+    def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> ResultSet | List[Tag]:
         """
         Scrape the landing page. If the source has a landing page, scrape the landing page for PDF links. If the source
         has a landing page and the `should_store` is True, store the PDF tags from the landing page. Otherwise, return
@@ -49,7 +50,7 @@ class IEEEScraper(BasePaginationPublisherScraper):
             landing_page_url (str): The landing page to scrape.
 
         Returns:
-            List[Tag]: A list of Tag objects containing the tags to the PDF links. If something went wrong, an empty list.
+            ResultSet | List[Tag]: A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF links. If something went wrong, an empty list.
         """
         self._logger.info(f"Processing Landing Page {landing_page_url}")
 
@@ -64,7 +65,7 @@ class IEEEScraper(BasePaginationPublisherScraper):
 
     def _scrape_page(self, url: str) -> ResultSet | None:
         """
-        Scrape the PubMed page of the collection from pagination for PDF links.
+        Scrape the IEEE page of the collection from pagination for PDF links.
 
         Args:
             url (str): The URL to scrape.

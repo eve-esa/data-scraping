@@ -2,8 +2,10 @@ from abc import abstractmethod
 from typing import List
 from bs4 import ResultSet, Tag
 
+from model.base_models import BaseConfigScraper
+from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from scraper.base_scraper import BaseScraper
-from utils import get_scraped_url
+from utils import get_unique
 
 
 class BasePaginationPublisherScraper(BaseScraper):
@@ -39,20 +41,33 @@ class BasePaginationPublisherScraper(BaseScraper):
 
         return pdf_tag_list
 
-    def post_process(self, scrape_output: ResultSet | List[Tag]) -> List[str]:
+    def post_process(self, scrape_output: BasePaginationPublisherScrapeOutput) -> List[str]:
         """
         Extract the href attribute from the links.
 
         Args:
-            scrape_output (ResultSet | List[Tag]): A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF links.
+            scrape_output (BasePaginationPublisherScrapeOutput): A dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.
 
         Returns:
             List[str]: A list of strings containing the PDF links
         """
-        return [get_scraped_url(tag, self.base_url) for tag in scrape_output]
+        return get_unique([link for links in scrape_output.values() for link in links])
 
     @abstractmethod
-    def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> List[Tag] | None:
+    def scrape(self, model: BaseConfigScraper) -> BasePaginationPublisherScrapeOutput:
+        """
+        Scrape the resources links. This method must be implemented in the derived class.
+
+        Args:
+            model (BaseConfigScraper): The configuration model.
+
+        Returns:
+            BasePaginationPublisherScrapeOutput: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.
+        """
+        pass
+
+    @abstractmethod
+    def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> ResultSet | List[Tag] | None:
         """
         Scrape the landing page. This method must be implemented in the derived class.
 
@@ -61,7 +76,7 @@ class BasePaginationPublisherScraper(BaseScraper):
             source_number (int): The source number.
 
         Returns:
-            List[Tag] | None: A list of Tag objects containing the tags to the PDF links, or None.
+            ResultSet | List[Tag] | None: A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF links, or None.
         """
         pass
 

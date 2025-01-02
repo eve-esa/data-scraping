@@ -1,9 +1,9 @@
 from typing import List, Type, Dict
 from bs4 import Tag
-import os
 
 from model.seos_models import SeosConfig, SeosSource
 from scraper.base_scraper import BaseScraper
+from utils import get_unique, get_scraped_url
 
 
 class SeosScraper(BaseScraper):
@@ -25,7 +25,7 @@ class SeosScraper(BaseScraper):
             model (SeosConfig): The configuration model.
 
         Returns:
-            Dict[str, List[Tag]]: a dictionary collecting, for each source, the corresponding ResultSet (i.e., a list) or a list of Tag objects containing the tags to the HTML links. If no tag was found, return None.
+            Dict[str, List[Tag]]: a dictionary collecting, for each source, the corresponding list of Tag objects containing the tags to the HTML links. If no tag was found, return None.
         """
 
         links = {}
@@ -65,18 +65,11 @@ class SeosScraper(BaseScraper):
         Extract the href attribute from the links.
 
         Args:
-            scrape_output (Dict[str, List[Tag]]): A dictionary collecting, for each source, the corresponding ResultSet (i.e., a list) or a list of Tag objects containing the tags to the HTML links.
+            scrape_output (Dict[str, List[Tag]]): A dictionary collecting, for each source, the corresponding list of Tag objects containing the tags to the HTML links.
 
         Returns:
             List[str]: A list of strings containing the HTML links
         """
 
-        links = []
-        for key_url in scrape_output.keys():
-            links.extend(
-                [
-                    key_url.replace(os.path.basename(key_url), tag.get("href"))
-                    for tag in scrape_output[key_url]
-                ]
-            )
-        return list(set(links))
+        links = [get_scraped_url(tag, self.base_url) for tags in scrape_output.values() for tag in tags]
+        return get_unique(links)

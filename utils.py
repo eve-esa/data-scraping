@@ -83,7 +83,7 @@ def discover_scrapers(base_package: str) -> Dict[str, Type[BaseScraper]]:
                and hasattr(obj, "scrape")
         }
 
-    logger.info(f"Discovered and started scrapers: {list(discovered_scrapers.keys())}")
+    logger.info(f"Discovered scrapers: {list(discovered_scrapers.keys())}")
 
     return discovered_scrapers
 
@@ -168,3 +168,16 @@ def get_pdf_name(pdf_url: str, file_extension: str) -> str:
 
     # otherwise, replace `/` with `_` and add the file extension
     return path.replace("/", "_") + file_extension
+
+
+def get_unique(pdf_links: List[str]) -> List[str]:
+    """
+    Get the unique PDF links.
+
+    Args:
+        pdf_links (List[str]): A list of PDF links.
+
+    Returns:
+        List[str]: A list of unique PDF links.
+    """
+    return list(set(pdf_links))
