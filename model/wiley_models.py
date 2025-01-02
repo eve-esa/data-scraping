@@ -1,7 +1,6 @@
 from typing import List
 
-from model.base_models import BaseConfig
-from model.base_pagination_publisher_models import BasePaginationPublisherSource
+from model.base_pagination_publisher_models import BasePaginationPublisherSource, BasePaginationPublisherConfig
 
 
 class WileySource(BasePaginationPublisherSource):
@@ -9,5 +8,5 @@ class WileySource(BasePaginationPublisherSource):
     base_url: str
 
 
-class WileyConfig(BaseConfig):
+class WileyConfig(BasePaginationPublisherConfig):
     sources: List[WileySource]
