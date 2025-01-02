@@ -1,7 +1,7 @@
 from typing import List
 from pydantic import BaseModel
 
-from model.base_models import BaseConfigScraper
+from model.base_models import BaseConfig
 
 
 class SeosSource(BaseModel):
@@ -9,5 +9,5 @@ class SeosSource(BaseModel):
     chapters: int
 
 
-class SeosConfig(BaseConfigScraper):
+class SeosConfig(BaseConfig):
     sources: List[SeosSource]

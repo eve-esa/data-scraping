@@ -1,13 +1,7 @@
 from typing import Dict, List, TypeAlias
 from pydantic import BaseModel
 
-from model.base_models import BaseConfigScraper
-
-
-IterativePublisherScrapeOutput: TypeAlias = Dict[str, Dict[int, Dict[int, List[str]]]]
-IterativePublisherScrapeJournalOutput: TypeAlias = Dict[int, Dict[int, List[str]]]
-IterativePublisherScrapeVolumeOutput: TypeAlias = Dict[int, List[str]]
-IterativePublisherScrapeIssueOutput: TypeAlias = List[str]
+from model.base_models import BaseConfig
 
 
 class BaseIterativePublisherJournal(BaseModel):
@@ -23,5 +17,11 @@ class BaseIterativeWithConstraintPublisherJournal(BaseIterativePublisherJournal)
     consecutive_missing_issues_threshold: int | None = 3
 
 
-class BaseIterativePublisherConfig(BaseConfigScraper):
+class BaseIterativePublisherConfig(BaseConfig):
     journals: List[BaseIterativePublisherJournal]
+
+
+IterativePublisherScrapeOutput: TypeAlias = Dict[str, Dict[int, Dict[int, List[str]]]]
+IterativePublisherScrapeJournalOutput: TypeAlias = Dict[int, Dict[int, List[str]]]
+IterativePublisherScrapeVolumeOutput: TypeAlias = Dict[int, List[str]]
+IterativePublisherScrapeIssueOutput: TypeAlias = List[str]

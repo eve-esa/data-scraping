@@ -10,7 +10,7 @@ import time
 import logging
 
 from constants import OUTPUT_FOLDER, USER_AGENT_LIST, ROTATE_USER_AGENT_EVERY, SECONDS_TO_SLEEP
-from model.base_models import BaseConfigScraper
+from model.base_models import BaseConfig
 from storage import S3Storage
 
 
@@ -44,7 +44,7 @@ class BaseScraper(ABC):
 
         self._s3_client = S3Storage()
 
-    def __call__(self, config_model: BaseConfigScraper):
+    def __call__(self, config_model: BaseConfig):
         self._logger.info(f"Running scraper {self.__class__.__name__}")
         self._config_model = config_model
 
@@ -190,12 +190,12 @@ class BaseScraper(ABC):
         return self._config_model.file_extension
 
     @abstractmethod
-    def scrape(self, model: BaseConfigScraper) -> Any | None:
+    def scrape(self, model: BaseConfig) -> Any | None:
         """
         Scrape the resources links. This method must be implemented in the derived class.
 
         Args:
-            model (BaseConfigScraper): The configuration model.
+            model (BaseConfig): The configuration model.
 
         Returns:
             Any: The output of the scraping, or None if something went wrong.
@@ -218,11 +218,11 @@ class BaseScraper(ABC):
 
     @property
     @abstractmethod
-    def config_model_type(self) -> Type[BaseConfigScraper]:
+    def config_model_type(self) -> Type[BaseConfig]:
         """
         Return the configuration model type. This property must be implemented in the derived class.
 
         Returns:
-            Type[BaseConfigScraper]: The configuration model type
+            Type[BaseConfig]: The configuration model type
         """
         pass

@@ -2,7 +2,7 @@ from abc import abstractmethod
 from typing import List
 from bs4 import ResultSet, Tag
 
-from model.base_models import BaseConfigScraper
+from model.base_models import BaseConfig
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from scraper.base_scraper import BaseScraper
 from utils import get_unique
@@ -60,12 +60,12 @@ class BasePaginationPublisherScraper(BaseScraper):
         return get_unique([link for links in scrape_output.values() for link in links])
 
     @abstractmethod
-    def scrape(self, model: BaseConfigScraper) -> BasePaginationPublisherScrapeOutput:
+    def scrape(self, model: BaseConfig) -> BasePaginationPublisherScrapeOutput:
         """
         Scrape the resources links. This method must be implemented in the derived class.
 
         Args:
-            model (BaseConfigScraper): The configuration model.
+            model (BaseConfig): The configuration model.
 
         Returns:
             BasePaginationPublisherScrapeOutput: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.

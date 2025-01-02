@@ -2,7 +2,7 @@ from typing import List
 from pydantic import BaseModel, field_validator
 
 from base_enum import Enum
-from scraper.base_scraper import BaseConfigScraper
+from scraper.base_scraper import BaseConfig
 
 
 class SourceType(Enum):
@@ -24,5 +24,5 @@ class BaseUrlPublisherSource(BaseModel):
         return v
 
 
-class BaseUrlPublisherConfig(BaseConfigScraper):
+class BaseUrlPublisherConfig(BaseConfig):
     sources: List[BaseUrlPublisherSource]
