@@ -1,29 +1,28 @@
 from typing import List, Type
 from bs4 import Tag, ResultSet
 
-from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
-from model.ieee_models import IEEEConfig
+from model.base_pagination_publisher_models import BasePaginationPublisherConfig, BasePaginationPublisherScrapeOutput
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
 from utils import get_scraped_url
 
 
 class IEEEScraper(BasePaginationPublisherScraper):
     @property
-    def config_model_type(self) -> Type[IEEEConfig]:
+    def config_model_type(self) -> Type[BasePaginationPublisherConfig]:
         """
         Return the configuration model type.
 
         Returns:
-            Type[IEEEConfig]: The configuration model type
+            Type[BasePaginationPublisherConfig]: The configuration model type
         """
-        return IEEEConfig
+        return BasePaginationPublisherConfig
 
-    def scrape(self, model: IEEEConfig) -> BasePaginationPublisherScrapeOutput:
+    def scrape(self, model: BasePaginationPublisherConfig) -> BasePaginationPublisherScrapeOutput:
         """
         Scrape the IEEE sources for PDF links.
 
         Args:
-            model (IEEEConfig): The configuration model.
+            model (BasePaginationPublisherConfig): The configuration model.
 
         Returns:
             BasePaginationPublisherScrapeOutput: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.

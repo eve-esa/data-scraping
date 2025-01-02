@@ -1,29 +1,28 @@
 from typing import Type, List
 from bs4 import Tag
 
-from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
-from model.sage_models import SageConfig
+from model.base_pagination_publisher_models import BasePaginationPublisherConfig, BasePaginationPublisherScrapeOutput
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
 from utils import get_scraped_url
 
 
 class SageScraper(BasePaginationPublisherScraper):
     @property
-    def config_model_type(self) -> Type[SageConfig]:
+    def config_model_type(self) -> Type[BasePaginationPublisherConfig]:
         """
         Return the configuration model type.
 
         Returns:
-            Type[SageConfig]: The configuration model type
+            Type[BasePaginationPublisherConfig]: The configuration model type
         """
-        return SageConfig
+        return BasePaginationPublisherConfig
 
-    def scrape(self, model: SageConfig) -> BasePaginationPublisherScrapeOutput:
+    def scrape(self, model: BasePaginationPublisherConfig) -> BasePaginationPublisherScrapeOutput:
         """
         Scrape the Sage sources for PDF links.
 
         Args:
-            model (SageConfig): The configuration model.
+            model (BasePaginationPublisherConfig): The configuration model.
 
         Returns:
             BasePaginationPublisherScrapeOutput: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.

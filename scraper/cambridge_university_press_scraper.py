@@ -1,29 +1,28 @@
 from typing import List, Type
 from bs4 import Tag, ResultSet
 
-from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
-from model.cambridge_university_press_models import CambridgeUniversityPressConfig
+from model.base_pagination_publisher_models import BasePaginationPublisherConfig, BasePaginationPublisherScrapeOutput
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
 from utils import get_scraped_url
 
 
 class CambridgeUniversityPressScraper(BasePaginationPublisherScraper):
     @property
-    def config_model_type(self) -> Type[CambridgeUniversityPressConfig]:
+    def config_model_type(self) -> Type[BasePaginationPublisherConfig]:
         """
         Return the configuration model type.
 
         Returns:
-            Type[CambridgeUniversityPressConfig]: The configuration model type
+            Type[BasePaginationPublisherConfig]: The configuration model type
         """
-        return CambridgeUniversityPressConfig
+        return BasePaginationPublisherConfig
 
-    def scrape(self, model: CambridgeUniversityPressConfig) -> BasePaginationPublisherScrapeOutput:
+    def scrape(self, model: BasePaginationPublisherConfig) -> BasePaginationPublisherScrapeOutput:
         """
         Scrape the Cambridge University Press sources for PDF links.
 
         Args:
-            model (CambridgeUniversityPressConfig): The configuration model.
+            model (BasePaginationPublisherConfig): The configuration model.
 
         Returns:
             BasePaginationPublisherScrapeOutput: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.

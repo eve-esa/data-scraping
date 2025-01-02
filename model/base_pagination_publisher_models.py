@@ -1,6 +1,8 @@
 from typing import TypeAlias, Dict, List
 from pydantic import BaseModel
 
+from model.base_models import BaseConfig
+
 
 class BasePaginationPublisherSource(BaseModel):
     """
@@ -11,6 +13,10 @@ class BasePaginationPublisherSource(BaseModel):
         landing_page_url (str): The landing URL to scrape
     """
     landing_page_url: str
+
+
+class BasePaginationPublisherConfig(BaseConfig):
+    sources: List[BasePaginationPublisherSource]
 
 
 BasePaginationPublisherScrapeOutput: TypeAlias = Dict[str, List[str]]
