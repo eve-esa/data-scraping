@@ -647,20 +647,22 @@
             },
             {
                 "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=29935210&sortBy=Earliest&pageSize=100&startPage={page_number}",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
-            },
-            {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=23249250&sortBy=Earliest&pageSize=100&startPage={page_number}",
                 "name": "Journal of Geophysical Research: Machine Learning and Computation",
                 "base_url": "https://agupubs.onlinelibrary.wiley.com"
             },
             {
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=23249250&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "name": "Eos, Transactions American Geophysical Union",
+                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+            },
+            {
                 "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=19449224&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "name": "Global Biogeochemical Cycles",
                 "base_url": "https://agupubs.onlinelibrary.wiley.com"
             },
             {
                 "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=25724525&sortBy=Earliest&pageSize=100&startPage={page_number}",
-                "name": "Global Biogeochemical Cycles",
+                "name": "Paleoceanography and Paleoclimatology",
                 "base_url": "https://agupubs.onlinelibrary.wiley.com"
             },
             {
@@ -670,11 +672,12 @@
             },
             {
                 "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=19449208&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "name": "Reviews of Geophysics",
                 "base_url": "https://agupubs.onlinelibrary.wiley.com"
             },
             {
                 "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=23254432&sortBy=Earliest&pageSize=100&startPage={page_number}",
-                "name": "Reviews of Geophysics",
+                "name": "Space Weather Quarterly",
                 "base_url": "https://agupubs.onlinelibrary.wiley.com"
             },
             {
@@ -684,11 +687,12 @@
             },
             {
                 "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=21698996&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "name": "Journal of Geophysical Research: Atmospheres",
                 "base_url": "https://agupubs.onlinelibrary.wiley.com"
             },
             {
                 "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=21698961&sortBy=Earliest&pageSize=100&startPage={page_number}",
-                "name": "Journal of Geophysical Research: Atmospheres",
+                "name": "Journal of Geophysical Research: Biogeosciences",
                 "base_url": "https://agupubs.onlinelibrary.wiley.com"
             },
             {
