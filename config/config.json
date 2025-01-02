@@ -577,7 +577,6 @@
     },
     "WileyScraper": {
         "bucket_key": "wiley",
-        "base_url": "https://onlinelibrary.wiley.com",
         "cookie_selector": "button.osano-cm-accept-all",
         "sources": [
             {
