@@ -3,7 +3,6 @@ import inspect
 import json
 import os
 import pkgutil
-import threading
 from typing import Dict, List, Type
 import yaml
 import logging
@@ -95,28 +94,18 @@ def run_scrapers(discovered_scrapers: Dict[str, Type[BaseScraper]], config: Dict
         discovered_scrapers (Dict[str, Type[BaseScraper]]): A dictionary of scraper names and their classes (i.e., types).
         config (Dict[str, Dict]): A dictionary of scraper names and their configurations.
     """
-    threads = []
     for name_scraper, class_type_scraper in discovered_scrapers.items():
-        config_scraper = config.get(name_scraper, None)
+        config_scraper = config.get(name_scraper)
         if config_scraper is None:
             logger.error(f"Scraper {name_scraper} not found in configured scrapers")
             continue
 
         scraper_obj = class_type_scraper()
-        config_model_type_scraper = getattr(scraper_obj, "config_model_type", None)
-        if config_model_type_scraper is None:
-            logger.error(f"Config class not found for scraper {name_scraper}")
-            continue
-
+        config_model = scraper_obj.config_model_type(**config_scraper)
         try:
-            thread = threading.Thread(target=lambda: scraper_obj(config_model_type_scraper(**config_scraper)))
-            thread.start()
-            threads.append(thread)
+            scraper_obj(config_model)
         except ValidationError as e:
             logger.error(f"Error running scraper {name_scraper}: {e}")
-
-    for thread in threads:
-        thread.join()
 
 
 def get_scraped_url(tag: Tag, base_url: str) -> str:
