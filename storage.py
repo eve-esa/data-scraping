@@ -1,13 +1,12 @@
 import logging
 import os
-import random
 from typing import Final
 import boto3
 import requests
 from botocore.exceptions import ClientError
+from fake_useragent import UserAgent
 from pydantic import BaseModel
 
-from constants import USER_AGENT_LIST
 from singleton import singleton
 
 
@@ -82,7 +81,7 @@ class S3Storage:
         try:
             # Download PDF content from the URL
             response = requests.get(source_url, headers={
-                "User-Agent": random.choice(USER_AGENT_LIST),
+                "User-Agent": UserAgent().random,
                 "Accept": "application/pdf,*/*",
                 "Accept-Language": "en-US,en;q=0.9",
                 "Referer": referer_url,

@@ -2,7 +2,7 @@
     "IOPScraper": {
         "bucket_key": "iopscience",
         "base_url": "https://iopscience.iop.org",
-        "cookie_selector": "body > div.cky-consent-container.cky-classic-bottom > div.cky-consent-bar > div > div > div.cky-notice-btn-wrapper > button.cky-btn.cky-btn-accept",
+        "cookie_selector": "div.cky-consent-container.cky-classic-bottom > div.cky-consent-bar > div > div > div.cky-notice-btn-wrapper > button.cky-btn.cky-btn-accept",
         "sources": [
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/169/1",
