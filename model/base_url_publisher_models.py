@@ -1,7 +1,7 @@
 from typing import List, TypeAlias, Dict
 from pydantic import BaseModel, field_validator
 
-from base_enum import Enum
+from helper.base_enum import Enum
 from scraper.base_scraper import BaseConfig
 
 

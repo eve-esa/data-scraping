@@ -1,6 +1,7 @@
 import os
 from typing import Type
 
+from helper.utils import get_scraped_url
 from model.base_iterative_publisher_models import (
     BaseIterativeWithConstraintPublisherJournal,
     IterativePublisherScrapeJournalOutput,
@@ -9,7 +10,6 @@ from model.base_iterative_publisher_models import (
 )
 from model.copernicus_models import CopernicusConfig
 from scraper.base_iterative_publisher_scraper import BaseIterativeWithConstraintPublisherScraper
-from utils import get_scraped_url
 
 
 class CopernicusScraper(BaseIterativeWithConstraintPublisherScraper):

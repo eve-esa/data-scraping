@@ -1,8 +1,8 @@
 from argparse import ArgumentParser
 from dotenv import load_dotenv
 
-from constants import CONFIG_PATH
-from utils import read_json_file, discover_scrapers, run_scrapers
+from helper.constants import CONFIG_PATH
+from helper.utils import read_json_file, discover_scrapers, run_scrapers
 
 
 def main(args):

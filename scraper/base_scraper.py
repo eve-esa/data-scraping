@@ -11,9 +11,9 @@ from abc import ABC, abstractmethod
 import time
 import logging
 
-from constants import OUTPUT_FOLDER, ROTATE_USER_AGENT_EVERY
+from helper.constants import OUTPUT_FOLDER, ROTATE_USER_AGENT_EVERY
 from model.base_models import BaseConfig
-from storage import S3Storage
+from service.storage import S3Storage
 
 
 class BaseScraper(ABC):
@@ -50,7 +50,7 @@ class BaseScraper(ABC):
         all_done = self._upload_to_s3(links)
 
         if all_done:
-            from utils import write_json_file, is_json_serializable
+            from helper.utils import write_json_file, is_json_serializable
             write_json_file(path_file_results, scraping_results if is_json_serializable(scraping_results) else links)
 
         self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")
@@ -145,16 +145,6 @@ class BaseScraper(ABC):
                     window.scrollTo(0, document.body.scrollHeight);
                 }}
             """)
-
-            if self._config_model.read_more_button:
-                self._driver.execute_script(f"""
-                    const button = Array.from(document.querySelectorAll('{self._config_model.read_more_button.selector}')).find(btn => 
-                      btn.textContent.trim().toUpperCase() === "{self._config_model.read_more_button.text}".toUpperCase()
-                    );
-                    if (button) {{
-                      button.click();
-                    }}
-                """)
 
             time.sleep(pause_time)
 

@@ -2,9 +2,9 @@ from abc import abstractmethod
 from typing import List, Type
 from bs4 import ResultSet, Tag
 
+from helper.utils import get_scraped_url, get_unique
 from model.base_url_publisher_models import BaseUrlPublisherConfig, BaseUrlPublisherSource, SourceType
 from scraper.base_scraper import BaseScraper
-from utils import get_scraped_url, get_unique
 
 
 class BaseUrlPublisherScraper(BaseScraper):

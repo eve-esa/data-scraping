@@ -2,10 +2,10 @@ from abc import abstractmethod
 from typing import List
 from bs4 import ResultSet, Tag
 
+from helper.utils import get_unique
 from model.base_models import BaseConfig
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from scraper.base_scraper import BaseScraper
-from utils import get_unique
 
 
 class BasePaginationPublisherScraper(BaseScraper):

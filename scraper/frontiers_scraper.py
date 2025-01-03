@@ -1,9 +1,9 @@
 from typing import List
 from bs4 import Tag, ResultSet
 
+from helper.utils import get_scraped_url
 from model.base_url_publisher_models import BaseUrlPublisherSource, SourceType
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
-from utils import get_scraped_url
 
 
 class FrontiersScraper(BaseUrlPublisherScraper):

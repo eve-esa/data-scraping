@@ -1,9 +1,9 @@
 from typing import List, Type, Dict
 from bs4 import Tag
 
+from helper.utils import get_unique, get_scraped_url
 from model.seos_models import SeosConfig, SeosSource
 from scraper.base_scraper import BaseScraper
-from utils import get_unique, get_scraped_url
 
 
 class SeosScraper(BaseScraper):

@@ -1,8 +1,8 @@
 from typing import List
 from bs4 import ResultSet, Tag
 
+from helper.utils import get_scraped_url
 from scraper.base_url_publisher_scraper import BaseUrlPublisherSource, BaseUrlPublisherScraper, SourceType
-from utils import get_scraped_url
 
 
 class SpringerScraper(BaseUrlPublisherScraper):

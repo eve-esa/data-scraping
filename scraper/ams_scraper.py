@@ -1,6 +1,7 @@
 import os
 from typing import Type
 
+from helper.utils import get_scraped_url
 from model.ams_models import AMSConfig, AMSJournal
 from model.base_iterative_publisher_models import (
     IterativePublisherScrapeJournalOutput,
@@ -8,7 +9,6 @@ from model.base_iterative_publisher_models import (
     IterativePublisherScrapeIssueOutput,
 )
 from scraper.base_iterative_publisher_scraper import BaseIterativePublisherScraper
-from utils import get_scraped_url
 
 
 class AMSScraper(BaseIterativePublisherScraper):

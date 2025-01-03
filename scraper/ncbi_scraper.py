@@ -1,10 +1,10 @@
 from typing import Type
 from bs4 import ResultSet
 
+from helper.utils import get_scraped_url
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from model.ncbi_models import NCBIConfig
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
-from utils import get_scraped_url
 
 
 class NCBIScraper(BasePaginationPublisherScraper):

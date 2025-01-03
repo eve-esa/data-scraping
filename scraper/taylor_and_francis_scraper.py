@@ -1,8 +1,8 @@
 from typing import List
-from bs4 import Tag, BeautifulSoup
+from bs4 import Tag
 
+from helper.utils import get_scraped_url
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper, BaseUrlPublisherSource, SourceType
-from utils import get_scraped_url
 
 
 class TaylorAndFrancisScraper(BaseUrlPublisherScraper):

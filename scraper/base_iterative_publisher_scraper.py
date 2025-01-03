@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List
 from pydantic import BaseModel
 
+from helper.utils import get_unique
 from model.base_iterative_publisher_models import (
     BaseIterativePublisherConfig,
     BaseIterativePublisherJournal,
@@ -12,7 +13,6 @@ from model.base_iterative_publisher_models import (
     IterativePublisherScrapeOutput,
 )
 from scraper.base_scraper import BaseScraper
-from utils import get_unique
 
 
 class BaseIterativePublisherScraper(BaseScraper):

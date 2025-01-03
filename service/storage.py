@@ -7,7 +7,7 @@ from botocore.exceptions import ClientError
 from fake_useragent import UserAgent
 from pydantic import BaseModel
 
-from singleton import singleton
+from helper.singleton import singleton
 
 
 class PDFName(BaseModel):
@@ -57,7 +57,7 @@ class S3Storage:
             self.client.create_bucket(Bucket=self.bucket_name, CreateBucketConfiguration=location)
 
     def upload(self, root_key: str, source_url: str, file_extension: str, referer_url: str | None = None) -> bool:
-        from utils import get_pdf_name
+        from helper.utils import get_pdf_name
 
         referer_url = referer_url if referer_url is not None else "https://www.google.com"
         s3_key = os.path.join(root_key, get_pdf_name(source_url, file_extension))  # Construct S3 key

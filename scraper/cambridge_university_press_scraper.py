@@ -1,9 +1,9 @@
 from typing import List, Type
 from bs4 import Tag, ResultSet
 
+from helper.utils import get_scraped_url
 from model.base_pagination_publisher_models import BasePaginationPublisherConfig, BasePaginationPublisherScrapeOutput
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
-from utils import get_scraped_url
 
 
 class CambridgeUniversityPressScraper(BasePaginationPublisherScraper):
