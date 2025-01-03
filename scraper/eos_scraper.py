@@ -1,6 +1,6 @@
 from typing import List
-
 from bs4 import Tag, ResultSet
+
 from model.base_url_publisher_models import BaseUrlPublisherSource
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
 

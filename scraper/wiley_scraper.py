@@ -4,10 +4,10 @@ from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
+from helper.utils import get_scraped_url
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from model.wiley_models import WileyConfig
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
-from utils import get_scraped_url
 
 
 class WileyScraper(BasePaginationPublisherScraper):
