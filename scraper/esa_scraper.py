@@ -85,7 +85,7 @@ class ESAScraper(BaseScraper):
                     all_done = False
 
                 # Sleep after each successful download to avoid overwhelming the server
-                time.sleep(random.uniform(2, 5))  # random between 2 and 5 seconds
+                time.sleep(random.uniform(2, 5))
 
         return all_done
 
