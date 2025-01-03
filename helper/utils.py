@@ -10,7 +10,7 @@ from bs4 import Tag
 from pydantic import ValidationError
 from urllib.parse import urlparse
 
-from scraper.base_scraper import BaseScraper
+from scraper.base_scraper import BaseScraper, BaseMappedScraper
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -77,6 +77,7 @@ def discover_scrapers(base_package: str) -> Dict[str, Type[BaseScraper]]:
             for name, obj in inspect.getmembers(module)
             if inspect.isclass(obj)
                and issubclass(obj, BaseScraper)
+               and not issubclass(obj, BaseMappedScraper)
                and not inspect.isabstract(obj)
                and hasattr(obj, "scrape")
         }

@@ -574,5 +574,131 @@
                 "type": "journal"
             }
         ]
+    },
+    "ESAScraper": {
+        "bucket_key": "esa",
+        "sources": [
+            {
+                "name": "ESA Earth Online",
+                "type": "url",
+                "config": {
+                    "base_url": "https://earth.esa.int/",
+                    "cookie_selector": "div#__next > div.fixed.bottom-0.left-0.right-0.bg-brand-bg-darker.text-white.font-esa > div.mx-auto.p-8.flex.flex-col > div.pt-4.flex.flex-col.gap-8.items-center.justify-center > button.p-1.uppercase.border.transition-colors",
+                    "file_extension": ".html",
+                    "read_more_button": {
+                        "selector": "button",
+                        "text": "READ MORE"
+                    },
+                    "sources": [
+                        {
+                            "url": "https://earth.esa.int/eogateway/search?category=All+Categories",
+                            "type": "issue_or_collection",
+                            "href": "/eogateway/",
+                            "class_": "hover:underline"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "ESA Newcomers Earth Observation Guide",
+                "type": "direct",
+                "config": {
+                    "file_extension": ".html",
+                    "urls": [
+                        "https://business.esa.int/newcomers-earth-observation-guide"
+                    ]
+                }
+            },
+            {
+                "name": "EO Portal",
+                "type": "url",
+                "config": {
+                    "base_url": "https://www.eoportal.org/",
+                    "cookie_selector": "div#__next > main > div.cy-page-content > div.cy-cookie-popup.css-1pa6g3f > div.css-1r4dq04 > button.chakra-button.css-122lbyf",
+                    "file_extension": ".html",
+                    "sources": [
+                        {
+                            "url": "https://www.eoportal.org/satellite-missions?Mission+type=EO",
+                            "type": "issue_or_collection",
+                            "href": "/satellite-missions/",
+                            "class_": "css-1wtmven"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "Sentiwiki Documents",
+                "type": "url",
+                "config": {
+                    "base_url": "https://sentiwiki.copernicus.eu/",
+                    "cookie_selector": "div#vp-js-cookies__notice > div.vp-cookies__notice.no-print.vp-non-modal-dialog.fixed.bottom-0.z-non-modal-dialog.w-full.p-4.shadow-lg > div.flex.flex-row.items-center.space-x-2 > button.vp-button.vp-button--primary",
+                    "sources": [
+                        {
+                            "url": "https://sentiwiki.copernicus.eu/web/document-library",
+                            "type": "issue_or_collection",
+                            "href": ".pdf"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "ESA EO for Society Publications",
+                "type": "url",
+                "config": {
+                    "base_url": "https://eo4society.esa.int/",
+                    "sources": [
+                        {
+                            "url": "https://eo4society.esa.int/result-type/publications/page/2/",
+                            "type": "issue_or_collection",
+                            "href": ".pdf"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "CEOS ESA Catalogue",
+                "type": "url",
+                "config": {
+                    "base_url": "https://database.eohandbook.com/database/",
+                    "file_extension": ".html",
+                    "sources": [
+                        {
+                            "url": "https://database.eohandbook.com/database/instrumentindex.aspx",
+                            "type": "issue_or_collection",
+                            "href": "instrumentsummary.aspx"
+                        },
+                        {
+                            "url": "https://database.eohandbook.com/database/missionindex.aspx",
+                            "type": "issue_or_collection",
+                            "href": "missionsummary.aspx"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "ESA Open Science Catalog",
+                "type": "url",
+                "config": {
+                    "base_url": "https://opensciencedata.esa.int/",
+                    "file_extension": ".html",
+                    "sources": [
+                        {
+                            "url": "https://opensciencedata.esa.int/search",
+                            "type": "issue_or_collection",
+                            "href": "/products/"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "Earth Observation Handbook 2023",
+                "type": "direct",
+                "config": {
+                    "urls": [
+                        "https://eohandbook.com/gst/documents/CEOS_EO_Handbook_2023_light.pdf"
+                    ]
+                }
+            }
+        ]
     }
 }

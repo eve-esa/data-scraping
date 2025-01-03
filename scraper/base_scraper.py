@@ -146,6 +146,16 @@ class BaseScraper(ABC):
                 }}
             """)
 
+            if self._config_model.read_more_button:
+                self._driver.execute_script(f"""
+                    const button = Array.from(document.querySelectorAll('{self._config_model.read_more_button.selector}')).find(btn => 
+                      btn.textContent.trim().toUpperCase() === "{self._config_model.read_more_button.text}".toUpperCase()
+                    );
+                    if (button) {{
+                      button.click();
+                    }}
+                """)
+
             time.sleep(pause_time)
 
             # Calculate new scroll height and compare with the last height
@@ -242,3 +252,7 @@ class BaseScraper(ABC):
             Type[BaseConfig]: The configuration model type
         """
         pass
+
+
+class BaseMappedScraper(ABC):
+    pass
