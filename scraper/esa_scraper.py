@@ -3,10 +3,10 @@ import time
 from typing import List, Type, Dict
 from bs4 import Tag, ResultSet
 
-from adapter import ScrapeAdapter
 from model.base_mapped_models import BaseMappedUrlSource, BaseMappedConfig, SourceType
 from scraper.base_scraper import BaseScraper, BaseMappedScraper
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
+from service.adapter import ScrapeAdapter
 
 
 class ESAScraper(BaseScraper):

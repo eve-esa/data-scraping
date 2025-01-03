@@ -1,8 +1,8 @@
 from typing import Any, Dict, Type
 
+from helper.utils import get_scraped_url
 from model.base_mapped_models import BaseMappedSource, SourceType
 from scraper.base_scraper import BaseScraper
-from utils import get_scraped_url
 
 
 class ScrapeAdapter:

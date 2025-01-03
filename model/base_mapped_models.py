@@ -1,7 +1,7 @@
 from typing import List
 from pydantic import BaseModel, field_validator, model_validator
 
-from base_enum import Enum
+from helper.base_enum import Enum
 from model.base_direct_publisher_models import BaseDirectPublisherConfig
 from model.base_iterative_publisher_models import (
     BaseIterativePublisherJournal,
