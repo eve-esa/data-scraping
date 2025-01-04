@@ -1,0 +1,152 @@
+from typing import Type, List
+from bs4 import ResultSet, Tag
+from selenium.common import NoSuchElementException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
+
+from helper.utils import get_scraped_url
+from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
+from model.wiley_models import WileyConfig
+from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
+
+
+class WileyScraper(BasePaginationPublisherScraper):
+    def __init__(self):
+        super().__init__()
+        self.__base_url = None
+
+    @property
+    def config_model_type(self) -> Type[WileyConfig]:
+        """
+        Return the configuration model type.
+
+        Returns:
+            Type[WileyConfig]: The configuration model type
+        """
+        return WileyConfig
+
+    def scrape(self, model: WileyConfig) -> BasePaginationPublisherScrapeOutput:
+        """
+        Scrape the Sage sources for PDF links.
+
+        Args:
+            model (WileyConfig): The configuration model.
+
+        Returns:
+            BasePaginationPublisherScrapeOutput: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.
+        """
+        pdf_tags = {}
+        for idx, source in enumerate(model.sources):
+            self.__base_url = source.base_url
+            pdf_tags_journal = self._scrape_landing_page(source.landing_page_url, idx + 1)
+            if pdf_tags_journal:
+                pdf_tags[source.name] = [get_scraped_url(tag, self.__base_url) for tag in pdf_tags_journal]
+
+        return pdf_tags
+
+    def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> List[Tag]:
+        """
+        Scrape the landing page. If the source has a landing page, scrape the landing page for PDF links. If the source
+        has a landing page and the `should_store` is True, store the PDF tags from the landing page. Otherwise, return
+        an empty list.
+
+        Args:
+            landing_page_url (str): The landing page to scrape.
+
+        Returns:
+            List[Tag]: A list of Tag objects containing the tags to the PDF links. If something went wrong, an empty list.
+        """
+        self._logger.info(f"Processing Landing Page {landing_page_url}")
+
+        return self._scrape_pagination(landing_page_url, source_number, starting_page_number=0)
+
+    def _scrape_page(self, url: str) -> List[Tag] | None:
+        """
+        Scrape the PubMed page of the collection from pagination for PDF links.
+
+        Args:
+            url (str): The URL to scrape.
+
+        Returns:
+            ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
+        """
+        try:
+            self._scrape_url(url)
+
+            # Find all article links in the pagination URL, using the appropriate class or tag (if lambda returns True, it will be included in the list)
+            article_tags = self._driver.find_elements(
+                By.XPATH,
+                "//a[contains(@class, 'publication_title') and contains(@class, 'visitable') and contains(@href, '/doi/')]"
+            )
+            articles_links = [
+                link for article_tag in article_tags if (link := self.__get_link_for_accessible_article(article_tag))
+            ]
+
+            # Now, visit each article link and find the PDF link
+            pdf_tag_list = [
+                tag for article_link in articles_links if (tag := self.__scrape_article(article_link))
+            ]
+
+            self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
+            return pdf_tag_list
+        except Exception as e:
+            self._logger.error(f"Failed to process URL {url}. Error: {e}")
+            return None
+
+    def __get_link_for_accessible_article(self, article_tag: WebElement) -> str | None:
+        """
+        Check if the article is accessible (i.e., not behind a paywall) and return the URL. The method checks if the
+        article tag has a lock-open icon, which indicates that the article is not behind a paywall. If the article is
+        accessible, return the URL to the article. Otherwise, return None.
+
+        Args:
+            article_tag (WebElement): The article tag.
+
+        Returns:
+            str | None: The URL to the article if it is accessible, otherwise None.
+        """
+        try:
+            icon = article_tag.find_element(
+                By.XPATH,
+                "../../preceding-sibling::div[contains(@class, 'meta__header')]//i[contains(@class, 'icon-icon-lock_open')]"
+            )
+            if icon:
+                return get_scraped_url(
+                    Tag(name="a", attrs={"href": article_tag.get_attribute("href")}), self.__base_url
+                )
+        except NoSuchElementException:
+            return None
+
+    def __scrape_article(self, url: str) -> Tag | None:
+        """
+        Scrape the article page of the collection for the PDF link.
+
+        Args:
+            url (str): The URL to scrape.
+
+        Returns:
+            Tag | None: A Tag object containing the tag to the PDF link. If something went wrong, return None.
+        """
+        try:
+            scraper = self._scrape_url(url)
+
+            # look for the ePDF link in the article page
+            epdf_tag = scraper.find(
+                "a",
+                href=lambda href: href and "/doi/epdf/" in href,
+                class_=lambda class_: class_ and "pdf-download" in class_,
+            )
+            if not epdf_tag:
+                return None
+
+            # now, scrape the ePDF page to get the final PDF link, and return this latter tag
+            direct_pdf_tag = self._scrape_url(
+                get_scraped_url(epdf_tag, self.__base_url)
+            ).find("a", href=lambda href: href and "/doi/pdfdirect/" in href)
+            if not direct_pdf_tag:
+                return None
+
+            return Tag(name="a", attrs={"href": direct_pdf_tag.get("href").replace("?download=true", "")})
+        except Exception as e:
+            self._logger.error(f"Failed to process URL {url}. Error: {e}")
+            return None
