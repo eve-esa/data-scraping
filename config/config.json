@@ -575,6 +575,16 @@
             }
         ]
     },
+    "ArxivScraper": {
+        "bucket_key": "arxiv",
+        "base_url": "https://arxiv.org",
+        "sources": [
+            {
+                "landing_page_url": "https://arxiv.org/search/?searchtype=all&query=\"Earth+Observation\"&abstracts=show&size={page_size}&order=-announced_date_first&start={start_index}",
+                "page_size": 100
+            }
+        ]
+    },
     "WileyScraper": {
         "bucket_key": "wiley",
         "cookie_selector": "button.osano-cm-accept-all",
@@ -769,6 +779,7 @@
             {
                 "url": "https://eos.org/archive-2015",
                 "type": "issue_or_collection"
+
             }
         ]
     }
