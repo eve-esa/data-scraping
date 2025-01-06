@@ -108,16 +108,11 @@ class BaseScraper(ABC):
 
         # Handle cookie popup only once, for the first request
         if not self._cookie_handled and self._config_model.cookie_selector:
-            try:
-                cookie_button = WebDriverWait(self._driver, 5).until(
-                    EC.element_to_be_clickable((By.CSS_SELECTOR, self._config_model.cookie_selector))
-                )
-                self._driver.execute_script("arguments[0].click();", cookie_button)
-                self._cookie_handled = True
-            except Exception as e:
-                self._logger.error(
-                    f"Failed to handle cookie popup using JavaScript. Error: {e}"
-                )
+            cookie_button = WebDriverWait(self._driver, 5).until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, self._config_model.cookie_selector))
+            )
+            self._driver.execute_script("arguments[0].click();", cookie_button)
+            self._cookie_handled = True
 
         # Scroll through the page to load all articles
         last_height = self._driver.execute_script("return document.body.scrollHeight")

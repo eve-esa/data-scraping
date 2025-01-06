@@ -17,7 +17,7 @@ class IEEEScraper(BasePaginationPublisherScraper):
         """
         return BasePaginationPublisherConfig
 
-    def scrape(self, model: BasePaginationPublisherConfig) -> BasePaginationPublisherScrapeOutput:
+    def scrape(self, model: BasePaginationPublisherConfig) -> BasePaginationPublisherScrapeOutput | None:
         """
         Scrape the IEEE sources for PDF links.
 
@@ -25,7 +25,7 @@ class IEEEScraper(BasePaginationPublisherScraper):
             model (BasePaginationPublisherConfig): The configuration model.
 
         Returns:
-            BasePaginationPublisherScrapeOutput: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.
+            BasePaginationPublisherScrapeOutput | None: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.
         """
         pdf_links = [
             get_scraped_url(pdf_tag, self.base_url)
@@ -37,7 +37,7 @@ class IEEEScraper(BasePaginationPublisherScraper):
             )
         ]
 
-        return {"IEEE": pdf_links}
+        return {"IEEE": pdf_links} if pdf_links else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> ResultSet | List[Tag]:
         """

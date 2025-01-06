@@ -17,7 +17,7 @@ class CambridgeUniversityPressScraper(BasePaginationPublisherScraper):
         """
         return BasePaginationPublisherConfig
 
-    def scrape(self, model: BasePaginationPublisherConfig) -> BasePaginationPublisherScrapeOutput:
+    def scrape(self, model: BasePaginationPublisherConfig) -> BasePaginationPublisherScrapeOutput | None:
         """
         Scrape the Cambridge University Press sources for PDF links.
 
@@ -37,7 +37,7 @@ class CambridgeUniversityPressScraper(BasePaginationPublisherScraper):
             )
         ]
 
-        return {"Cambridge University Press": pdf_links}
+        return {"Cambridge University Press": pdf_links} if pdf_links else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> ResultSet | List[Tag]:
         """

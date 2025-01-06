@@ -1,7 +1,9 @@
 from typing import Type, List
 from bs4 import ResultSet, Tag
 
+from helper.utils import get_scraped_url
 from model.arxiv_models import ArxivConfig
+from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
 
 
@@ -20,7 +22,7 @@ class ArxivScraper(BasePaginationPublisherScraper):
         """
         return ArxivConfig
 
-    def scrape(self, model: ArxivConfig) -> List[Tag] | None:
+    def scrape(self, model: ArxivConfig) -> BasePaginationPublisherScrapeOutput | None:
         """
         Scrape the Sage sources for PDF links.
 
@@ -28,14 +30,14 @@ class ArxivScraper(BasePaginationPublisherScraper):
             model (ArxivConfig): The configuration model.
 
         Returns:
-            List[Tag] | None: A list of Tag objects containing the tags to the PDF links. If no tag was found, return None.
+            BasePaginationPublisherScrapeOutput | None: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.
         """
         pdf_tags = []
         for idx, source in enumerate(model.sources):
             self.__page_size = source.page_size
             pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
 
-        return pdf_tags if pdf_tags else None
+        return {"Arxiv": [get_scraped_url(tag, self.base_url) for tag in pdf_tags]} if pdf_tags else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> List[Tag]:
         """

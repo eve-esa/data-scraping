@@ -25,7 +25,7 @@ class WileyScraper(BasePaginationPublisherScraper):
         """
         return WileyConfig
 
-    def scrape(self, model: WileyConfig) -> BasePaginationPublisherScrapeOutput:
+    def scrape(self, model: WileyConfig) -> BasePaginationPublisherScrapeOutput | None:
         """
         Scrape the Sage sources for PDF links.
 
@@ -33,7 +33,7 @@ class WileyScraper(BasePaginationPublisherScraper):
             model (WileyConfig): The configuration model.
 
         Returns:
-            BasePaginationPublisherScrapeOutput: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.
+            BasePaginationPublisherScrapeOutput | None: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.
         """
         pdf_tags = {}
         for idx, source in enumerate(model.sources):
@@ -42,7 +42,7 @@ class WileyScraper(BasePaginationPublisherScraper):
             if pdf_tags_journal:
                 pdf_tags[source.name] = [get_scraped_url(tag, self.__base_url) for tag in pdf_tags_journal]
 
-        return pdf_tags
+        return pdf_tags if pdf_tags else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> List[Tag]:
         """
@@ -127,6 +127,8 @@ class WileyScraper(BasePaginationPublisherScraper):
         Returns:
             Tag | None: A Tag object containing the tag to the PDF link. If something went wrong, return None.
         """
+        self._logger.info(f"Processing Article {url}")
+
         try:
             scraper = self._scrape_url(url)
 

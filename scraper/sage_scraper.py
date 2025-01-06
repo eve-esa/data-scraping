@@ -17,7 +17,7 @@ class SageScraper(BasePaginationPublisherScraper):
         """
         return BasePaginationPublisherConfig
 
-    def scrape(self, model: BasePaginationPublisherConfig) -> BasePaginationPublisherScrapeOutput:
+    def scrape(self, model: BasePaginationPublisherConfig) -> BasePaginationPublisherScrapeOutput | None:
         """
         Scrape the Sage sources for PDF links.
 
@@ -25,13 +25,13 @@ class SageScraper(BasePaginationPublisherScraper):
             model (BasePaginationPublisherConfig): The configuration model.
 
         Returns:
-            BasePaginationPublisherScrapeOutput: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.
+            BasePaginationPublisherScrapeOutput | None: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.
         """
         pdf_tags = []
         for idx, source in enumerate(model.sources):
             pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
 
-        return {"Sage": [get_scraped_url(tag, self.base_url) for tag in pdf_tags]}
+        return {"Sage": [get_scraped_url(tag, self.base_url) for tag in pdf_tags]} if pdf_tags else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> List[Tag]:
         """

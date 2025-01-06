@@ -60,7 +60,7 @@ class BasePaginationPublisherScraper(BaseScraper):
         return get_unique([link for links in scrape_output.values() for link in links])
 
     @abstractmethod
-    def scrape(self, model: BaseConfig) -> BasePaginationPublisherScrapeOutput:
+    def scrape(self, model: BaseConfig) -> BasePaginationPublisherScrapeOutput | None:
         """
         Scrape the resources links. This method must be implemented in the derived class.
 
@@ -68,7 +68,7 @@ class BasePaginationPublisherScraper(BaseScraper):
             model (BaseConfig): The configuration model.
 
         Returns:
-            BasePaginationPublisherScrapeOutput: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.
+            BasePaginationPublisherScrapeOutput | None: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.
         """
         pass
 
