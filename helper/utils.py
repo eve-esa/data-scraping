@@ -4,12 +4,16 @@ import json
 import os
 import pkgutil
 import threading
+import time
+import zipfile
 from typing import Dict, List, Type
 import yaml
 import logging
 from bs4 import Tag
 from pydantic import ValidationError
 from urllib.parse import urlparse
+import undetected_chromedriver as uc
+from fake_useragent import UserAgent
 
 from scraper.base_scraper import BaseScraper, BaseMappedScraper
 
@@ -139,18 +143,18 @@ def get_scraped_url(tag: Tag, base_url: str) -> str:
     return f"{prefix}/{tag.get('href').lstrip('/')}"
 
 
-def get_pdf_name(pdf_url: str, file_extension: str) -> str:
+def get_filename(url: str, file_extension: str) -> str:
     """
-    Get the PDF name from the URL.
+    Get the filename from the URL.
 
     Args:
-        pdf_url (str): The URL of the PDF.
+        url (str): The URL of the file.
         file_extension (str): The type of the file.
 
     Returns:
-        str: The name of the PDF.
+        str: The final name of the file.
     """
-    parsed = urlparse(pdf_url)
+    parsed = urlparse(url)
 
     path = parsed.path.lstrip("/")
     # if the `path` contains the file extension, return the last part of the URL
@@ -172,3 +176,72 @@ def get_unique(pdf_links: List[str]) -> List[str]:
         List[str]: A list of unique PDF links.
     """
     return list(set(pdf_links))
+
+
+def get_chrome_options() -> uc.ChromeOptions:
+    chrome_options = uc.ChromeOptions()
+
+    # Basic configuration
+    chrome_options.add_argument("--start-maximized")
+    chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+    chrome_options.add_argument(f"--user-agent={UserAgent().random}")
+    chrome_options.add_argument("--headless=new")  # Run in headless mode (no browser UI)
+
+    # Performance options
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+
+    # Cookies and security
+    chrome_options.add_argument("--enable-cookies")
+    chrome_options.add_argument("--disable-web-security")
+    chrome_options.add_argument("--ignore-certificate-errors")
+
+    return chrome_options
+
+
+def wait_end_download(directory: str, timeout: int | None = 60) -> bool:
+    """
+    Wait for the download to finish. If the download is not completed within the specified timeout, raise an exception.
+
+    Args:
+        directory (str): The directory containing the download files.
+        timeout (int): The timeout in seconds. Default is 60 seconds.
+
+    Returns:
+        bool: True if the download is completed, False otherwise.
+    """
+    start_time = time.time()
+
+    while time.time() - start_time < timeout:
+        # check if there are download temporary files in the directory
+        ongoing_downloads = [
+            f for f in os.listdir(directory) if f.endswith(".crdownload") or f.endswith(".tmp") or f.endswith(".part")
+        ]
+        if not ongoing_downloads:
+            return True
+
+        time.sleep(0.5)
+
+    raise TimeoutError("Incomplete download in the specified timeout")
+
+
+def unpack_zip_files(directory: str):
+    """
+    Unpack the ZIP files in the directory.
+
+    Args:
+        directory (str): The directory containing the ZIP files.
+    """
+    zip_files = [f for f in os.listdir(directory) if f.endswith(".zip")]
+    if not zip_files:
+        return
+
+    # Unpack the ZIP files
+    for zip_file in zip_files:
+        zip_file_path = os.path.join(directory, zip_file)
+        # Unpack the ZIP file
+        with zipfile.ZipFile(zip_file_path, "r") as zip_ref:
+            zip_ref.extractall(directory)
+        # Remove the ZIP file
+        os.remove(zip_file_path)

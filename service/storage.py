@@ -56,27 +56,29 @@ class S3Storage:
             location = {"LocationConstraint": region}
             self.client.create_bucket(Bucket=self.bucket_name, CreateBucketConfiguration=location)
 
-    def upload(self, root_key: str, source_url: str, file_extension: str, referer_url: str | None = None) -> bool:
-        from helper.utils import get_pdf_name
-
-        referer_url = referer_url if referer_url is not None else "https://www.google.com"
-        s3_key = os.path.join(root_key, get_pdf_name(source_url, file_extension))  # Construct S3 key
-
-        self.logger.info(f"Uploading Source: {source_url} to {s3_key}")
-
+    def __can_upload(self, s3_key: str) -> bool:
         # Check if the file already exists in S3
         try:
             self.client.head_object(Bucket=self.bucket_name, Key=s3_key)
             self.logger.warning(f"{s3_key} already exists in S3, skipping upload.")
-            return True  # Exit the function if the file exists
+            return False  # Exit the function if the file exists
         except ClientError as e:
             if e.response["Error"]["Code"] == "404":
                 # The object does not exist, proceed to upload
-                pass
-            else:
-                # Handle other exceptions, e.g. permissions
-                self.logger.error(f"Error checking if {s3_key} exists in S3: {e}")
-                return False
+                return True
+            # Handle other exceptions, e.g. permissions
+            self.logger.error(f"Error checking if {s3_key} exists in S3: {e}")
+            return False
+
+    def upload(self, root_key: str, source_url: str, file_extension: str, referer_url: str | None = None) -> bool:
+        from helper.utils import get_filename
+
+        referer_url = referer_url if referer_url is not None else "https://www.google.com"
+        s3_key = os.path.join(root_key, get_filename(source_url, file_extension))  # Construct S3 key
+
+        self.logger.info(f"Uploading Source: {source_url} to {s3_key}")
+        if not self.__can_upload(s3_key):
+            return False
 
         try:
             # Download PDF content from the URL
@@ -95,5 +97,23 @@ class S3Storage:
             return True
         except Exception as e:
             self.logger.error(f"Failed to upload source {source_url} to {s3_key}. Error: {e}")
+
+            return False
+
+    def upload_content(self, root_key: str, source_name: str, content: bytes) -> bool:
+        s3_key = os.path.join(root_key, source_name)  # Construct S3 key
+
+        self.logger.info(f"Uploading Source: {source_name} to {s3_key}")
+        if not self.__can_upload(s3_key):
+            return False
+
+        try:
+            # Upload to S3
+            self.client.put_object(Bucket=self.bucket_name, Key=s3_key, Body=content)
+            self.logger.info(f"Successfully uploaded to S3: {s3_key}")
+
+            return True
+        except Exception as e:
+            self.logger.error(f"Failed to upload source {source_name} to {s3_key}. Error: {e}")
 
             return False

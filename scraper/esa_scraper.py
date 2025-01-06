@@ -80,7 +80,7 @@ class ESAScraper(BaseScraper):
             file_extension = self.__file_extensions[source_name]
 
             for link in source_links:
-                result = self._s3_client.upload(self._config_model.bucket_key, link, file_extension)
+                result = self._s3_client.upload(self.bucket_key, link, file_extension)
                 if not result:
                     all_done = False
 
