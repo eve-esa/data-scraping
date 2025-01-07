@@ -3,6 +3,7 @@ import inspect
 import json
 import os
 import pkgutil
+import threading
 from typing import Dict, List, Type
 import yaml
 import logging
@@ -95,6 +96,7 @@ def run_scrapers(discovered_scrapers: Dict[str, Type[BaseScraper]], config: Dict
         discovered_scrapers (Dict[str, Type[BaseScraper]]): A dictionary of scraper names and their classes (i.e., types).
         config (Dict[str, Dict]): A dictionary of scraper names and their configurations.
     """
+    threads = []
     for name_scraper, class_type_scraper in discovered_scrapers.items():
         config_scraper = config.get(name_scraper)
         if config_scraper is None:
@@ -104,9 +106,14 @@ def run_scrapers(discovered_scrapers: Dict[str, Type[BaseScraper]], config: Dict
         scraper_obj = class_type_scraper()
         config_model = scraper_obj.config_model_type(**config_scraper)
         try:
-            scraper_obj(config_model)
+            thread = threading.Thread(target=lambda: scraper_obj(config_model))
+            thread.start()
+            threads.append(thread)
         except ValidationError as e:
             logger.error(f"Error running scraper {name_scraper}: {e}")
+
+    for thread in threads:
+        thread.join()
 
 
 def get_scraped_url(tag: Tag, base_url: str) -> str:
