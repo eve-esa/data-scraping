@@ -13,6 +13,7 @@ import logging
 
 from helper.constants import OUTPUT_FOLDER, ROTATE_USER_AGENT_EVERY
 from model.base_models import BaseConfig
+from service.proxy_provider import ProxyProvider
 from service.storage import S3Storage
 
 
@@ -62,6 +63,9 @@ class BaseScraper(ABC):
         if self._download_folder_path and not os.path.exists(self._download_folder_path):
             os.makedirs(self._download_folder_path)
         chrome_options = get_chrome_options(self._download_folder_path)
+
+        if working_proxy := ProxyProvider().find_proxy():
+            chrome_options.add_argument(f"--proxy-server={working_proxy}")
 
         # Create WebDriver instance
         self._driver = uc.Chrome(options=chrome_options, user_multi_procs=True)

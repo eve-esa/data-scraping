@@ -8,6 +8,7 @@ from fake_useragent import UserAgent
 from pydantic import BaseModel
 
 from helper.singleton import singleton
+from service.proxy_provider import ProxyProvider
 
 
 class PDFName(BaseModel):
@@ -81,13 +82,19 @@ class S3Storage:
             return False
 
         try:
+            working_proxy = ProxyProvider().find_proxy()
+
             # Download PDF content from the URL
-            response = requests.get(source_url, headers={
-                "User-Agent": UserAgent().random,
-                "Accept": "application/pdf,*/*",
-                "Accept-Language": "en-US,en;q=0.9",
-                "Referer": referer_url,
-            })
+            response = requests.get(
+                source_url,
+                headers={
+                    "User-Agent": UserAgent().random,
+                    "Accept": "application/pdf,*/*",
+                    "Accept-Language": "en-US,en;q=0.9",
+                    "Referer": referer_url,
+                },
+                proxies={"http": working_proxy, "https": working_proxy} if working_proxy else None
+            )
             response.raise_for_status()  # Check for request errors
 
             # Upload to S3
