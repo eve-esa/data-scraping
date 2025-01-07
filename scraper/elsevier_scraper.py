@@ -8,8 +8,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from helper.utils import get_scraped_url, get_chrome_options, wait_end_download, unpack_zip_files
-from model.base_models import BaseConfig
+from helper.utils import get_scraped_url, get_chrome_options, unpack_zip_files
 from model.elsevier_models import (
     SourceType,
     ElsevierConfig,
@@ -29,7 +28,7 @@ class ElsevierScraper(BaseScraper):
             os.makedirs(self.__download_folder_path)
 
     @property
-    def config_model_type(self) -> Type[BaseConfig]:
+    def config_model_type(self) -> Type[ElsevierConfig]:
         return ElsevierConfig
 
     def setup_driver(self):
@@ -90,15 +89,15 @@ class ElsevierScraper(BaseScraper):
             self._logger.error(f"Error scraping journal: {e}")
             return None
 
-    def __scrape_issue(self, source: ElsevierConfig) -> ElsevierScrapeIssueOutput:
-        self._logger.info(f"Scraping Issue: {source.name}")
+    def __scrape_issue(self, source: ElsevierSource) -> ElsevierScrapeIssueOutput:
+        self._logger.info(f"Scraping Issue: {source.name}, URL: {source.url}")
 
         try:
             scraper = self._scrape_url(source.url)
 
             # find the element with tag "a", class "anchor" and attribute `navname` equal to "prev-next-issue-bottom"
             next_issue_tag = scraper.find("a", class_="anchor", navname="prev-next-issue-bottom")
-            next_issue_link = get_scraped_url(next_issue_tag, self._config_model.base_url) if next_issue_tag else None
+            next_issue_link = get_scraped_url(next_issue_tag, self.base_url) if next_issue_tag else None
 
             # check for the presence of tags "a", class "pdf-download" with attribute `href` containing ".pdf"
             pdf_tags = scraper.find_all(
@@ -108,7 +107,7 @@ class ElsevierScraper(BaseScraper):
             )
             # if no pdf_tags exist, try with the next issue since no PDF can be downloaded from the current one
             if not pdf_tags:
-                self._logger.error(f"No downloadable PDF found in the Issue {source.name}")
+                self._logger.error(f"No downloadable PDF found at the URL: {source.url}")
                 return ElsevierScrapeIssueOutput(was_scraped=False, next_issue_url=next_issue_link)
 
             # wait for the page to load and get the element with tag "button", child of "form.js-download-full-issue-form"
@@ -119,12 +118,38 @@ class ElsevierScraper(BaseScraper):
             self._driver.execute_script("arguments[0].click();", button_download)
 
             # wait for the download to complete
-            wait_end_download(self.__download_folder_path)
+            self._logger.info(f"Downloading PDFs from {source.url}")
+            self.__wait_end_download()
+
+            # unpack zip files before uploading
+            unpack_zip_files(self.__download_folder_path)
 
             return ElsevierScrapeIssueOutput(was_scraped=True, next_issue_url=next_issue_link)
         except Exception as e:
             self._logger.error(f"Error scraping journal: {e}")
             return ElsevierScrapeIssueOutput(was_scraped=False, next_issue_url=None)
+
+    def __wait_end_download(self, timeout: int | None = 60) -> bool:
+        """
+        Wait for the download to finish. If the download is not completed within the specified timeout, raise an exception.
+
+        Args:
+            timeout (int): The timeout in seconds. Default is 60 seconds.
+
+        Returns:
+            bool: True if the download is completed, False otherwise.
+        """
+        start_time = time.time()
+
+        while time.time() - start_time < timeout:
+            # check if there are completed zip files temporary files in the directory
+            completed_downloads = [f for f in os.listdir(self.__download_folder_path) if f.endswith(".zip")]
+            if completed_downloads:
+                return True
+
+            time.sleep(0.5)
+
+        raise TimeoutError("Incomplete download in the specified timeout")
 
     def _upload_to_s3(self, sources_links: List[str]) -> bool:
         """
@@ -140,12 +165,11 @@ class ElsevierScraper(BaseScraper):
 
         all_done = True
 
-        # unpack zip files before uploading
-        self._logger.info("Unpacking zip files")
-        unpack_zip_files(self.__download_folder_path)
-
         # upload files to S3
         for file in os.listdir(self.__download_folder_path):
+            if not os.path.isfile(os.path.join(self.__download_folder_path, file)):
+                continue
+
             if not file.endswith(self.file_extension):
                 continue
 

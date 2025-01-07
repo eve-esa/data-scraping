@@ -908,5 +908,47 @@
                 }
             }
         ]
+    },
+    "ElsevierScraper": {
+        "bucket_key": "elsevier",
+        "base_url": "https://www.sciencedirect.com",
+        "cookie_selector": "[id='onetrust-accept-btn-handler']",
+        "sources":[
+            {
+                "url": "https://www.sciencedirect.com/journal/international-journal-of-applied-earth-observation-and-geoinformation/issues",
+                "name": "International Journal of Applied Earth Observation and Geoinformation",
+                "type": "journal"
+            },
+            {
+                "url": "https://www.sciencedirect.com/journal/remote-sensing-applications-society-and-environment/issues",
+                "name": "Remote Sensing Applications: Society and Environment",
+                "type": "journal"
+            },
+            {
+                "url": "https://www.sciencedirect.com/journal/science-of-remote-sensing/issues",
+                "name": "Science of Remote Sensing",
+                "type": "journal"
+            },
+            {
+                "url": "https://www.sciencedirect.com/journal/weather-and-climate-extremes/issues",
+                "name": "Weather and Climate Extremes",
+                "type": "journal"
+            },
+            {
+                "url": "https://www.sciencedirect.com/journal/isprs-open-journal-of-photogrammetry-and-remote-sensing/issues",
+                "name": "ISPRS Open Journal of Photogrammetry and Remote Sensing",
+                "type": "journal"
+            },
+            {
+                "url": "https://www.sciencedirect.com/journal/the-egyptian-journal-of-remote-sensing-and-space-sciences/issues",
+                "name": "The Egyptian Journal of Remote Sensing and Space Sciences",
+                "type": "journal"
+            },
+            {
+                "url": "https://www.sciencedirect.com/journal/global-environmental-change-advances/vol/2/suppl/C",
+                "name": "Global Environmental Change Advances",
+                "type": "issue"
+            }
+        ]
     }
 }

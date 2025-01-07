@@ -200,32 +200,6 @@ def get_chrome_options() -> uc.ChromeOptions:
     return chrome_options
 
 
-def wait_end_download(directory: str, timeout: int | None = 60) -> bool:
-    """
-    Wait for the download to finish. If the download is not completed within the specified timeout, raise an exception.
-
-    Args:
-        directory (str): The directory containing the download files.
-        timeout (int): The timeout in seconds. Default is 60 seconds.
-
-    Returns:
-        bool: True if the download is completed, False otherwise.
-    """
-    start_time = time.time()
-
-    while time.time() - start_time < timeout:
-        # check if there are download temporary files in the directory
-        ongoing_downloads = [
-            f for f in os.listdir(directory) if f.endswith(".crdownload") or f.endswith(".tmp") or f.endswith(".part")
-        ]
-        if not ongoing_downloads:
-            return True
-
-        time.sleep(0.5)
-
-    raise TimeoutError("Incomplete download in the specified timeout")
-
-
 def unpack_zip_files(directory: str):
     """
     Unpack the ZIP files in the directory.
