@@ -75,7 +75,7 @@ class BaseScraper(ABC):
         chrome_options.add_argument("--ignore-certificate-errors")
 
         # Create WebDriver instance
-        self._driver = uc.Chrome(options=chrome_options)
+        self._driver = uc.Chrome(options=chrome_options, user_multi_procs=True)
 
     def shutdown_driver(self):
         if self._driver:
