@@ -54,7 +54,8 @@ class ProxyProvider:
                 response = requests.get(
                     "https://www.google.com",
                     proxies={"http": test_proxy, "https": test_proxy},
-                    timeout=10
+                    timeout=10,
+                    verify=False
                 )
                 if response.status_code != 200:
                     raise Exception("Invalid response")
