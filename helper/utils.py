@@ -4,7 +4,6 @@ import json
 import os
 import pkgutil
 import threading
-import time
 import zipfile
 from typing import Dict, List, Type
 import yaml
@@ -186,6 +185,8 @@ def get_chrome_options() -> uc.ChromeOptions:
     chrome_options.add_argument("--disable-blink-features=AutomationControlled")
     chrome_options.add_argument(f"--user-agent={UserAgent().random}")
     chrome_options.add_argument("--headless=new")  # Run in headless mode (no browser UI)
+    chrome_options.add_argument('--window-size=1920,1080')
+    chrome_options.add_argument('--start-maximized')
 
     # Performance options
     chrome_options.add_argument("--disable-gpu")
