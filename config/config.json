@@ -1,6 +1,6 @@
 {
     "IOPScraper": {
-        "bucket_key": "iopscience",
+        "bucket_key": "raw_data/iopscience",
         "base_url": "https://iopscience.iop.org",
         "cookie_selector": "div.cky-consent-container.cky-classic-bottom > div.cky-consent-bar > div > div > div.cky-notice-btn-wrapper > button.cky-btn.cky-btn-accept",
         "sources": [
@@ -79,7 +79,7 @@
         ]
     },
     "MDPIScraper": {
-        "bucket_key": "mdpi",
+        "bucket_key": "raw_data/mdpi",
         "base_url": "https://www.mdpi.com",
         "journals": [
             {
@@ -189,7 +189,7 @@
         ]
     },
     "SpringerScraper": {
-        "bucket_key": "springer",
+        "bucket_key": "raw_data/springer",
         "cookie_selector": "button.cc-banner__button-accept",
         "base_url": "https://link.springer.com",
         "sources": [
@@ -236,7 +236,7 @@
         ]
     },
     "AMSScraper": {
-        "bucket_key": "ams",
+        "bucket_key": "raw_data/ams",
         "base_url": "https://journals.ametsoc.org",
         "journals": [
             {
@@ -290,7 +290,7 @@
         ]
     },
     "CopernicusScraper": {
-        "bucket_key": "copernicus",
+        "bucket_key": "raw_data/copernicus",
         "journals": [
             {
                 "url": "https://acp.copernicus.org",
@@ -439,7 +439,7 @@
         ]
     },
     "SeosScraper": {
-        "bucket_key": "seos",
+        "bucket_key": "raw_data/seos",
         "base_url": "https://seos-project.eu",
         "file_extension": ".html",
         "sources": [
@@ -462,7 +462,7 @@
         ]
     },
     "NCBIScraper": {
-        "bucket_key": "ncbi",
+        "bucket_key": "raw_data/ncbi",
         "base_url": "https://www.ncbi.nlm.nih.gov",
         "sources": [
             {
@@ -476,7 +476,7 @@
         ]
     },
     "CambridgeUniversityPressScraper": {
-        "bucket_key": "cambridge_university_press",
+        "bucket_key": "raw_data/cambridge_university_press",
         "base_url": "https://www.cambridge.org",
         "cookie_selector": "a.cookie-close",
         "sources": [
@@ -489,7 +489,7 @@
         ]
     },
     "OxfordAcademicScraper": {
-        "bucket_key": "oxford_academic",
+        "bucket_key": "raw_data/oxford_academic",
         "base_url": "https://academic.oup.com",
         "cookie_selector": "[id='accept-button']",
         "journals": [
@@ -505,7 +505,7 @@
         ]
     },
     "IEEEScraper": {
-        "bucket_key": "ieee",
+        "bucket_key": "raw_data/ieee",
         "base_url": "https://ieeexplore.ieee.org",
         "cookie_selector": "button.osano-cm-accept-all",
         "sources": [
@@ -518,7 +518,7 @@
         ]
     },
     "TaylorAndFrancisScraper": {
-        "bucket_key": "taylor_and_francis",
+        "bucket_key": "raw_data/taylor_and_francis",
         "base_url": "https://www.tandfonline.com",
         "cookie_selector": "[id='onetrust-accept-btn-handler']",
         "sources": [
@@ -545,7 +545,7 @@
         ]
     },
     "FrontiersScraper": {
-        "bucket_key": "frontiers",
+        "bucket_key": "raw_data/frontiers",
         "base_url": "https://www.frontiersin.org/",
         "cookie_selector": "[id='onetrust-accept-btn-handler']",
         "sources": [
@@ -556,7 +556,7 @@
         ]
     },
     "SageScraper": {
-        "bucket_key": "sage",
+        "bucket_key": "raw_data/sage",
         "base_url": "https://journals.sagepub.com",
         "cookie_selector": "div.qc-cmp2-summary-buttons > button.css-1pdnrb0",
         "sources": [
@@ -566,7 +566,7 @@
         ]
     },
     "EOGEScraper": {
-        "bucket_key": "eoge",
+        "bucket_key": "raw_data/eoge",
         "base_url": "https://eoge.ut.ac.ir",
         "sources": [
             {
@@ -576,7 +576,7 @@
         ]
     },
     "ArxivScraper": {
-        "bucket_key": "arxiv",
+        "bucket_key": "raw_data/arxiv",
         "base_url": "https://arxiv.org",
         "sources": [
             {
@@ -586,7 +586,7 @@
         ]
     },
     "WileyScraper": {
-        "bucket_key": "wiley",
+        "bucket_key": "raw_data/wiley",
         "cookie_selector": "button.osano-cm-accept-all",
         "sources": [
             {
@@ -732,7 +732,7 @@
         ]
     },
     "EOSScraper": {
-        "bucket_key": "eos",
+        "bucket_key": "raw_data/eos",
         "base_url": "https://eos.org/",
         "cookie_selector": "a.cc-dismiss",
         "sources": [
@@ -784,7 +784,7 @@
         ]
     },
     "ESAScraper": {
-        "bucket_key": "esa",
+        "bucket_key": "raw_data/esa",
         "sources": [
             {
                 "name": "ESA Earth Online",
