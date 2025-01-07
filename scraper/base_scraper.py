@@ -63,6 +63,8 @@ class BaseScraper(ABC):
         chrome_options.add_argument("--disable-blink-features=AutomationControlled")
         chrome_options.add_argument(f"--user-agent={UserAgent().random}")
         chrome_options.add_argument("--headless=new")  # Run in headless mode (no browser UI)
+        chrome_options.add_argument('--window-size=1920,1080')
+        chrome_options.add_argument('--start-maximized')
 
         # Performance options
         chrome_options.add_argument("--disable-gpu")
@@ -76,6 +78,9 @@ class BaseScraper(ABC):
 
         # Create WebDriver instance
         self._driver = uc.Chrome(options=chrome_options, user_multi_procs=True)
+
+        # emulating hardware characteristics
+        self._driver.execute_cdp_cmd("Emulation.setHardwareConcurrencyOverride", {"hardwareConcurrency": 8})
 
     def shutdown_driver(self):
         if self._driver:
