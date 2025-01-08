@@ -920,7 +920,7 @@
         ]
     },
     "ElsevierScraper": {
-        "bucket_key": "elsevier",
+        "bucket_key": "raw_data/elsevier",
         "base_url": "https://www.sciencedirect.com",
         "cookie_selector": "[id='onetrust-accept-btn-handler']",
         "sources":[
