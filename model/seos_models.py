@@ -8,6 +8,7 @@ class SeosSource(BaseModel):
     url: str
     search: str
     folder: str
+    chapter_start: int | None = 1
     chapters: int
 
 

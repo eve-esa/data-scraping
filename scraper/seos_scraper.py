@@ -48,7 +48,7 @@ class SeosScraper(BaseScraper):
         scraper = self._scrape_url(source.url)
 
         html_tags = []
-        for i in range(1, source.chapters + 1):
+        for i in range(source.chapter_start, source.chapters + 1):
             try:
                 i_str = f"{i}" if i >= 10 else f"0{i}"  # Add leading zero if needed
 

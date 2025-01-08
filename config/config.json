@@ -447,12 +447,14 @@
                 "url": "https://seos-project.eu/remotesensing/remotesensing-c00-p02.html",
                 "search": "remotesensing-c",
                 "folder": "remotesensing",
+                "chapter_start": 0,
                 "chapters": 6
             },
             {
                 "url": "https://seos-project.eu/landuse/landuse-c00-p02.html",
                 "search": "landuse-c",
                 "folder": "landuse",
+                "chapter_start": 0,
                 "chapters": 4
             },
             {
