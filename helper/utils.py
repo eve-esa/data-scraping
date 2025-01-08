@@ -18,6 +18,7 @@ from selenium.webdriver.common.by import By
 from selenium.common import NoSuchElementException
 
 from scraper.base_scraper import BaseScraper, BaseMappedScraper
+from service.proxy_provider import ProxyProvider
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -208,6 +209,9 @@ def get_chrome_options(download_folder_path: str | None = None) -> uc.ChromeOpti
             "download.directory_upgrade": True,
             "safebrowsing.enabled": True
         })
+
+    if working_proxy := ProxyProvider().find_proxy():
+        chrome_options.add_argument(f"--proxy-server={working_proxy}")
 
     return chrome_options
 
