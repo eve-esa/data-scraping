@@ -56,25 +56,8 @@ class BaseScraper(ABC):
         self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")
 
     def setup_driver(self):
-        chrome_options = uc.ChromeOptions()
-
-        # Basic configuration
-        chrome_options.add_argument("--start-maximized")
-        chrome_options.add_argument("--disable-blink-features=AutomationControlled")
-        chrome_options.add_argument(f"--user-agent={UserAgent().random}")
-        chrome_options.add_argument("--headless=new")  # Run in headless mode (no browser UI)
-        chrome_options.add_argument('--window-size=1920,1080')
-        chrome_options.add_argument('--start-maximized')
-
-        # Performance options
-        chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-
-        # Cookies and security
-        chrome_options.add_argument("--enable-cookies")
-        chrome_options.add_argument("--disable-web-security")
-        chrome_options.add_argument("--ignore-certificate-errors")
+        from helper.utils import get_chrome_options
+        chrome_options = get_chrome_options()
 
         # Create WebDriver instance
         self._driver = uc.Chrome(options=chrome_options, user_multi_procs=True)
@@ -196,7 +179,7 @@ class BaseScraper(ABC):
 
         all_done = True
         for link in sources_links:
-            result = self._s3_client.upload(self._config_model.bucket_key, link, self._config_model.file_extension)
+            result = self._s3_client.upload(self.bucket_key, link, self.file_extension)
             if not result:
                 all_done = False
 
@@ -208,12 +191,32 @@ class BaseScraper(ABC):
     @property
     def base_url(self) -> str:
         """
-        Return the base URL of the publisher. This property must be implemented in the derived class.
+        Return the base URL of the publisher.
 
         Returns:
             str: The base URL of the publisher
         """
         return self._config_model.base_url
+
+    @property
+    def bucket_key(self) -> str:
+        """
+        Return the bucket key of the publisher.
+
+        Returns:
+            str: The bucket key of the publisher
+        """
+        return self._config_model.bucket_key
+
+    @property
+    def file_extension(self) -> str:
+        """
+        Return the file extension linked to the publisher.
+
+        Returns:
+            str: The file extension linked to the publisher
+        """
+        return self._config_model.file_extension
 
     @abstractmethod
     def scrape(self, model: BaseConfig) -> Any | None:

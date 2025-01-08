@@ -4,12 +4,15 @@ import json
 import os
 import pkgutil
 import threading
+import zipfile
 from typing import Dict, List, Type
 import yaml
 import logging
 from bs4 import Tag
 from pydantic import ValidationError
 from urllib.parse import urlparse
+import undetected_chromedriver as uc
+from fake_useragent import UserAgent
 
 from scraper.base_scraper import BaseScraper, BaseMappedScraper
 
@@ -139,18 +142,18 @@ def get_scraped_url(tag: Tag, base_url: str) -> str:
     return f"{prefix}/{tag.get('href').lstrip('/')}"
 
 
-def get_pdf_name(pdf_url: str, file_extension: str) -> str:
+def get_filename(url: str, file_extension: str) -> str:
     """
-    Get the PDF name from the URL.
+    Get the filename from the URL.
 
     Args:
-        pdf_url (str): The URL of the PDF.
+        url (str): The URL of the file.
         file_extension (str): The type of the file.
 
     Returns:
-        str: The name of the PDF.
+        str: The final name of the file.
     """
-    parsed = urlparse(pdf_url)
+    parsed = urlparse(url)
 
     path = parsed.path.lstrip("/")
     # if the `path` contains the file extension, return the last part of the URL
@@ -172,3 +175,48 @@ def get_unique(pdf_links: List[str]) -> List[str]:
         List[str]: A list of unique PDF links.
     """
     return list(set(pdf_links))
+
+
+def get_chrome_options() -> uc.ChromeOptions:
+    chrome_options = uc.ChromeOptions()
+
+    # Basic configuration
+    chrome_options.add_argument("--start-maximized")
+    chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+    chrome_options.add_argument(f"--user-agent={UserAgent().random}")
+    chrome_options.add_argument("--headless=new")  # Run in headless mode (no browser UI)
+    chrome_options.add_argument('--window-size=1920,1080')
+    chrome_options.add_argument('--start-maximized')
+
+    # Performance options
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+
+    # Cookies and security
+    chrome_options.add_argument("--enable-cookies")
+    chrome_options.add_argument("--disable-web-security")
+    chrome_options.add_argument("--ignore-certificate-errors")
+
+    return chrome_options
+
+
+def unpack_zip_files(directory: str):
+    """
+    Unpack the ZIP files in the directory.
+
+    Args:
+        directory (str): The directory containing the ZIP files.
+    """
+    zip_files = [f for f in os.listdir(directory) if f.endswith(".zip")]
+    if not zip_files:
+        return
+
+    # Unpack the ZIP files
+    for zip_file in zip_files:
+        zip_file_path = os.path.join(directory, zip_file)
+        # Unpack the ZIP file
+        with zipfile.ZipFile(zip_file_path, "r") as zip_ref:
+            zip_ref.extractall(directory)
+        # Remove the ZIP file
+        os.remove(zip_file_path)
