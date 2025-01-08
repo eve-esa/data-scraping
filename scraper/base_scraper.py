@@ -24,6 +24,7 @@ class BaseScraper(ABC):
         self._cookie_handled = False
         self._num_requests = 0
         self._config_model = None
+        self._download_folder_path = None
 
         self._s3_client = S3Storage()
 
@@ -57,7 +58,10 @@ class BaseScraper(ABC):
 
     def setup_driver(self):
         from helper.utils import get_chrome_options
-        chrome_options = get_chrome_options()
+
+        if self._download_folder_path and not os.path.exists(self._download_folder_path):
+            os.makedirs(self._download_folder_path)
+        chrome_options = get_chrome_options(self._download_folder_path)
 
         # Create WebDriver instance
         self._driver = uc.Chrome(options=chrome_options, user_multi_procs=True)

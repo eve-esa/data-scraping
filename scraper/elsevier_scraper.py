@@ -3,12 +3,11 @@ import random
 import shutil
 import time
 from typing import Type, List
-import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from helper.utils import get_scraped_url, get_chrome_options, unpack_zip_files
+from helper.utils import get_scraped_url, unpack_zip_files
 from model.elsevier_models import (
     SourceType,
     ElsevierConfig,
@@ -23,25 +22,11 @@ class ElsevierScraper(BaseScraper):
     def __init__(self):
         super().__init__()
 
-        self.__download_folder_path = os.path.join(os.getcwd(), "downloads")
-        if not os.path.exists(self.__download_folder_path):
-            os.makedirs(self.__download_folder_path)
+        self._download_folder_path = os.path.join(os.getcwd(), "downloads")
 
     @property
     def config_model_type(self) -> Type[ElsevierConfig]:
         return ElsevierConfig
-
-    def setup_driver(self):
-        chrome_options = get_chrome_options()
-        prefs = {
-            "download.default_directory": self.__download_folder_path,
-            "download.prompt_for_download": False,
-            "download.directory_upgrade": True,
-            "safebrowsing.enabled": True
-        }
-        chrome_options.add_experimental_option("prefs", prefs)
-
-        self._driver = uc.Chrome(options=chrome_options)
 
     def scrape(self, model: ElsevierConfig) -> ElsevierScraperOutput | None:
         """
@@ -161,7 +146,7 @@ class ElsevierScraper(BaseScraper):
             self.__wait_end_download()
 
             # unpack zip files before uploading
-            unpack_zip_files(self.__download_folder_path)
+            unpack_zip_files(self._download_folder_path)
 
             return ElsevierScrapeIssueOutput(was_scraped=True, next_issue_url=next_issue_link)
         except Exception as e:
@@ -180,7 +165,7 @@ class ElsevierScraper(BaseScraper):
 
         while time.time() - start_time < timeout:
             # check if there are completed zip files temporary files in the directory
-            completed_downloads = [f for f in os.listdir(self.__download_folder_path) if f.endswith(".zip")]
+            completed_downloads = [f for f in os.listdir(self._download_folder_path) if f.endswith(".zip")]
             if completed_downloads:
                 return
 
@@ -201,14 +186,14 @@ class ElsevierScraper(BaseScraper):
         all_done = True
 
         # upload files to S3
-        for file in os.listdir(self.__download_folder_path):
-            if not os.path.isfile(os.path.join(self.__download_folder_path, file)):
+        for file in os.listdir(self._download_folder_path):
+            if not os.path.isfile(os.path.join(self._download_folder_path, file)):
                 continue
 
             if not file.endswith(self.file_extension):
                 continue
 
-            with open(os.path.join(self.__download_folder_path, file), "rb") as f:
+            with open(os.path.join(self._download_folder_path, file), "rb") as f:
                 result = self._s3_client.upload_content(self.bucket_key, file, f.read())
                 if not result:
                     all_done = False
@@ -217,6 +202,6 @@ class ElsevierScraper(BaseScraper):
             time.sleep(random.uniform(2, 5))
 
         # remove the entire download folder
-        shutil.rmtree(self.__download_folder_path)
+        shutil.rmtree(self._download_folder_path)
 
         return all_done

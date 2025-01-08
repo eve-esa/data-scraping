@@ -177,7 +177,7 @@ def get_unique(pdf_links: List[str]) -> List[str]:
     return list(set(pdf_links))
 
 
-def get_chrome_options() -> uc.ChromeOptions:
+def get_chrome_options(download_folder_path: str | None = None) -> uc.ChromeOptions:
     chrome_options = uc.ChromeOptions()
 
     # Basic configuration
@@ -197,6 +197,14 @@ def get_chrome_options() -> uc.ChromeOptions:
     chrome_options.add_argument("--enable-cookies")
     chrome_options.add_argument("--disable-web-security")
     chrome_options.add_argument("--ignore-certificate-errors")
+
+    if download_folder_path:
+        chrome_options.add_experimental_option("prefs", {
+            "download.default_directory": download_folder_path,
+            "download.prompt_for_download": False,
+            "download.directory_upgrade": True,
+            "safebrowsing.enabled": True
+        })
 
     return chrome_options
 
