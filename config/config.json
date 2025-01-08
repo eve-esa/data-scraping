@@ -444,19 +444,27 @@
         "file_extension": ".html",
         "sources": [
             {
-                "url": "https://seos-project.eu/remotesensing/remotesensing-c{chapter}-p02.html",
-                "chapters": 5
+                "url": "https://seos-project.eu/remotesensing/remotesensing-c00-p02.html",
+                "search": "remotesensing-c",
+                "folder": "remotesensing",
+                "chapters": 6
             },
             {
-                "url": "https://seos-project.eu/landuse/landuse-c{chapter}-p02.html",
+                "url": "https://seos-project.eu/landuse/landuse-c00-p02.html",
+                "search": "landuse-c",
+                "folder": "landuse",
                 "chapters": 4
             },
             {
-                "url": "https://seos-project.eu/agriculture/agriculture-c{chapter}-p02.html",
+                "url": "https://seos-project.eu/agriculture/agriculture-c00-p02.html",
+                "search": "agriculture-c",
+                "folder": "agriculture",
                 "chapters": 4
             },
             {
-                "url": "https://seos-project.eu/resources/resources-c{chapter}-p02.html",
+                "url": "https://seos-project.eu/resources/resources-c00-p02.html",
+                "search": "resources-c",
+                "folder": "resources",
                 "chapters": 5
             }
         ]
