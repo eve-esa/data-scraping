@@ -1,7 +1,8 @@
 import os
-from typing import Type
+from typing import Type, Tuple
+from selenium.webdriver.common.by import By
 
-from helper.utils import get_scraped_url
+from helper.utils import get_scraped_url, get_link_for_accessible_article
 from model.ams_models import AMSConfig, AMSJournal
 from model.base_iterative_publisher_models import (
     IterativePublisherScrapeJournalOutput,
@@ -74,10 +75,11 @@ class AMSScraper(BaseIterativePublisherScraper):
         issue = 1
         links = {}
         while True:
-            if not (res := self._scrape_issue(journal, volume_num, issue)):
+            res = self._scrape_issue(journal, volume_num, issue)
+            if res is None:
                 break
-
-            links[issue] = res
+            if len(res) > 0:
+                links[issue] = res
             issue += 1  # Move to next issue
 
         return links
@@ -94,27 +96,30 @@ class AMSScraper(BaseIterativePublisherScraper):
             issue_num (int): The issue number.
 
         Returns:
-            IterativePublisherScrapeIssueOutput | None: A list of PDF links found in the issue, or None is something went wrong.
+            IterativePublisherScrapeIssueOutput | None: A list of PDF links found in the issue, or None if something went wrong.
         """
         issue_url = os.path.join(self.base_url, "view/journals", journal.code, str(volume_num), str(issue_num), f"{journal.code}.{volume_num}.issue-{issue_num}.xml")
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
         try:
             scraper = self._scrape_url(issue_url)
+            if "not found" in scraper.text.lower():
+                return None
 
-            # find all the URLs to the articles where I can grab the PDF links (one per article URL, if lambda returns
-            # True, it will be included in the list)
-            tags = scraper.find_all(
-                "a",
-                class_="c-Button--link",
-                href=lambda href: href and f"/view/journals/{journal.code}/{volume_num}/{issue_num}/" in href
-            )
-
-            pdf_links = [
-                pdf_link
-                for pdf_link in map(lambda tag: self._scrape_article(get_scraped_url(tag, self.base_url)), tags)
-                if pdf_link
+            # find all the article links in the issue by keeping only the links to the accessible articles
+            article_links = [
+                link
+                for tag in self._driver.find_elements(
+                    By.XPATH,
+                    f"//a[contains(@class, 'c-Button--link') and contains(@href, '/view/journals/{journal.code}/{volume_num}/{issue_num}/')]"
+                )
+                if (link := get_link_for_accessible_article(
+                    tag,
+                    self.base_url,
+                    "../../preceding-sibling::div/div[contains(@class, 'ico-access-open') or contains(@class, 'ico-access-free')]"
+                ))
             ]
+            pdf_links = [pdf_link for link in article_links if (pdf_link := self._scrape_article(link))]
 
             self._logger.info(f"PDF links found: {len(pdf_links)}")
             return pdf_links

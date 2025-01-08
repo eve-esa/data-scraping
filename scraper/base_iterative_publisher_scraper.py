@@ -107,7 +107,7 @@ class BaseIterativePublisherScraper(BaseScraper):
             issue_num (int): The issue number.
 
         Returns:
-            IterativePublisherScrapeIssueOutput | None: A list of PDF links found in the issue, or None is something went wrong.
+            IterativePublisherScrapeIssueOutput | None: A list of PDF links found in the issue, or None if something went wrong.
         """
         pass
 

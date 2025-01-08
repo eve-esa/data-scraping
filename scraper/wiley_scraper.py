@@ -1,10 +1,8 @@
 from typing import Type, List
 from bs4 import ResultSet, Tag
-from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.remote.webelement import WebElement
 
-from helper.utils import get_scraped_url
+from helper.utils import get_scraped_url, get_link_for_accessible_article
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from model.wiley_models import WileyConfig
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
@@ -79,7 +77,13 @@ class WileyScraper(BasePaginationPublisherScraper):
                 "//a[contains(@class, 'publication_title') and contains(@class, 'visitable') and contains(@href, '/doi/')]"
             )
             articles_links = [
-                link for article_tag in article_tags if (link := self.__get_link_for_accessible_article(article_tag))
+                link
+                for article_tag in article_tags
+                if (link := get_link_for_accessible_article(
+                    article_tag,
+                    self.__base_url,
+                    "../../preceding-sibling::div[contains(@class, 'meta__header')]//i[contains(@class, 'icon-icon-lock_open')]"
+                ))
             ]
 
             # Now, visit each article link and find the PDF link
@@ -91,30 +95,6 @@ class WileyScraper(BasePaginationPublisherScraper):
             return pdf_tag_list
         except Exception as e:
             self._logger.error(f"Failed to process URL {url}. Error: {e}")
-            return None
-
-    def __get_link_for_accessible_article(self, article_tag: WebElement) -> str | None:
-        """
-        Check if the article is accessible (i.e., not behind a paywall) and return the URL. The method checks if the
-        article tag has a lock-open icon, which indicates that the article is not behind a paywall. If the article is
-        accessible, return the URL to the article. Otherwise, return None.
-
-        Args:
-            article_tag (WebElement): The article tag.
-
-        Returns:
-            str | None: The URL to the article if it is accessible, otherwise None.
-        """
-        try:
-            icon = article_tag.find_element(
-                By.XPATH,
-                "../../preceding-sibling::div[contains(@class, 'meta__header')]//i[contains(@class, 'icon-icon-lock_open')]"
-            )
-            if icon:
-                return get_scraped_url(
-                    Tag(name="a", attrs={"href": article_tag.get_attribute("href")}), self.__base_url
-                )
-        except NoSuchElementException:
             return None
 
     def __scrape_article(self, url: str) -> Tag | None:

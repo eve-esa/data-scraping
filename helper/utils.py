@@ -13,6 +13,9 @@ from pydantic import ValidationError
 from urllib.parse import urlparse
 import undetected_chromedriver as uc
 from fake_useragent import UserAgent
+from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.common.by import By
+from selenium.common import NoSuchElementException
 
 from scraper.base_scraper import BaseScraper, BaseMappedScraper
 
@@ -228,3 +231,25 @@ def unpack_zip_files(directory: str):
             zip_ref.extractall(directory)
         # Remove the ZIP file
         os.remove(zip_file_path)
+
+
+def get_link_for_accessible_article(article_tag: WebElement, base_url: str, xpath: str) -> str | None:
+
+    """
+    Check if the article is accessible (i.e., not behind a paywall) and return the URL. The method checks if the
+    article tag has a lock-open icon, which indicates that the article is not behind a paywall. If the article is
+    accessible, return the URL to the article. Otherwise, return None.
+
+    Args:
+        article_tag (WebElement): The article tag.
+        base_url (str): The base URL of the publisher.
+        xpath (str): The XPath to the element to check.
+
+    Returns:
+        str | None: The URL to the article if it is accessible, otherwise None.
+    """
+    try:
+        article_tag.find_element(By.XPATH, xpath)
+        return get_scraped_url(Tag(name="a", attrs={"href": article_tag.get_attribute("href")}), base_url)
+    except NoSuchElementException:
+        return None

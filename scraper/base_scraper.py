@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 import os
 import undetected_chromedriver as uc
 import random
@@ -7,7 +8,6 @@ from fake_useragent import UserAgent
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from abc import ABC, abstractmethod
 import time
 import logging
 
