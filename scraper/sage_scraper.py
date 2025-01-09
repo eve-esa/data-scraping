@@ -35,9 +35,7 @@ class SageScraper(BasePaginationPublisherScraper):
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> List[Tag]:
         """
-        Scrape the landing page. If the source has a landing page, scrape the landing page for PDF links. If the source
-        has a landing page and the `should_store` is True, store the PDF tags from the landing page. Otherwise, return
-        an empty list.
+        Scrape the landing page.
 
         Args:
             landing_page_url (str): The landing page to scrape.

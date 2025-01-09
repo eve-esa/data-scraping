@@ -798,7 +798,7 @@
         "sources": [
             {
                 "name": "ESA Earth Online",
-                "type": "url",
+                "scraper": "EsaUrlScraper",
                 "config": {
                     "base_url": "https://earth.esa.int/",
                     "cookie_selector": "div#__next > div.fixed.bottom-0.left-0.right-0.bg-brand-bg-darker.text-white.font-esa > div.mx-auto.p-8.flex.flex-col > div.pt-4.flex.flex-col.gap-8.items-center.justify-center > button.p-1.uppercase.border.transition-colors",
@@ -819,7 +819,6 @@
             },
             {
                 "name": "ESA Newcomers Earth Observation Guide",
-                "type": "direct",
                 "config": {
                     "file_extension": ".html",
                     "urls": [
@@ -829,7 +828,7 @@
             },
             {
                 "name": "EO Portal",
-                "type": "url",
+                "scraper": "EsaUrlScraper",
                 "config": {
                     "base_url": "https://www.eoportal.org/",
                     "cookie_selector": "div#__next > main > div.cy-page-content > div.cy-cookie-popup.css-1pa6g3f > div.css-1r4dq04 > button.chakra-button.css-122lbyf",
@@ -846,7 +845,7 @@
             },
             {
                 "name": "Sentiwiki Documents",
-                "type": "url",
+                "scraper": "EsaUrlScraper",
                 "config": {
                     "base_url": "https://sentiwiki.copernicus.eu/",
                     "cookie_selector": "div#vp-js-cookies__notice > div.vp-cookies__notice.no-print.vp-non-modal-dialog.fixed.bottom-0.z-non-modal-dialog.w-full.p-4.shadow-lg > div.flex.flex-row.items-center.space-x-2 > button.vp-button.vp-button--primary",
@@ -861,7 +860,7 @@
             },
             {
                 "name": "ESA EO for Society Publications",
-                "type": "url",
+                "scraper": "EsaUrlScraper",
                 "config": {
                     "base_url": "https://eo4society.esa.int/",
                     "sources": [
@@ -875,7 +874,7 @@
             },
             {
                 "name": "CEOS ESA Catalogue",
-                "type": "url",
+                "scraper": "EsaUrlScraper",
                 "config": {
                     "base_url": "https://database.eohandbook.com/database/",
                     "file_extension": ".html",
@@ -895,7 +894,7 @@
             },
             {
                 "name": "ESA Open Science Catalog",
-                "type": "url",
+                "scraper": "EsaUrlScraper",
                 "config": {
                     "base_url": "https://opensciencedata.esa.int/",
                     "file_extension": ".html",
@@ -910,7 +909,6 @@
             },
             {
                 "name": "Earth Observation Handbook 2023",
-                "type": "direct",
                 "config": {
                     "urls": [
                         "https://eohandbook.com/gst/documents/CEOS_EO_Handbook_2023_light.pdf"

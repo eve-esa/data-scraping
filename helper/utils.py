@@ -80,13 +80,13 @@ def discover_scrapers(base_package: str) -> Dict[str, Type[BaseScraper]]:
         module = importlib.import_module(f"{base_package}.{module_name}")
 
         discovered_scrapers |= {
-            name: obj
-            for name, obj in inspect.getmembers(module)
-            if inspect.isclass(obj)
-               and issubclass(obj, BaseScraper)
-               and not issubclass(obj, BaseMappedScraper)
-               and not inspect.isabstract(obj)
-               and hasattr(obj, "scrape")
+            name: obj_type
+            for name, obj_type in inspect.getmembers(module)
+            if inspect.isclass(obj_type)
+               and issubclass(obj_type, BaseScraper)
+               and not issubclass(obj_type, BaseMappedScraper)
+               and not inspect.isabstract(obj_type)
+               and hasattr(obj_type, "scrape")
         }
 
     logger.info(f"Discovered scrapers: {list(discovered_scrapers.keys())}")

@@ -1,5 +1,5 @@
-from typing import List
-from pydantic import BaseModel, field_validator, model_validator
+from typing import List, TypeAlias
+from pydantic import BaseModel
 
 from helper.base_enum import Enum
 from model.base_direct_publisher_models import BaseDirectPublisherConfig
@@ -22,7 +22,7 @@ class SourceType(Enum):
 
 
 class BaseMappedItemSource(BaseModel):
-    href: str
+    href: str | None = None
     class_: str | None = None
 
 
@@ -68,38 +68,19 @@ class BaseMappedDirectConfig(BaseDirectPublisherConfig):
     bucket_key: str | None = None
 
 
+BaseMappedSourceConfig: TypeAlias = (
+    BaseMappedIterativeConfig
+    | BaseMappedIterativeWithConstraintConfig
+    | BaseMappedPaginationConfig
+    | BaseMappedUrlConfig
+    | BaseMappedDirectConfig
+)
+
+
 class BaseMappedSource(BaseModel):
     name: str
-    type: str
-    config: (
-            BaseMappedIterativeConfig
-            | BaseMappedIterativeWithConstraintConfig
-            | BaseMappedPaginationConfig
-            | BaseMappedUrlConfig
-            | BaseMappedDirectConfig
-    )
-    _type_config_mapper = {
-        str(SourceType.ITERATIVE): BaseMappedIterativeConfig,
-        str(SourceType.ITERATIVE_WITH_CONSTRAINT): BaseMappedIterativeWithConstraintConfig,
-        str(SourceType.PAGINATION): BaseMappedPaginationConfig,
-        str(SourceType.URL): BaseMappedUrlConfig,
-        str(SourceType.DIRECT): BaseMappedDirectConfig
-    }
-
-    @field_validator("type")
-    def validate_type(cls, v):
-        if not v:
-            raise ValueError("Type cannot be empty")
-        if v not in SourceType:
-            raise ValueError(f"Invalid type: {v}")
-        return v
-
-    @model_validator(mode="after")
-    def validate_type_config(self):
-        if not isinstance(self.config, self._type_config_mapper[self.type]):
-            raise ValueError(f"Invalid config for type {self.type}")
-
-        return self
+    scraper: str | None = None
+    config: BaseMappedSourceConfig
 
 
 class BaseMappedConfig(Config):

@@ -3,7 +3,7 @@ import time
 from typing import List, Type, Dict
 from bs4 import Tag, ResultSet
 
-from model.base_mapped_models import BaseMappedUrlSource, BaseMappedConfig, SourceType
+from model.base_mapped_models import BaseMappedUrlSource, BaseMappedConfig
 from scraper.base_scraper import BaseScraper, BaseMappedScraper
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
 from service.adapter import ScrapeAdapter
@@ -14,9 +14,6 @@ class ESAScraper(BaseScraper):
         super().__init__()
 
         self.__file_extensions = {}
-
-    def setup_driver(self):
-        pass
 
     @property
     def config_model_type(self) -> Type[BaseMappedConfig]:
@@ -39,11 +36,11 @@ class ESAScraper(BaseScraper):
             Dict[str, List]: The output of the scraping.
         """
         pdf_links = {}
-        mapping = {str(SourceType.URL): EsaUrlScraper}
+        mapping = {"EsaUrlScraper": ESAUrlScraper}
         for source in model.sources:
             self._logger.info(f"Processing source {source.name}")
 
-            results = ScrapeAdapter(source, mapping).scrape()
+            results = ScrapeAdapter(source.config, mapping.get(source.scraper)).scrape()
             if results is not None:
                 pdf_links[source.name] = results
                 self.__file_extensions[source.name] = source.config.file_extension
@@ -90,7 +87,7 @@ class ESAScraper(BaseScraper):
         return all_done
 
 
-class EsaUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
+class ESAUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
     def _scrape_journal(self, source: BaseMappedUrlSource) -> ResultSet | List[Tag] | None:
         pass
 
