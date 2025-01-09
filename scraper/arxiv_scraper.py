@@ -41,7 +41,7 @@ class ArxivScraper(BasePaginationPublisherScraper):
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> List[Tag]:
         """
-         Scrape the landing page.
+        Scrape the landing page.
 
         Args:
             landing_page_url (str): The landing page to scrape.
