@@ -963,14 +963,14 @@
         "bucket_key": "raw_data/nasa",
         "sources": [
             {
-                "name": "NASA Earth Data Wiki",
-                "scraper": "NASAWikiScraper",
+                "name": "NASA EarthData Wiki",
+                "scraper": "NASAEarthDataWikiScraper",
                 "config": {
                     "base_url": "https://wiki.earthdata.nasa.gov/",
                     "file_extension": ".html",
                     "sources": [
                         {
-                            "url": "https://earth.esa.int/eogateway/search?category=All+Categories",
+                            "url": "https://wiki.earthdata.nasa.gov/display/CMR/Common+Metadata+Repository+Home",
                             "type": "issue_or_collection"
                         }
                     ]
