@@ -4,9 +4,8 @@ from typing import List, Type, Dict
 from bs4 import Tag, ResultSet, BeautifulSoup
 
 from helper.utils import get_scraped_url
-from model.base_mapped_models import BaseMappedUrlSource, BaseMappedConfig
-from model.base_models import BaseConfig
-from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput, BasePaginationPublisherConfig
+from model.base_mapped_models import BaseMappedUrlSource, BaseMappedConfig, BaseMappedPaginationConfig
+from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from model.nasa_models import NASANTRSConfig
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
 from scraper.base_scraper import BaseScraper, BaseMappedScraper
@@ -45,6 +44,7 @@ class NASAScraper(BaseScraper):
             "NasaWikiScraper": NASAWikiScraper,
             "NasaNTRSScraper": NASANTRSScraper,
             "NasaEOSScraper": NASAEOSScraper,
+            "NASAEarthDataScraper": NASAEarthDataScraper,
         }
         for source in model.sources:
             self._logger.info(f"Processing source {source.name}")
@@ -174,10 +174,10 @@ class NASANTRSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
 
 class NASAEOSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
     @property
-    def config_model_type(self) -> Type[BasePaginationPublisherConfig]:
-        return BasePaginationPublisherConfig
+    def config_model_type(self) -> Type[BaseMappedPaginationConfig]:
+        return BaseMappedPaginationConfig
 
-    def scrape(self, model: BaseConfig) -> BasePaginationPublisherScrapeOutput | None:
+    def scrape(self, model: BaseMappedPaginationConfig) -> BasePaginationPublisherScrapeOutput | None:
         pdf_tags = []
         for idx, source in enumerate(model.sources):
             pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
@@ -193,11 +193,45 @@ class NASAEOSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
         try:
             scraper = BeautifulSoup(self._scrape_url(url).page_source, "html.parser")
 
-            # Now, visit each article link and find the PDF link
             pdf_tag_list = scraper.find_all("a", href=lambda href: href and ".pdf" in href)
 
             self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
+        except Exception as e:
+            self._logger.error(f"Failed to process URL {url}. Error: {e}")
+            return None
+
+
+class NASAEarthDataScraper(BasePaginationPublisherScraper, BaseMappedScraper):
+    def __init__(self):
+        super().__init__()
+        self.__href = None
+
+    @property
+    def config_model_type(self) -> Type[BaseMappedPaginationConfig]:
+        return BaseMappedPaginationConfig
+
+    def scrape(self, model: BaseMappedPaginationConfig) -> BasePaginationPublisherScrapeOutput | None:
+        html_tags = []
+        for idx, source in enumerate(model.sources):
+            self.__href = source.href
+            html_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
+
+        return {"NASA EarthData": [get_scraped_url(tag, self.base_url) for tag in html_tags]} if html_tags else None
+
+    def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> ResultSet | List[Tag] | None:
+        self._logger.info(f"Processing Landing Page {landing_page_url}")
+
+        return self._scrape_pagination(landing_page_url, source_number, base_zero=True)
+
+    def _scrape_page(self, url: str) -> ResultSet | List[Tag] | None:
+        try:
+            scraper = BeautifulSoup(self._scrape_url(url).page_source, "html.parser")
+
+            html_tag_list = scraper.find_all("a", href=lambda href: href and self.__href in href, hreflang="en")
+
+            self._logger.info(f"HTML links found: {len(html_tag_list)}")
+            return html_tag_list
         except Exception as e:
             self._logger.error(f"Failed to process URL {url}. Error: {e}")
             return None

@@ -1000,6 +1000,36 @@
                         }
                     ]
                 }
+            },
+            {
+                "name": "NASA EarthData",
+                "scraper": "NASAEarthDataScraper",
+                "config": {
+                    "base_url": "https://www.earthdata.nasa.gov",
+                    "file_extension": ".html",
+                    "sources": [
+                        {
+                            "landing_page_url": "https://www.earthdata.nasa.gov/topics/glossary?%2Ftopics%2Fglossary%2Fall=&page={page_number}",
+                            "href": "/topics/"
+                        },
+                        {
+                            "landing_page_url": "https://www.earthdata.nasa.gov/learn/data-in-action?items_per_page=16&page={page_number}",
+                            "href": "/learn/"
+                        },
+                        {
+                            "landing_page_url": "https://www.earthdata.nasa.gov/learn/data-recipes?items_per_page=16&page={page_number}",
+                            "href": "/learn/"
+                        },
+                        {
+                            "landing_page_url": "https://www.earthdata.nasa.gov/learn/tutorials?items_per_page=16&page={page_number}",
+                            "href": "/learn/"
+                        },
+                        {
+                            "landing_page_url": "https://www.earthdata.nasa.gov/learn/webinars?items_per_page=16&page={page_number}",
+                            "href": "/learn/"
+                        }
+                    ]
+                }
             }
         ]
     }
