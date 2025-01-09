@@ -3,9 +3,9 @@ from typing import List
 from model.base_pagination_publisher_models import BasePaginationPublisherSource, BasePaginationPublisherConfig
 
 
-class NasaNTRSSource(BasePaginationPublisherSource):
+class NASANTRSSource(BasePaginationPublisherSource):
     page_size: int
 
 
-class NasaNTRSConfig(BasePaginationPublisherConfig):
-    sources: List[NasaNTRSSource]
+class NASANTRSConfig(BasePaginationPublisherConfig):
+    sources: List[NASANTRSSource]

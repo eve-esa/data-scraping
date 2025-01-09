@@ -959,15 +959,12 @@
             }
         ]
     },
-
-
-
     "NASAScraper": {
         "bucket_key": "raw_data/nasa",
         "sources": [
             {
                 "name": "NASA Earth Data Wiki",
-                "scraper": "NasaWikiScraper",
+                "scraper": "NASAWikiScraper",
                 "config": {
                     "base_url": "https://wiki.earthdata.nasa.gov/",
                     "file_extension": ".html",
@@ -981,7 +978,7 @@
             },
             {
                 "name": "NASA NTRS",
-                "scraper": "NasaNTRSScraper",
+                "scraper": "NASANTRSScraper",
                 "config": {
                     "base_url": "https://ntrs.nasa.gov",
                     "sources": [
@@ -994,7 +991,7 @@
             },
             {
                 "name": "NASA EOS Portal",
-                "scraper": "NasaEOSScraper",
+                "scraper": "NASAEOSScraper",
                 "config": {
                     "base_url": "https://eospso.nasa.gov",
                     "sources": [

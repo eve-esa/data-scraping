@@ -7,7 +7,7 @@ from helper.utils import get_scraped_url
 from model.base_mapped_models import BaseMappedUrlSource, BaseMappedConfig
 from model.base_models import BaseConfig
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput, BasePaginationPublisherConfig
-from model.nasa_models import NasaNTRSConfig
+from model.nasa_models import NASANTRSConfig
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
 from scraper.base_scraper import BaseScraper, BaseMappedScraper
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
@@ -42,9 +42,9 @@ class NASAScraper(BaseScraper):
         """
         pdf_links = {}
         mapping = {
-            "NasaWikiScraper": NasaWikiScraper,
-            "NasaNTRSScraper": NasaNTRSScraper,
-            "NasaEOSScraper": NasaEOSScraper,
+            "NasaWikiScraper": NASAWikiScraper,
+            "NasaNTRSScraper": NASANTRSScraper,
+            "NasaEOSScraper": NASAEOSScraper,
         }
         for source in model.sources:
             self._logger.info(f"Processing source {source.name}")
@@ -96,7 +96,7 @@ class NASAScraper(BaseScraper):
         return all_done
 
 
-class NasaWikiScraper(BaseUrlPublisherScraper, BaseMappedScraper):
+class NASAWikiScraper(BaseUrlPublisherScraper, BaseMappedScraper):
     def _scrape_journal(self, source: BaseMappedUrlSource) -> ResultSet | List[Tag] | None:
         pass
 
@@ -136,16 +136,16 @@ class NasaWikiScraper(BaseUrlPublisherScraper, BaseMappedScraper):
         pass
 
 
-class NasaNTRSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
+class NASANTRSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
     def __init__(self):
         super().__init__()
         self.__page_size = None
 
     @property
-    def config_model_type(self) -> Type[NasaNTRSConfig]:
-        return NasaNTRSConfig
+    def config_model_type(self) -> Type[NASANTRSConfig]:
+        return NASANTRSConfig
 
-    def scrape(self, model: NasaNTRSConfig) -> BasePaginationPublisherScrapeOutput | None:
+    def scrape(self, model: NASANTRSConfig) -> BasePaginationPublisherScrapeOutput | None:
         pdf_tags = []
         for idx, source in enumerate(model.sources):
             self.__page_size = source.page_size
@@ -172,7 +172,7 @@ class NasaNTRSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
             return None
 
 
-class NasaEOSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
+class NASAEOSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
     @property
     def config_model_type(self) -> Type[BasePaginationPublisherConfig]:
         return BasePaginationPublisherConfig
