@@ -98,7 +98,11 @@ class AMSScraper(BaseIterativePublisherScraper):
         Returns:
             IterativePublisherScrapeIssueOutput | None: A list of PDF links found in the issue, or None if something went wrong.
         """
-        issue_url = os.path.join(self.base_url, "view/journals", journal.code, str(volume_num), str(issue_num), f"{journal.code}.{volume_num}.issue-{issue_num}.xml")
+        issue_url = os.path.join(
+            self.base_url,
+            f"view/journals/{journal.code}/{volume_num}/{issue_num}",
+            f"{journal.code}.{volume_num}.issue-{issue_num}.xml"
+        )
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
         try:
@@ -142,7 +146,7 @@ class AMSScraper(BaseIterativePublisherScraper):
         try:
             scraper = self._scrape_url(article_url)
 
-            pdf_tag = scraper.find("a", href=True, class_="pdf-download")  # Update 'pdf-download' as needed
+            pdf_tag = scraper.find("a", href=True, class_="pdf-download")
             if pdf_tag:
                 return get_scraped_url(pdf_tag, self.base_url)
 
