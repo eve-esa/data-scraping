@@ -60,7 +60,8 @@ AWS_SECRET_KEY=<aws_secret_key>
 AWS_BUCKET_NAME=<aws_bucket_name>
 ```
 
-Then, you can run the ETL pipeline as described in the previous section.
+Then, you can run the ETL pipeline as described in the previous section. In the `.env` file you could also customize
+the `CHROME_DRIVER_VERSION` key (integer, default 131), which represents the version of the Chrome driver to be used by the Selenium scraper.
 
 ## HowTo: add a new Scraper
 In order to add a new scraper, the following steps are required:

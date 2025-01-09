@@ -11,7 +11,6 @@ import logging
 from bs4 import Tag
 from pydantic import ValidationError
 from urllib.parse import urlparse
-import undetected_chromedriver as uc
 from fake_useragent import UserAgent
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.by import By
@@ -180,38 +179,6 @@ def get_unique(pdf_links: List[str]) -> List[str]:
     return list(set(pdf_links))
 
 
-def get_chrome_options(download_folder_path: str | None = None) -> uc.ChromeOptions:
-    chrome_options = uc.ChromeOptions()
-
-    # Basic configuration
-    chrome_options.add_argument("--start-maximized")
-    chrome_options.add_argument("--disable-blink-features=AutomationControlled")
-    chrome_options.add_argument(f"--user-agent={UserAgent().random}")
-    chrome_options.add_argument("--headless=new")  # Run in headless mode (no browser UI)
-    chrome_options.add_argument('--window-size=1920,1080')
-    chrome_options.add_argument('--start-maximized')
-
-    # Performance options
-    chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-
-    # Cookies and security
-    chrome_options.add_argument("--enable-cookies")
-    chrome_options.add_argument("--disable-web-security")
-    chrome_options.add_argument("--ignore-certificate-errors")
-
-    if download_folder_path:
-        chrome_options.add_experimental_option("prefs", {
-            "download.default_directory": download_folder_path,
-            "download.prompt_for_download": False,
-            "download.directory_upgrade": True,
-            "safebrowsing.enabled": True
-        })
-
-    return chrome_options
-
-
 def unpack_zip_files(directory: str):
     """
     Unpack the ZIP files in the directory.
@@ -253,3 +220,15 @@ def get_link_for_accessible_article(article_tag: WebElement, base_url: str, xpat
         return get_scraped_url(Tag(name="a", attrs={"href": article_tag.get_attribute("href")}), base_url)
     except NoSuchElementException:
         return None
+
+
+def get_user_agent(include_mobile: bool = False) -> str:
+    ua = UserAgent()
+    random_ua = ua.random
+    if include_mobile:
+        return random_ua
+
+    while "mobile" in random_ua.lower():
+        random_ua = ua.random
+
+    return random_ua

@@ -4,14 +4,13 @@ import undetected_chromedriver as uc
 import random
 from typing import List, Type, Any
 from bs4 import BeautifulSoup
-from fake_useragent import UserAgent
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 import time
 import logging
 
-from helper.constants import OUTPUT_FOLDER, ROTATE_USER_AGENT_EVERY
+from helper.constants import OUTPUT_FOLDER, ROTATE_USER_AGENT_EVERY, CHROME_DRIVER_VERSION
 from model.base_models import BaseConfig
 from service.storage import S3Storage
 
@@ -57,14 +56,40 @@ class BaseScraper(ABC):
         self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")
 
     def setup_driver(self):
-        from helper.utils import get_chrome_options
+        from helper.utils import get_user_agent
 
-        if self._download_folder_path and not os.path.exists(self._download_folder_path):
-            os.makedirs(self._download_folder_path)
-        chrome_options = get_chrome_options(self._download_folder_path)
+        chrome_options = uc.ChromeOptions()
+
+        # Basic configuration
+        chrome_options.add_argument("--start-maximized")
+        chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+        chrome_options.add_argument(f"--user-agent={get_user_agent()}")
+        chrome_options.add_argument("--headless=new")  # Run in headless mode (no browser UI)
+        chrome_options.add_argument('--window-size=1920,1080')
+        chrome_options.add_argument('--start-maximized')
+
+        # Performance options
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+
+        # Cookies and security
+        chrome_options.add_argument("--enable-cookies")
+        chrome_options.add_argument("--disable-web-security")
+        chrome_options.add_argument("--ignore-certificate-errors")
+
+        if self._download_folder_path:
+            os.makedirs(self._download_folder_path, exist_ok=True)
+
+            chrome_options.add_experimental_option("prefs", {
+                "download.default_directory": self._download_folder_path,
+                "download.prompt_for_download": False,
+                "download.directory_upgrade": True,
+                "safebrowsing.enabled": True
+            })
 
         # Create WebDriver instance
-        self._driver = uc.Chrome(options=chrome_options, user_multi_procs=True)
+        self._driver = uc.Chrome(options=chrome_options, user_multi_procs=True, version_main=int(CHROME_DRIVER_VERSION))
 
         # emulating hardware characteristics
         self._driver.execute_cdp_cmd("Emulation.setHardwareConcurrencyOverride", {"hardwareConcurrency": 8})
@@ -84,12 +109,14 @@ class BaseScraper(ABC):
         Returns:
             BeautifulSoup: the fully rendered HTML of the URL.
         """
+        from helper.utils import get_user_agent
+
         self._driver.get("about:blank")
 
         self._num_requests += 1
         if self._num_requests % ROTATE_USER_AGENT_EVERY == 0:
             self._driver.execute_cdp_cmd("Network.setUserAgentOverride", {
-                "userAgent": UserAgent().random
+                "userAgent": get_user_agent()
             })
 
         self._driver.get(url)
