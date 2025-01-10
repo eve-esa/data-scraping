@@ -1,10 +1,9 @@
 from typing import List, Type, Dict
-from bs4 import Tag, ResultSet, BeautifulSoup
+from bs4 import Tag, ResultSet
 
 from helper.utils import get_scraped_url
 from model.base_mapped_models import BaseMappedUrlSource, BaseMappedPaginationConfig
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
-from model.nasa_models import NASANTRSConfig
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
 from scraper.base_scraper import BaseMappedScraper
@@ -19,6 +18,7 @@ class NASAScraper(BaseMappedPublisherScraper):
             "NASANTRSScraper": NASANTRSScraper,
             "NASAEOSScraper": NASAEOSScraper,
             "NASAEarthDataScraper": NASAEarthDataScraper,
+            "NASAEarthDataPDFScraper": NASAEarthDataPDFScraper,
         }
 
 
@@ -30,11 +30,11 @@ class NASAEarthDataWikiScraper(BaseUrlPublisherScraper, BaseMappedScraper):
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
         try:
-            driver = self._scrape_url(source.url)
+            self._scrape_url(source.url)
 
             all_expanded = False
             while not all_expanded:
-                all_expanded = driver.execute_script("""
+                all_expanded = self._driver.execute_script("""
                     let expandAll = async () => {
                         let toggles = document.querySelectorAll("a.aui-iconfont-chevron-right");
                         if (toggles.length == 0) {
@@ -49,9 +49,7 @@ class NASAEarthDataWikiScraper(BaseUrlPublisherScraper, BaseMappedScraper):
                     return await expandAll();
                 """)
 
-            scraper = BeautifulSoup(driver.page_source, "html.parser")
-
-            html_tag_list = scraper.find_all(
+            html_tag_list = self._get_parsed_page_source().find_all(
                 "a", href=lambda href: href and ("/display/" in href or "/pages/" in href) and "#" not in href
             )
             self._logger.info(f"HTML links found: {len(html_tag_list)}")
@@ -71,10 +69,10 @@ class NASANTRSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
         self.__page_size = None
 
     @property
-    def config_model_type(self) -> Type[NASANTRSConfig]:
-        return NASANTRSConfig
+    def config_model_type(self) -> Type[BaseMappedPaginationConfig]:
+        return BaseMappedPaginationConfig
 
-    def scrape(self, model: NASANTRSConfig) -> BasePaginationPublisherScrapeOutput | None:
+    def scrape(self, model: BaseMappedPaginationConfig) -> BasePaginationPublisherScrapeOutput | None:
         pdf_tags = []
         for idx, source in enumerate(model.sources):
             self.__page_size = source.page_size
@@ -89,7 +87,7 @@ class NASANTRSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
 
     def _scrape_page(self, url: str) -> ResultSet | List[Tag] | None:
         try:
-            scraper = BeautifulSoup(self._scrape_url(url).page_source, "html.parser")
+            scraper = self._scrape_url(url)
 
             # Now, visit each article link and find the PDF link
             pdf_tag_list = scraper.find_all("a", href=lambda href: href and ".pdf" in href)
@@ -120,7 +118,7 @@ class NASAEOSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
 
     def _scrape_page(self, url: str) -> ResultSet | List[Tag] | None:
         try:
-            scraper = BeautifulSoup(self._scrape_url(url).page_source, "html.parser")
+            scraper = self._scrape_url(url)
 
             pdf_tag_list = scraper.find_all("a", href=lambda href: href and ".pdf" in href)
 
@@ -155,12 +153,45 @@ class NASAEarthDataScraper(BasePaginationPublisherScraper, BaseMappedScraper):
 
     def _scrape_page(self, url: str) -> ResultSet | List[Tag] | None:
         try:
-            scraper = BeautifulSoup(self._scrape_url(url).page_source, "html.parser")
+            scraper = self._scrape_url(url)
 
             html_tag_list = scraper.find_all("a", href=lambda href: href and self.__href in href, hreflang="en")
 
             self._logger.info(f"HTML links found: {len(html_tag_list)}")
             return html_tag_list
+        except Exception as e:
+            self._logger.error(f"Failed to process URL {url}. Error: {e}")
+            return None
+
+
+class NASAEarthDataPDFScraper(NASAEarthDataScraper):
+    def scrape(self, model: BaseMappedPaginationConfig) -> BasePaginationPublisherScrapeOutput | None:
+        pdf_tags = []
+        for idx, source in enumerate(model.sources):
+            self.__href = source.href
+            pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
+
+        return {"NASA EarthData PDF": [get_scraped_url(tag, self.base_url) for tag in pdf_tags]} if pdf_tags else None
+
+    def _scrape_page(self, url: str) -> ResultSet | List[Tag] | None:
+        try:
+            scraper = self._scrape_url(url)
+
+            html_links = [
+                get_scraped_url(tag, self.base_url)
+                for tag in scraper.find_all("a", href=lambda href: href and self.__href in href, hreflang="en")
+            ]
+
+            pdf_tag_list = []
+            for html_link in html_links:
+                self._logger.info(f"Processing URL {html_link}")
+
+                pdf_tag_list.extend(self._scrape_url(html_link).find_all(
+                    "a", href=lambda href: href and ".pdf" in href, hreflang="en"
+                ))
+
+            self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
+            return pdf_tag_list
         except Exception as e:
             self._logger.error(f"Failed to process URL {url}. Error: {e}")
             return None

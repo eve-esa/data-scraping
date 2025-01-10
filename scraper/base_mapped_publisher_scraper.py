@@ -35,7 +35,7 @@ class BaseMappedPublisherScraper(BaseScraper):
         """
         return BaseMappedConfig
 
-    def scrape(self, model: BaseMappedConfig) -> Dict[str, List]:
+    def scrape(self, model: BaseMappedConfig) -> Dict[str, List[str] | Dict[str, List[str]]]:
         """
         Scrape the resources links.
 
@@ -43,31 +43,33 @@ class BaseMappedPublisherScraper(BaseScraper):
             model (BaseMappedConfig): The configuration model.
 
         Returns:
-            Dict[str, List]: The output of the scraping.
+            Dict[str, List | Dict]: The output of the scraping.
         """
-        pdf_links = {}
+        links = {}
         for source in model.sources:
             self._logger.info(f"Processing source {source.name}")
 
             results = ScrapeAdapter(source.config, self.mapping.get(source.scraper)).scrape()
             if results is not None:
-                pdf_links[source.name] = results
+                links[source.name] = results
                 self.__file_extensions[source.name] = source.config.file_extension
 
-        return pdf_links
+        return links
 
-    def post_process(self, scrape_output: Dict[str, List]) -> Dict[str, List[str]]:
+    def post_process(self, scrape_output: Dict[str, List[str] | Dict[str, List[str]]]) -> Dict[str, List[str]]:
         """
         Post-process the scraped output. This method is called after the sources have been scraped. It is used to
         retrieve the final list of processed URLs. This method must be implemented in the derived class.
 
         Args:
-            scrape_output (Dict[str, List]): The scraped output
+            scrape_output (Dict[str, List[str] | Dict[str, List[str]]]): The scraped output
 
         Returns:
             Dict[str, List[str]]: The results of the scraping
         """
-        return scrape_output
+        return {source_name: source_links if isinstance(source_links, list) else [
+                link for links in source_links.values() for link in links
+            ] for source_name, source_links in scrape_output.items()}
 
     def _upload_to_s3(self, sources_links: Dict[str, List[str]]) -> bool:
         """

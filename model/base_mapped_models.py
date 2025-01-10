@@ -47,7 +47,7 @@ class BaseMappedIterativeWithConstraintConfig(BaseConfig):
 
 
 class BaseMappedPaginationSource(BasePaginationPublisherSource, BaseMappedItemSource):
-    pass
+    page_size: int | None = None
 
 
 class BaseMappedPaginationConfig(BasePaginationPublisherConfig):

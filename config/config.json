@@ -1021,9 +1021,22 @@
                             "href": "/learn/"
                         },
                         {
-                            "landing_page_url": "https://www.earthdata.nasa.gov/learn/tutorials?items_per_page=16&page={page_number}",
+                            "landing_page_url": "https://www.earthdata.nasa.gov/learn/tutorials?items_per_page=16&page=,,,,,,,,,,,,,,,,,,,,,,,,,,,{page_number}",
                             "href": "/learn/"
                         },
+                        {
+                            "landing_page_url": "https://www.earthdata.nasa.gov/learn/webinars?items_per_page=16&page={page_number}",
+                            "href": "/learn/"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "NASA EarthData PDF",
+                "scraper": "NASAEarthDataPDFScraper",
+                "config": {
+                    "base_url": "https://www.earthdata.nasa.gov",
+                    "sources": [
                         {
                             "landing_page_url": "https://www.earthdata.nasa.gov/learn/webinars?items_per_page=16&page={page_number}",
                             "href": "/learn/"
