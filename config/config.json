@@ -1063,6 +1063,43 @@
                         }
                     ]
                 }
+            },
+            {
+                "name": "Wikipedia",
+                "scraper": "WikipediaScraper",
+                "config": {
+                    "bucket_key": "wikipedia",
+                    "base_url": "https://en.wikipedia.org/",
+                    "file_extension": ".html",
+                    "sources": [
+                        {
+                            "url": "https://en.wikipedia.org/wiki/Category:Earth_observation_satellites",
+                            "type": "issue_or_collection"
+                        },
+                        {
+                            "url": "https://en.wikipedia.org/wiki/Category:Earth_observation_satellite_sensors",
+                            "type": "issue_or_collection"
+                        },
+                        {
+                            "url": "https://en.wikipedia.org/wiki/Category:Remote_sensing#:~:text=Remote%20sensing%20is%20the%20acquisition,contrast%20to%20on%20site%20observation.",
+                            "type": "issue_or_collection"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "MIT",
+                "scraper": "MITScraper",
+                "config": {
+                    "bucket_key": "mit",
+                    "base_url": "https://ocw.mit.edu/",
+                    "sources": [
+                        {
+                            "url": "https://ocw.mit.edu/courses/12-090-the-environment-of-the-earths-surface-spring-2007/pages/course-textbook/",
+                            "type": "issue_or_collection"
+                        }
+                    ]
+                }
             }
         ]
     }
