@@ -12,6 +12,7 @@ class BaseMappedPublisherScraper(BaseScraper):
     def __init__(self):
         super().__init__()
 
+        self.__bucket_keys = {}
         self.__file_extensions = {}
 
     @property
@@ -52,7 +53,8 @@ class BaseMappedPublisherScraper(BaseScraper):
             results = ScrapeAdapter(source.config, self.mapping.get(source.scraper)).scrape()
             if results is not None:
                 links[source.name] = results
-                self.__file_extensions[source.name] = source.config.file_extension
+                self.__bucket_keys[source.name] = f"{self.bucket_key}/{source.config.bucket_key or ''}".rstrip("/")
+                self.__file_extensions[source.name] = source.config.file_extension or self.file_extension
 
         return links
 
@@ -85,10 +87,11 @@ class BaseMappedPublisherScraper(BaseScraper):
 
         all_done = True
         for source_name, source_links in sources_links.items():
+            bucket_key = self.__bucket_keys[source_name]
             file_extension = self.__file_extensions[source_name]
 
             for link in source_links:
-                result = self._s3_client.upload(self.bucket_key, link, file_extension)
+                result = self._s3_client.upload(bucket_key, link, file_extension)
                 if not result:
                     all_done = False
 

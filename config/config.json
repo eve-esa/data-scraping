@@ -1045,5 +1045,25 @@
                 }
             }
         ]
+    },
+    "MiscellaneousScraper": {
+        "bucket_key": "raw_data/miscellaneous",
+        "sources": [
+            {
+                "name": "Open Night Lights",
+                "scraper": "OpenNightLightsScraper",
+                "config": {
+                    "bucket_key": "open_night_lights_scraper",
+                    "base_url": "https://worldbank.github.io/OpenNightLights/",
+                    "file_extension": ".html",
+                    "sources": [
+                        {
+                            "url": "https://worldbank.github.io/OpenNightLights/welcome.html",
+                            "type": "issue_or_collection"
+                        }
+                    ]
+                }
+            }
+        ]
     }
 }
