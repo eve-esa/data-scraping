@@ -1100,6 +1100,55 @@
                         }
                     ]
                 }
+            },
+            {
+                "name": "JAXA",
+                "scraper": "JAXAScraper",
+                "config": {
+                    "bucket_key": "jaxa",
+                    "base_url": "https://earth.jaxa.jp/en/eo-knowledge",
+                    "file_extension": ".html",
+                    "sources": [
+                        {
+                            "url": "https://earth.jaxa.jp/en/eo-knowledge/index.html",
+                            "type": "issue_or_collection"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "Servir",
+                "config": {
+                    "bucket_key": "servir",
+                    "urls": [
+                        "https://gis1.servirglobal.net/TrainingMaterials/SAR/SARHB_FullRes.pdf",
+                        "https://lib.icimod.org/record/35312/files/HimalDoc2021_BOOK_Earth_Observation_Science_and_Applications_for_Risk_Reduction_and_Enhanced_Resilience_in_HKH.pdf?type=primary"
+                    ]
+                }
+            },
+            {
+                "name": "Open Library",
+                "config": {
+                    "bucket_key": "open_library",
+                    "urls": [
+                        "https://ecampusontario.pressbooks.pub/remotesensing/open/download?type=pdf"
+                    ]
+                }
+            },
+            {
+                "name": "UK Met Office",
+                "scraper": "UKMetOfficeScraper",
+                "config": {
+                    "bucket_key": "uk_met_office",
+                    "base_url": "https://library.metoffice.gov.uk",
+                    "cookie_selector": "button.cc-btn.cc-allow",
+                    "sources": [
+                        {
+                            "url": "https://library.metoffice.gov.uk/Portal/Default/en-GB/Search/AdvancedSearch?userSearchId=319",
+                            "type": "issue_or_collection"
+                        }
+                    ]
+                }
             }
         ]
     }
