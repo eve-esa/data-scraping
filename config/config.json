@@ -1138,6 +1138,34 @@
                         "https://ecampusontario.pressbooks.pub/remotesensing/open/download?type=pdf"
                     ]
                 }
+            },
+            {
+                "name": "MIT",
+                "config": {
+                    "bucket_key": "mit",
+                    "urls": [
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/3278fefb18bb9b47a78db64304af6143_hitran_exercise.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/889caef2dccbebf39c37c3e0c15dfcc1_mie_theory_exer.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/6ef9bb3431d114b89fdf7974561a4737_mie_theory.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/88c659e3b9c49b9da9c9fd583c989e8c_multi_scattering.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/ee49eb5398d4275427460ba56e583585_multiple_scat_ex.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/c3de7cdd1118ae0e3ee34493356ae0ca_pcmodwin_exercis.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/ea34272500ed6488bbc41bf241a317be_radia_equil_exer.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/095971725284763efce8d3001357fdb4_radiativ_transfr.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/d3635e3b226ade356f9b2d800a01616f_remote_sens_exer.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/68e061fe6b28729e449263ed03076f51_remote_sensing.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/b550c0e6c50a59bbaee39b3a5b9e9a06_absorption.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/40b1a10d8bc3860bc7f98c732addbb27_atmos_trans_emis.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/8704b854533349b6e5cf253f75891b1a_overview.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/e10d65ac65c27fed8d6ede9e1a4ce666_radiative_transf.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/7b9b6c5e92a345aa5cb3c1291db442b2_remote_sensing.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/88b86c33a9b743d32e4bdc4b7b2a9248_scattering.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/a4ea2da52e05800b5782a91b96f54322_thermo.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/3bd6a8d2b92c22eb41db413a80c4b0ad_thermodynamic_concepts_of_radiation.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/79d280745388d512bda626adcb8da238_1_eq_radiative_transfer.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/cbe4e58bb5702092df86970840b5b444_2mod_atm_trns_em.pdf"
+                    ]
+                }
             }
         ]
     }
