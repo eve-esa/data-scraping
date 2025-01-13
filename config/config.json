@@ -953,9 +953,9 @@
                 "type": "journal"
             },
             {
-                "url": "https://www.sciencedirect.com/journal/global-environmental-change-advances/vol/2/suppl/C",
+                "url": "https://www.sciencedirect.com/journal/global-environmental-change-advances/issues",
                 "name": "Global Environmental Change Advances",
-                "type": "issue"
+                "type": "journal"
             }
         ]
     }
