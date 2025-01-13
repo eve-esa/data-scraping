@@ -1,27 +1,17 @@
-from typing import List, Dict, Type
+from typing import List
 from bs4 import ResultSet, Tag
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 
-from model.base_mapped_models import BaseMappedUrlSource
-from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
-from scraper.base_scraper import BaseMappedScraper
+from model.base_url_publisher_models import BaseUrlPublisherSource
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
 
 
-class MiscellaneousScraper(BaseMappedPublisherScraper):
-    @property
-    def mapping(self) -> Dict[str, Type[BaseMappedScraper]]:
-        return {
-            "UKMetOfficeScraper": UKMetOfficeScraper,
-        }
-
-
-class UKMetOfficeScraper(BaseUrlPublisherScraper, BaseMappedScraper):
-    def _scrape_journal(self, source: BaseMappedUrlSource) -> ResultSet | List[Tag] | None:
+class UKMetOfficeScraper(BaseUrlPublisherScraper):
+    def _scrape_journal(self, source: BaseUrlPublisherSource) -> ResultSet | List[Tag] | None:
         pass
 
-    def _scrape_issue_or_collection(self, source: BaseMappedUrlSource) -> List[Tag] | None:
+    def _scrape_issue_or_collection(self, source: BaseUrlPublisherSource) -> List[Tag] | None:
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
         try:
@@ -43,7 +33,7 @@ class UKMetOfficeScraper(BaseUrlPublisherScraper, BaseMappedScraper):
             self._logger.error(f"Failed to process Issue / Collection {source.url}. Error: {e}")
             return None
 
-    def _scrape_article(self, source: BaseMappedUrlSource) -> Tag | None:
+    def _scrape_article(self, source: BaseUrlPublisherSource) -> Tag | None:
         pass
 
     def __wait_for_loader_hidden(self, timeout: int | None = 10) -> bool:
