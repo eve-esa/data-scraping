@@ -40,6 +40,8 @@ class BaseUrlPublisherScraper(BaseScraper):
 
             if scraped_tags is not None:
                 pdf_tags.extend(scraped_tags)
+            else:
+                self._logger.warning(f"No PDF links found in {source.url}, perhaps due to anti-bot protection.")
 
         return pdf_tags if pdf_tags else None
 

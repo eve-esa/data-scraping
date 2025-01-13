@@ -107,7 +107,8 @@ class AMSScraper(BaseIterativePublisherScraper):
 
         try:
             scraper = self._scrape_url(issue_url)
-            if "not found" in scraper.text.lower():
+            if any(keyword in scraper.text.lower() for keyword in ["not found", "maintenance"]):
+                self._logger.warning(f"Issue {issue_num} in Volume {volume_num} not found or under maintenance.")
                 return None
 
             # find all the article links in the issue by keeping only the links to the accessible articles
