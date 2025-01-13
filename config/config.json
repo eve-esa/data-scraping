@@ -1046,76 +1046,80 @@
             }
         ]
     },
-    "MiscellaneousScraper": {
-        "bucket_key": "raw_data/miscellaneous",
+    "OpenNightLightsScraper": {
+        "bucket_key": "raw_data/open_night_lights_scraper",
+        "base_url": "https://worldbank.github.io/OpenNightLights/",
+        "file_extension": ".html",
         "sources": [
             {
-                "name": "Open Night Lights",
-                "scraper": "OpenNightLightsScraper",
-                "config": {
-                    "bucket_key": "open_night_lights_scraper",
-                    "base_url": "https://worldbank.github.io/OpenNightLights/",
-                    "file_extension": ".html",
-                    "sources": [
-                        {
-                            "url": "https://worldbank.github.io/OpenNightLights/welcome.html",
-                            "type": "issue_or_collection"
-                        }
-                    ]
-                }
+                "url": "https://worldbank.github.io/OpenNightLights/welcome.html",
+                "type": "issue_or_collection"
+            }
+        ]
+    },
+    "WikipediaScraper": {
+        "bucket_key": "raw_data/wikipedia",
+        "base_url": "https://en.wikipedia.org/",
+        "file_extension": ".html",
+        "sources": [
+            {
+                "url": "https://en.wikipedia.org/wiki/Category:Earth_observation_satellites",
+                "type": "issue_or_collection"
             },
             {
-                "name": "Wikipedia",
-                "scraper": "WikipediaScraper",
-                "config": {
-                    "bucket_key": "wikipedia",
-                    "base_url": "https://en.wikipedia.org/",
-                    "file_extension": ".html",
-                    "sources": [
-                        {
-                            "url": "https://en.wikipedia.org/wiki/Category:Earth_observation_satellites",
-                            "type": "issue_or_collection"
-                        },
-                        {
-                            "url": "https://en.wikipedia.org/wiki/Category:Earth_observation_satellite_sensors",
-                            "type": "issue_or_collection"
-                        },
-                        {
-                            "url": "https://en.wikipedia.org/wiki/Category:Remote_sensing#:~:text=Remote%20sensing%20is%20the%20acquisition,contrast%20to%20on%20site%20observation.",
-                            "type": "issue_or_collection"
-                        }
-                    ]
-                }
+                "url": "https://en.wikipedia.org/wiki/Category:Earth_observation_satellite_sensors",
+                "type": "issue_or_collection"
             },
             {
-                "name": "MIT",
-                "scraper": "MITScraper",
-                "config": {
-                    "bucket_key": "mit",
-                    "base_url": "https://ocw.mit.edu/",
-                    "sources": [
-                        {
-                            "url": "https://ocw.mit.edu/courses/12-090-the-environment-of-the-earths-surface-spring-2007/pages/course-textbook/",
-                            "type": "issue_or_collection"
-                        }
-                    ]
-                }
-            },
+                "url": "https://en.wikipedia.org/wiki/Category:Remote_sensing#:~:text=Remote%20sensing%20is%20the%20acquisition,contrast%20to%20on%20site%20observation.",
+                "type": "issue_or_collection"
+            }
+        ]
+    },
+    "MITScraper": {
+        "bucket_key": "raw_data/mit",
+        "base_url": "https://ocw.mit.edu/",
+        "sources": [
             {
-                "name": "JAXA",
-                "scraper": "JAXAScraper",
-                "config": {
-                    "bucket_key": "jaxa",
-                    "base_url": "https://earth.jaxa.jp/en/eo-knowledge",
-                    "file_extension": ".html",
-                    "sources": [
-                        {
-                            "url": "https://earth.jaxa.jp/en/eo-knowledge/index.html",
-                            "type": "issue_or_collection"
-                        }
-                    ]
-                }
-            },
+                "url": "https://ocw.mit.edu/courses/12-090-the-environment-of-the-earths-surface-spring-2007/pages/course-textbook/",
+                "type": "issue_or_collection"
+            }
+        ]
+    },
+    "JAXAScraper": {
+        "bucket_key": "raw_data/jaxa",
+        "base_url": "https://earth.jaxa.jp/en/eo-knowledge",
+        "file_extension": ".html",
+        "sources": [
+            {
+                "url": "https://earth.jaxa.jp/en/eo-knowledge/index.html",
+                "type": "issue_or_collection"
+            }
+        ]
+    },
+    "UKMetOfficeScraper": {
+        "bucket_key": "raw_data/uk_met_office",
+        "base_url": "https://library.metoffice.gov.uk",
+        "cookie_selector": "button.cc-btn.cc-allow",
+        "sources": [
+            {
+                "url": "https://library.metoffice.gov.uk/Portal/Default/en-GB/Search/AdvancedSearch?userSearchId=319",
+                "type": "issue_or_collection"
+            }
+        ]
+    },
+    "EOAScraper": {
+        "bucket_key": "raw_data/eoa",
+        "base_url": "https://www.eoa.org.au/",
+        "sources": [
+            {
+                "url": "https://www.eoa.org.au/earth-observation-textbooks"
+            }
+        ]
+    },
+    "DirectLinksScraper": {
+        "bucket_key": "raw_data",
+        "sources": [
             {
                 "name": "Servir",
                 "config": {
@@ -1132,21 +1136,6 @@
                     "bucket_key": "open_library",
                     "urls": [
                         "https://ecampusontario.pressbooks.pub/remotesensing/open/download?type=pdf"
-                    ]
-                }
-            },
-            {
-                "name": "UK Met Office",
-                "scraper": "UKMetOfficeScraper",
-                "config": {
-                    "bucket_key": "uk_met_office",
-                    "base_url": "https://library.metoffice.gov.uk",
-                    "cookie_selector": "button.cc-btn.cc-allow",
-                    "sources": [
-                        {
-                            "url": "https://library.metoffice.gov.uk/Portal/Default/en-GB/Search/AdvancedSearch?userSearchId=319",
-                            "type": "issue_or_collection"
-                        }
                     ]
                 }
             }
