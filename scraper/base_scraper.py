@@ -54,7 +54,10 @@ class BaseScraper(ABC):
             from helper.utils import write_json_file, is_json_serializable
             write_json_file(path_file_results, scraping_results if is_json_serializable(scraping_results) else links)
 
-        self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")
+            self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")
+            return
+
+        self._logger.info(f"Something went wrong with Scraper {self.__class__.__name__}: unsuccessfully completed.")
 
     def setup_driver(self):
         from helper.utils import get_user_agent

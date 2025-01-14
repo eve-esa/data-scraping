@@ -958,5 +958,215 @@
                 "type": "journal"
             }
         ]
+    },
+    "NASAScraper": {
+        "bucket_key": "raw_data/nasa",
+        "sources": [
+            {
+                "name": "NASA EarthData Wiki",
+                "scraper": "NASAEarthDataWikiScraper",
+                "config": {
+                    "base_url": "https://wiki.earthdata.nasa.gov/",
+                    "file_extension": ".html",
+                    "sources": [
+                        {
+                            "url": "https://wiki.earthdata.nasa.gov/display/CMR/Common+Metadata+Repository+Home",
+                            "type": "issue_or_collection"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "NASA NTRS",
+                "scraper": "NASANTRSScraper",
+                "config": {
+                    "base_url": "https://ntrs.nasa.gov",
+                    "sources": [
+                        {
+                            "landing_page_url": "https://ntrs.nasa.gov/search?subjectCategory=Earth%20Resources%20And%20Remote%20Sensing&page=%7B%22size%22:{page_size},%22from%22:{start_index}%7D",
+                            "page_size": 200
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "NASA EOS Portal",
+                "scraper": "NASAEOSScraper",
+                "config": {
+                    "base_url": "https://eospso.nasa.gov",
+                    "sources": [
+                        {
+                            "landing_page_url": "https://eospso.nasa.gov/publications/59?page={page_number}"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "NASA EarthData",
+                "scraper": "NASAEarthDataScraper",
+                "config": {
+                    "base_url": "https://www.earthdata.nasa.gov",
+                    "file_extension": ".html",
+                    "sources": [
+                        {
+                            "landing_page_url": "https://www.earthdata.nasa.gov/topics/glossary?%2Ftopics%2Fglossary%2Fall=&page={page_number}",
+                            "href": "/topics/"
+                        },
+                        {
+                            "landing_page_url": "https://www.earthdata.nasa.gov/learn/data-in-action?items_per_page=16&page={page_number}",
+                            "href": "/learn/"
+                        },
+                        {
+                            "landing_page_url": "https://www.earthdata.nasa.gov/learn/data-recipes?items_per_page=16&page={page_number}",
+                            "href": "/learn/"
+                        },
+                        {
+                            "landing_page_url": "https://www.earthdata.nasa.gov/learn/tutorials?items_per_page=16&page=,,,,,,,,,,,,,,,,,,,,,,,,,,,{page_number}",
+                            "href": "/learn/"
+                        },
+                        {
+                            "landing_page_url": "https://www.earthdata.nasa.gov/learn/webinars?items_per_page=16&page={page_number}",
+                            "href": "/learn/"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "NASA EarthData PDF",
+                "scraper": "NASAEarthDataPDFScraper",
+                "config": {
+                    "base_url": "https://www.earthdata.nasa.gov",
+                    "sources": [
+                        {
+                            "landing_page_url": "https://www.earthdata.nasa.gov/learn/webinars?items_per_page=16&page={page_number}",
+                            "href": "/learn/"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "OpenNightLightsScraper": {
+        "bucket_key": "raw_data/open_night_lights_scraper",
+        "base_url": "https://worldbank.github.io/OpenNightLights/",
+        "file_extension": ".html",
+        "sources": [
+            {
+                "url": "https://worldbank.github.io/OpenNightLights/welcome.html",
+                "type": "issue_or_collection"
+            }
+        ]
+    },
+    "WikipediaScraper": {
+        "bucket_key": "raw_data/wikipedia",
+        "base_url": "https://en.wikipedia.org/",
+        "file_extension": ".html",
+        "sources": [
+            {
+                "url": "https://en.wikipedia.org/wiki/Category:Earth_observation_satellites",
+                "type": "issue_or_collection"
+            },
+            {
+                "url": "https://en.wikipedia.org/wiki/Category:Earth_observation_satellite_sensors",
+                "type": "issue_or_collection"
+            },
+            {
+                "url": "https://en.wikipedia.org/wiki/Category:Remote_sensing#:~:text=Remote%20sensing%20is%20the%20acquisition,contrast%20to%20on%20site%20observation.",
+                "type": "issue_or_collection"
+            }
+        ]
+    },
+    "MITScraper": {
+        "bucket_key": "raw_data/mit",
+        "base_url": "https://ocw.mit.edu/",
+        "sources": [
+            {
+                "url": "https://ocw.mit.edu/courses/12-090-the-environment-of-the-earths-surface-spring-2007/pages/course-textbook/",
+                "type": "issue_or_collection"
+            }
+        ]
+    },
+    "JAXAScraper": {
+        "bucket_key": "raw_data/jaxa",
+        "base_url": "https://earth.jaxa.jp/en/eo-knowledge",
+        "file_extension": ".html",
+        "sources": [
+            {
+                "url": "https://earth.jaxa.jp/en/eo-knowledge/index.html",
+                "type": "issue_or_collection"
+            }
+        ]
+    },
+    "UKMetOfficeScraper": {
+        "bucket_key": "raw_data/uk_met_office",
+        "base_url": "https://library.metoffice.gov.uk",
+        "cookie_selector": "button.cc-btn.cc-allow",
+        "sources": [
+            {
+                "url": "https://library.metoffice.gov.uk/Portal/Default/en-GB/Search/AdvancedSearch?userSearchId=319",
+                "type": "issue_or_collection"
+            }
+        ]
+    },
+    "EOAScraper": {
+        "bucket_key": "raw_data/eoa",
+        "base_url": "https://www.eoa.org.au/",
+        "sources": [
+            {
+                "url": "https://www.eoa.org.au/earth-observation-textbooks"
+            }
+        ]
+    },
+    "DirectLinksScraper": {
+        "bucket_key": "raw_data",
+        "sources": [
+            {
+                "name": "Servir",
+                "config": {
+                    "bucket_key": "servir",
+                    "urls": [
+                        "https://gis1.servirglobal.net/TrainingMaterials/SAR/SARHB_FullRes.pdf",
+                        "https://lib.icimod.org/record/35312/files/HimalDoc2021_BOOK_Earth_Observation_Science_and_Applications_for_Risk_Reduction_and_Enhanced_Resilience_in_HKH.pdf?type=primary"
+                    ]
+                }
+            },
+            {
+                "name": "Open Library",
+                "config": {
+                    "bucket_key": "open_library",
+                    "urls": [
+                        "https://ecampusontario.pressbooks.pub/remotesensing/open/download?type=pdf"
+                    ]
+                }
+            },
+            {
+                "name": "MIT",
+                "config": {
+                    "bucket_key": "mit",
+                    "urls": [
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/3278fefb18bb9b47a78db64304af6143_hitran_exercise.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/889caef2dccbebf39c37c3e0c15dfcc1_mie_theory_exer.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/6ef9bb3431d114b89fdf7974561a4737_mie_theory.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/88c659e3b9c49b9da9c9fd583c989e8c_multi_scattering.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/ee49eb5398d4275427460ba56e583585_multiple_scat_ex.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/c3de7cdd1118ae0e3ee34493356ae0ca_pcmodwin_exercis.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/ea34272500ed6488bbc41bf241a317be_radia_equil_exer.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/095971725284763efce8d3001357fdb4_radiativ_transfr.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/d3635e3b226ade356f9b2d800a01616f_remote_sens_exer.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/68e061fe6b28729e449263ed03076f51_remote_sensing.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/b550c0e6c50a59bbaee39b3a5b9e9a06_absorption.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/40b1a10d8bc3860bc7f98c732addbb27_atmos_trans_emis.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/8704b854533349b6e5cf253f75891b1a_overview.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/e10d65ac65c27fed8d6ede9e1a4ce666_radiative_transf.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/7b9b6c5e92a345aa5cb3c1291db442b2_remote_sensing.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/88b86c33a9b743d32e4bdc4b7b2a9248_scattering.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/a4ea2da52e05800b5782a91b96f54322_thermo.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/3bd6a8d2b92c22eb41db413a80c4b0ad_thermodynamic_concepts_of_radiation.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/79d280745388d512bda626adcb8da238_1_eq_radiative_transfer.pdf",
+                        "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/cbe4e58bb5702092df86970840b5b444_2mod_atm_trns_em.pdf"
+                    ]
+                }
+            }
+        ]
     }
 }

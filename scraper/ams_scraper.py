@@ -1,5 +1,5 @@
 import os
-from typing import Type, Tuple
+from typing import Type
 from selenium.webdriver.common.by import By
 
 from helper.utils import get_scraped_url, get_link_for_accessible_article

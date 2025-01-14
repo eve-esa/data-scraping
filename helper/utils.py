@@ -5,12 +5,12 @@ import os
 import pkgutil
 import threading
 import zipfile
-from typing import Dict, List, Type
+from typing import Dict, List, Type, Tuple
 import yaml
 import logging
 from bs4 import Tag
 from pydantic import ValidationError
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 from fake_useragent import UserAgent
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.by import By
@@ -232,3 +232,27 @@ def get_user_agent(include_mobile: bool = False) -> str:
         random_ua = ua.random
 
     return random_ua
+
+
+def parse_google_drive_link(google_drive_link: str) -> Tuple[str, str]:
+    """
+    Extract the ID and download URL from the Google Drive link.
+
+    Args:
+        google_drive_link (str): The Google Drive link.
+
+    Returns:
+        Tuple[str, str]: The ID and download URL of the file.
+    """
+    parsed_url = urlparse(google_drive_link)
+    parsed_query = parse_qs(parsed_url.query)
+    file_id = parsed_url.path.split("/")[-2]
+    if "d" in parsed_query:
+        file_id = parsed_query["d"][0]
+    if "id" in parsed_query:
+        file_id = parsed_query["id"][0]
+
+    # direct URL for the download
+    download_url = f"https://drive.google.com/uc?id={file_id}"
+
+    return file_id, download_url
