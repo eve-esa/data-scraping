@@ -1117,6 +1117,15 @@
             }
         ]
     },
+    "ISPRSScraper": {
+        "bucket_key": "raw_data/isprs",
+        "base_url": "https://www.isprs.org/",
+        "sources": [
+            {
+                "url": "https://www.isprs.org/publications/archives.aspx"
+            }
+        ]
+    },
     "DirectLinksScraper": {
         "bucket_key": "raw_data",
         "sources": [
