@@ -1184,6 +1184,21 @@
                         "https://cdn.intechopen.com/pdfs/27164.pdf"
                     ]
                 }
+            },
+            {
+                "name": "Open University",
+                "config": {
+                    "bucket_key": "open_university",
+                    "urls": [
+                        "https://www.open.edu/openlearn/nature-environment/environmental-studies/watching-the-weather/altformat-printable",
+                        "https://www.open.edu/openlearn/nature-environment/environmental-studies/climate-change-and-renewable-energy/altformat-printable",
+                        "https://www.open.edu/openlearn/science-maths-technology/the-oceans/altformat-printable",
+                        "https://www.open.edu/openlearn/nature-environment/climate-change/altformat-printable",
+                        "https://www.open.edu/openlearn/nature-environment/environmental-studies/managing-coastal-environments/altformat-printable",
+                        "https://www.open.edu/openlearn/nature-environment/environment-understanding-atmospheric-and-ocean-flows/altformat-printable",
+                        "https://www.open.edu/openlearn/nature-environment/environmental-studies/the-frozen-planet/altformat-printable"
+                    ]
+                }
             }
         ]
     }
