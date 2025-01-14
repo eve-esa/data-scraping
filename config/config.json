@@ -1166,6 +1166,15 @@
                         "https://ocw.mit.edu/courses/12-815-atmospheric-radiation-fall-2006/cbe4e58bb5702092df86970840b5b444_2mod_atm_trns_em.pdf"
                     ]
                 }
+            },
+            {
+                "name": "Intech Open",
+                "config": {
+                    "bucket_key": "intech_open",
+                    "urls": [
+                        "https://cdn.intechopen.com/pdfs/27164.pdf"
+                    ]
+                }
             }
         ]
     }
