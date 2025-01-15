@@ -1043,6 +1043,15 @@
                         }
                     ]
                 }
+            },
+            {
+                "name": "NASA EO Glossary",
+                "config": {
+                    "file_extension": ".html",
+                    "urls": [
+                        "https://earthobservatory.nasa.gov/glossary/all"
+                    ]
+                }
             }
         ]
     },
