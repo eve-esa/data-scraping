@@ -234,6 +234,17 @@ def get_user_agent(include_mobile: bool = False) -> str:
     return random_ua
 
 
+def get_random_proxy() -> str:
+    """
+    This method integrates Bright Data's proxy service with the requests library. It returns a dictionary with the
+    proxy configuration. The proxy is a residential proxy that rotates the IP address for each request.
+
+    Returns:
+        str: The proxy configuration.
+    """
+    return f"http://{os.getenv('BRIGHTDATA_USERNAME')}:{os.getenv('BRIGHTDATA_PASSWORD')}@{os.getenv('BRIGHTDATA_PROXY')}"
+
+
 def parse_google_drive_link(google_drive_link: str) -> Tuple[str, str]:
     """
     Extract the ID and download URL from the Google Drive link.

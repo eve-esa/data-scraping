@@ -5,7 +5,7 @@ import scrapy
 from urllib.parse import urljoin
 from scrapy.http import Response
 
-from helper.utils import get_user_agent  #, get_random_proxy
+from helper.utils import get_user_agent, get_random_proxy
 
 
 class CustomUserAgentMiddleware:
@@ -16,12 +16,12 @@ class CustomUserAgentMiddleware:
         request.headers["User-Agent"] = get_user_agent()
 
 
-# class CustomProxyMiddleware:
-#     """
-#     Middleware to set a dynamic proxy
-#     """
-#     def process_request(self, request, spider):
-#         request.meta["proxy"] = get_random_proxy()
+class CustomProxyMiddleware:
+    """
+    Middleware to set a dynamic proxy
+    """
+    def process_request(self, request, spider):
+        request.meta["proxy"] = get_random_proxy()
 
 
 class EveSpider(scrapy.Spider):
@@ -33,7 +33,7 @@ class EveSpider(scrapy.Spider):
         "CONCURRENT_REQUESTS_PER_DOMAIN": 4,
         "DOWNLOADER_MIDDLEWARES": {
             "service.crawler.CustomUserAgentMiddleware": 400,
-            # "service.crawler.CustomProxyMiddleware": 410,
+            "service.crawler.CustomProxyMiddleware": 410,
             "scrapy.downloadermiddlewares.cookies.CookiesMiddleware": 700,
         },
     }
