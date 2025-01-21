@@ -1,5 +1,4 @@
 from typing import List, TypeAlias, Dict
-
 from pydantic import BaseModel, field_validator
 
 from helper.base_enum import Enum

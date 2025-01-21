@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Final
 import boto3
-import requests
+import cloudscraper
 from botocore.exceptions import ClientError
 from pydantic import BaseModel
 
@@ -80,8 +80,10 @@ class S3Storage:
             return False
 
         try:
+            scraper = cloudscraper.create_scraper()
+
             # Download content from the URL
-            response = requests.get(source_url, headers={
+            response = scraper.get(source_url, headers={
                 "User-Agent": get_user_agent(),
                 "Accept": "application/pdf,*/*",
                 "Accept-Language": "en-US,en;q=0.9",

@@ -1135,6 +1135,19 @@
             }
         ]
     },
+    "CrawlingScraper": {
+        "bucket_key": "raw_data/crawling",
+        "sources": [
+            {
+                "name": "NASA Climate Change",
+                "url": "https://science.nasa.gov/climate-change/"
+            },
+            {
+                "name": "NASA Climate Kids",
+                "url": "https://climatekids.nasa.gov/image-use/"
+            }
+        ]
+    },
     "DirectLinksScraper": {
         "bucket_key": "raw_data",
         "sources": [

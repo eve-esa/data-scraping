@@ -25,3 +25,6 @@ class Enum(BaseEnum, metaclass=MetaEnum):
         if isinstance(other, Enum):
             return self.value == other.value
         return self.value == other
+
+    def __hash__(self):
+        return hash(self.value)
