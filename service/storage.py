@@ -70,7 +70,7 @@ class S3Storage:
             return False
 
     def upload(self, root_key: str, source_url: str, file_extension: str, referer_url: str | None = None) -> bool:
-        from helper.utils import get_filename, get_user_agent, get_random_proxy
+        from helper.utils import get_filename, get_user_agent
 
         referer_url = referer_url if referer_url is not None else "https://www.google.com"
         s3_key = os.path.join(root_key, get_filename(source_url, file_extension))  # Construct S3 key
@@ -90,12 +90,7 @@ class S3Storage:
                     "Accept": "application/pdf,*/*",
                     "Accept-Language": "en-US,en;q=0.9",
                     "Referer": referer_url,
-                },
-                proxies={
-                    "http": get_random_proxy(),
-                    "https": get_random_proxy(),
-                },
-                verify=False  # Equivalent to -k flag in curl (ignore SSL certificate warnings)
+                }
             )
             response.raise_for_status()  # Check for request errors
 
