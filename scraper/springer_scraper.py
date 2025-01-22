@@ -1,17 +1,26 @@
-from typing import List
+from typing import List, Dict, Type
 from bs4 import ResultSet, Tag
 
 from helper.utils import get_scraped_url
-from scraper.base_url_publisher_scraper import BaseUrlPublisherSource, BaseUrlPublisherScraper, SourceType
+from model.base_mapped_models import BaseMappedUrlSource
+from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
+from scraper.base_scraper import BaseMappedScraper
+from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper, SourceType
 
 
-class SpringerScraper(BaseUrlPublisherScraper):
-    def _scrape_journal(self, source: BaseUrlPublisherSource) -> List[Tag] | None:
+class SpringerScraper(BaseMappedPublisherScraper):
+    @property
+    def mapping(self) -> Dict[str, Type[BaseMappedScraper]]:
+        return {"SpringerUrlScraper": SpringerUrlScraper}
+
+
+class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
+    def _scrape_journal(self, source: BaseMappedUrlSource) -> List[Tag] | None:
         """
         Scrape all articles of a journal.
 
         Args:
-            source (BaseUrlPublisherSource): The journal to scrape.
+            source (BaseMappedUrlSource): The journal to scrape.
 
         Returns:
             List[Tag] | None: A list of Tag objects containing the PDF links. If no tag was found, return None.
@@ -40,7 +49,7 @@ class SpringerScraper(BaseUrlPublisherScraper):
             pdf_tag_list = [
                 tag for tag in (
                     self._scrape_article(
-                        BaseUrlPublisherSource(url=get_scraped_url(tag, self.base_url), type=str(SourceType.ARTICLE))
+                        BaseMappedUrlSource(url=get_scraped_url(tag, self.base_url), type=str(SourceType.ARTICLE))
                     )
                     for tag in article_tag_list
                 ) if tag
@@ -52,12 +61,12 @@ class SpringerScraper(BaseUrlPublisherScraper):
             self._logger.error(f"Failed to process Journal {source.url}. Error: {e}")
             return None
 
-    def _scrape_issue_or_collection(self, source: BaseUrlPublisherSource) -> ResultSet | None:
+    def _scrape_issue_or_collection(self, source: BaseMappedUrlSource) -> ResultSet | None:
         """
         Scrape the issue (or collection) URL for PDF links.
 
         Args:
-            source (BaseUrlPublisherSource): The issue / collection to scrape.
+            source (BaseMappedUrlSource): The issue / collection to scrape.
 
         Returns:
             ResultSet | None: A ResultSet (i.e., list) object containing the tags to the PDF links, or None if no tag was found.
@@ -76,12 +85,12 @@ class SpringerScraper(BaseUrlPublisherScraper):
             self._logger.error(f"Failed to process Issue / Collection {source.url}. Error: {e}")
             return None
 
-    def _scrape_article(self, source: BaseUrlPublisherSource) -> Tag | None:
+    def _scrape_article(self, source: BaseMappedUrlSource) -> Tag | None:
         """
         Scrape a single article.
 
         Args:
-            source (BaseUrlPublisherSource): The article to scrape.
+            source (BaseMappedUrlSource): The article to scrape.
 
         Returns:
             Tag | None: The tag containing the PDF link found in the article, or None if no tag was found.

@@ -33,7 +33,7 @@ class EveSpider(scrapy.Spider):
         "CONCURRENT_REQUESTS_PER_DOMAIN": 4,
         "DOWNLOADER_MIDDLEWARES": {
             "service.crawler.CustomUserAgentMiddleware": 400,
-            "service.crawler.CustomProxyMiddleware": 410,
+            # "service.crawler.CustomProxyMiddleware": 410,
             "scrapy.downloadermiddlewares.cookies.CookiesMiddleware": 700,
         },
     }

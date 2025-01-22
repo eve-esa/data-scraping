@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 import os
-import undetected_chromedriver as uc
 import random
 from typing import List, Type, Any
 from bs4 import BeautifulSoup
@@ -8,6 +7,7 @@ from selenium.common import TimeoutException
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
+import undetected_chromedriver as uc
 import time
 import logging
 

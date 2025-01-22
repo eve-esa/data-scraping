@@ -190,48 +190,56 @@
     },
     "SpringerScraper": {
         "bucket_key": "raw_data/springer",
-        "cookie_selector": "button.cc-banner__button-accept",
-        "base_url": "https://link.springer.com",
         "sources": [
             {
-                "url": "https://link.springer.com/journal/44288/articles",
-                "type": "journal"
-            },
-            {
-                "url": "https://link.springer.com/book/10.1007/978-3-319-65633-5",
-                "type": "issue_or_collection"
-            },
-            {
-                "url": "https://link.springer.com/book/10.1007/978-3-030-33157-3",
-                "type": "issue_or_collection"
-            },
-            {
-                "url": "https://link.springer.com/book/10.1007/978-3-030-90998-7",
-                "type": "issue_or_collection"
-            },
-            {
-                "url": "https://link.springer.com/book/10.1007/978-3-031-15988-6",
-                "type": "issue_or_collection"
-            },
-            {
-                "url": "https://link.springer.com/book/10.1007/978-3-030-80767-2",
-                "type": "issue_or_collection"
-            },
-            {
-                "url": "https://link.springer.com/book/10.1007/978-981-15-8983-6",
-                "type": "issue_or_collection"
-            },
-            {
-                "url": "https://link.springer.com/book/10.1007/978-981-99-9375-8",
-                "type": "issue_or_collection"
-            },
-            {
-                "url": "https://link.springer.com/book/10.1007/978-981-10-3713-9",
-                "type": "issue_or_collection"
-            },
-            {
-                "url": "https://link.springer.com/book/10.1007/978-3-642-25643-1",
-                "type": "issue_or_collection"
+                "name": "Springer Journals / collections",
+                "scraper": "SpringerUrlScraper",
+                "config": {
+                    "cookie_selector": "button.cc-banner__button-accept",
+                    "base_url": "https://link.springer.com",
+                    "sources": [
+                        {
+                            "url": "https://link.springer.com/journal/44288/articles",
+                            "type": "journal"
+                        },
+                        {
+                            "url": "https://link.springer.com/book/10.1007/978-3-319-65633-5",
+                            "type": "issue_or_collection"
+                        },
+                        {
+                            "url": "https://link.springer.com/book/10.1007/978-3-030-33157-3",
+                            "type": "issue_or_collection"
+                        },
+                        {
+                            "url": "https://link.springer.com/book/10.1007/978-3-030-90998-7",
+                            "type": "issue_or_collection"
+                        },
+                        {
+                            "url": "https://link.springer.com/book/10.1007/978-3-031-15988-6",
+                            "type": "issue_or_collection"
+                        },
+                        {
+                            "url": "https://link.springer.com/book/10.1007/978-3-030-80767-2",
+                            "type": "issue_or_collection"
+                        },
+                        {
+                            "url": "https://link.springer.com/book/10.1007/978-981-15-8983-6",
+                            "type": "issue_or_collection"
+                        },
+                        {
+                            "url": "https://link.springer.com/book/10.1007/978-981-99-9375-8",
+                            "type": "issue_or_collection"
+                        },
+                        {
+                            "url": "https://link.springer.com/book/10.1007/978-981-10-3713-9",
+                            "type": "issue_or_collection"
+                        },
+                        {
+                            "url": "https://link.springer.com/book/10.1007/978-3-642-25643-1",
+                            "type": "issue_or_collection"
+                        }
+                    ]
+                }
             }
         ]
     },
