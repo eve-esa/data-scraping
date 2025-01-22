@@ -83,6 +83,7 @@ class S3Storage:
             scraper = cloudscraper.create_scraper()
 
             # Download content from the URL
+            proxy = get_random_proxy()
             response = scraper.get(
                 source_url,
                 headers={
@@ -92,8 +93,8 @@ class S3Storage:
                     "Referer": referer_url,
                 },
                 proxies={
-                    "http": get_random_proxy(),
-                    "https": get_random_proxy(),
+                    "http": proxy,
+                    "https": proxy,
                 },
                 verify=False  # Equivalent to -k flag in curl (ignore SSL certificate warnings)
             )
