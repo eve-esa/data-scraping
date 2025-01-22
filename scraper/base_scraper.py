@@ -60,7 +60,7 @@ class BaseScraper(ABC):
         self._logger.warning(f"Something went wrong with Scraper {self.__class__.__name__}: unsuccessfully completed.")
 
     def setup_driver(self):
-        from helper.utils import get_user_agent
+        from helper.utils import get_user_agent, get_random_proxy
 
         chrome_options = uc.ChromeOptions()
 
@@ -71,6 +71,9 @@ class BaseScraper(ABC):
         chrome_options.add_argument("--headless=new")  # Run in headless mode (no browser UI)
         chrome_options.add_argument('--window-size=1920,1080')
         chrome_options.add_argument('--start-maximized')
+
+        # Add proxy support
+        chrome_options.add_argument(f"--proxy-server={get_random_proxy()}")
 
         # Performance options
         chrome_options.add_argument("--disable-gpu")
