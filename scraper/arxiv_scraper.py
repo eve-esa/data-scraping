@@ -24,7 +24,7 @@ class ArxivScraper(BasePaginationPublisherScraper):
 
     def scrape(self, model: ArxivConfig) -> BasePaginationPublisherScrapeOutput | None:
         """
-        Scrape the Sage sources for PDF links.
+        Scrape the Arxiv sources for PDF links.
 
         Args:
             model (ArxivConfig): The configuration model.

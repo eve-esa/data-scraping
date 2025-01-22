@@ -192,7 +192,7 @@
         "bucket_key": "raw_data/springer",
         "sources": [
             {
-                "name": "Springer Journals / collections",
+                "name": "Springer journals / collections",
                 "scraper": "SpringerUrlScraper",
                 "config": {
                     "cookie_selector": "button.cc-banner__button-accept",
@@ -237,6 +237,55 @@
                         {
                             "url": "https://link.springer.com/book/10.1007/978-3-642-25643-1",
                             "type": "issue_or_collection"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "Springer search engine",
+                "scraper": "SpringerSearchEngineScraper",
+                "config": {
+                    "cookie_selector": "button.cc-banner__button-accept",
+                    "base_url": "https://link.springer.com",
+                    "sources": [
+                        {
+                            "landing_page_url": "https://link.springer.com/search?new-search=true&query=earth+observation&content-type=article&content-type=research&content-type=chapter&content-type=conference+paper&content-type=review&content-type=reference+work+entry&content-type=news&content-type=book&content-type=protocol&dateFrom=&dateTo=&language=En&sortBy=relevance&page={page_number}"
+                        },
+                        {
+                            "landing_page_url": "https://link.springer.com/search?new-search=true&query=Remote+sensing&content-type=article&content-type=research&content-type=chapter&content-type=conference+paper&content-type=review&content-type=reference+work+entry&content-type=news&content-type=book&content-type=protocol&dateFrom=&dateTo=&language=En&sortBy=relevance&page={page_number}"
+                        },
+                        {
+                            "landing_page_url": "https://link.springer.com/search?new-search=true&query=earth+monitoring&content-type=article&content-type=research&content-type=chapter&content-type=conference+paper&content-type=review&content-type=reference+work+entry&content-type=news&content-type=book&content-type=protocol&dateFrom=&dateTo=&language=En&sortBy=relevance&page={page_number}"
+                        },
+                        {
+                            "landing_page_url": "https://link.springer.com/search?new-search=true&query=environmental+monitoring&content-type=article&content-type=research&content-type=chapter&content-type=conference+paper&content-type=review&content-type=reference+work+entry&content-type=news&content-type=protocol&content-type=book&dateFrom=&dateTo=&language=En&sortBy=relevance&page={page_number}"
+                        },
+                        {
+                            "landing_page_url": "https://link.springer.com/search?new-search=true&query=satellite+observation&content-type=article&content-type=research&content-type=chapter&content-type=conference+paper&content-type=review&content-type=reference+work+entry&content-type=news&content-type=protocol&content-type=book&dateFrom=&dateTo=&language=En&sortBy=relevance&page={page_number}"
+                        },
+                        {
+                            "landing_page_url": "https://link.springer.com/search?new-search=true&query=Synthetic+Aperture+Radar&content-type=article&content-type=research&content-type=chapter&content-type=conference+paper&content-type=reference+work+entry&content-type=review&content-type=news&content-type=book&dateFrom=&dateTo=&language=En&sortBy=relevance&page={page_number}"
+                        },
+                        {
+                            "landing_page_url": "https://link.springer.com/search?new-search=true&query=multispectral+imaging&content-type=article&content-type=research&content-type=chapter&content-type=conference+paper&content-type=review&content-type=reference+work+entry&content-type=protocol&content-type=news&content-type=book&dateFrom=&dateTo=&language=En&sortBy=relevance&page={page_number}"
+                        },
+                        {
+                            "landing_page_url": "https://link.springer.com/search?new-search=true&query=lidar&content-type=article&content-type=research&content-type=chapter&content-type=conference+paper&content-type=review&content-type=reference+work+entry&content-type=protocol&content-type=news&content-type=book&dateFrom=&dateTo=&language=En&sortBy=relevance&page={page_number}"
+                        },
+                        {
+                            "landing_page_url": "https://link.springer.com/search?new-search=true&query=light+detection+and+ranging&content-type=article&content-type=chapter&content-type=research&content-type=conference+paper&content-type=review&content-type=reference+work+entry&content-type=news&content-type=book&content-type=protocol&dateFrom=&dateTo=&language=En&sortBy=relevance&page={page_number}"
+                        },
+                        {
+                            "landing_page_url": "https://link.springer.com/search?new-search=true&query=geospatial+monitoring&content-type=article&content-type=research&content-type=chapter&content-type=conference+paper&content-type=review&content-type=reference+work+entry&content-type=news&content-type=book&dateFrom=&dateTo=&language=En&sortBy=relevance&page={page_number}"
+                        },
+                        {
+                            "landing_page_url": "https://link.springer.com/search?new-search=true&query=atmospheric+observations&content-type=article&content-type=research&content-type=chapter&content-type=conference+paper&content-type=review&content-type=news&content-type=reference+work+entry&content-type=protocol&content-type=book&dateFrom=&dateTo=&language=En&sortBy=relevance&page={page_number}"
+                        },
+                        {
+                            "landing_page_url": "https://link.springer.com/search?new-search=true&query=land+use%2Fland+cover&content-type=chapter&content-type=article&content-type=research&content-type=conference+paper&content-type=reference+work+entry&content-type=review&content-type=news&content-type=protocol&content-type=book&dateFrom=&dateTo=&language=En&sortBy=relevance&page={page_number}"
+                        },
+                        {
+                            "landing_page_url": "https://link.springer.com/search?new-search=true&query=lulc&content-type=article&content-type=research&content-type=chapter&content-type=conference+paper&content-type=review&content-type=reference+work+entry&dateFrom=&dateTo=&language=En&sortBy=relevance&page={page_number}"
                         }
                     ]
                 }

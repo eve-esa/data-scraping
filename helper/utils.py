@@ -121,6 +121,23 @@ def run_scrapers(discovered_scrapers: Dict[str, Type[BaseScraper]], config: Dict
         process.join()
 
 
+def remove_query_string_from_url(url: str | None = None) -> str | None:
+    """
+    Remove the query string from the URL.
+
+    Args:
+        url (str): The URL to process.
+
+    Returns:
+        str | None: The URL without the query string, or None if the URL is None.
+    """
+    if url is None:
+        return None
+
+    parsed = urlparse(url)
+    return f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
+
+
 def get_scraped_url(tag: Tag, base_url: str) -> str:
     """
     Get the URL from the Tag.
@@ -141,7 +158,7 @@ def get_scraped_url(tag: Tag, base_url: str) -> str:
         prefix += "//"
 
     # Join with single slash
-    return f"{prefix}/{tag.get('href').lstrip('/')}"
+    return remove_query_string_from_url(f"{prefix}/{tag.get('href').lstrip('/')}")
 
 
 def get_filename(url: str, file_extension: str) -> str:

@@ -1,9 +1,12 @@
 from typing import List, Dict, Type
 from bs4 import ResultSet, Tag
+from selenium.webdriver.common.by import By
 
 from helper.utils import get_scraped_url
 from model.base_mapped_models import BaseMappedUrlSource
+from model.base_pagination_publisher_models import BasePaginationPublisherConfig, BasePaginationPublisherScrapeOutput
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
+from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
 from scraper.base_scraper import BaseMappedScraper
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper, SourceType
 
@@ -11,7 +14,10 @@ from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper, SourceTy
 class SpringerScraper(BaseMappedPublisherScraper):
     @property
     def mapping(self) -> Dict[str, Type[BaseMappedScraper]]:
-        return {"SpringerUrlScraper": SpringerUrlScraper}
+        return {
+            "SpringerUrlScraper": SpringerUrlScraper,
+            "SpringerSearchEngineScraper": SpringerSearchEngineScraper,
+        }
 
 
 class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
@@ -104,4 +110,94 @@ class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
             return scraper.find("a", href=lambda href: href and "/pdf/" in href)
         except Exception as e:
             self._logger.error(f"Failed to process Article {source.url}. Error: {e}")
+            return None
+
+
+class SpringerSearchEngineScraper(BasePaginationPublisherScraper):
+    @property
+    def config_model_type(self) -> Type[BasePaginationPublisherConfig]:
+        """
+        Return the configuration model type.
+
+        Returns:
+            Type[BasePaginationPublisherConfig]: The configuration model type
+        """
+        return BasePaginationPublisherConfig
+
+    def scrape(self, model: BasePaginationPublisherConfig) -> BasePaginationPublisherScrapeOutput | None:
+        """
+        Scrape the Springer sources from Search Engine tools for PDF links.
+
+        Args:
+            model (BasePaginationPublisherConfig): The configuration model.
+
+        Returns:
+            BasePaginationPublisherScrapeOutput: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.
+        """
+        pdf_tags = []
+        for idx, source in enumerate(model.sources):
+            pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
+
+        return {"Springer": [get_scraped_url(tag, self.base_url) for tag in pdf_tags]} if pdf_tags else None
+
+    def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> ResultSet | List[Tag]:
+        """
+        Scrape the landing page.
+
+        Args:
+            landing_page_url (str): The landing page to scrape.
+
+        Returns:
+            List[Tag]: A list of Tag objects containing the tags to the PDF links. If something went wrong, an empty list.
+        """
+        self._logger.info(f"Processing Landing Page {landing_page_url}")
+
+        return self._scrape_pagination(landing_page_url, source_number)
+
+    def _check_tag_list(self, page_tag_list):
+        return page_tag_list is not None
+
+    def _scrape_page(self, url: str) -> List[Tag] | None:
+        """
+        Scrape the Cambridge University Press page of the collection from pagination for PDF links.
+
+        Args:
+            url (str): The URL to scrape.
+
+        Returns:
+            ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
+        """
+        try:
+            scraper = self._scrape_url(url)
+
+            article_tag_list = scraper.find_all("a", href=True, class_="app-card-open__link")
+            if not article_tag_list:
+                return None
+
+            # by using Selenium self._driver, search for all "a" tags, with class "app-card-open__link", href attribute and which parent has the previous sibling:
+            # - with class "app-entitlement"
+            # - containing a svg with class "app-entitlement__icon.app-entitlement__icon--full-access
+            open_access_article_tag_list = self._driver.find_elements(
+                By.XPATH,
+                "//a[contains(@class, 'app-card-open__link')]/parent::h3/preceding-sibling::div[contains(@class, 'app-entitlement') and .//svg[contains(@class, 'app-entitlement__icon--full-access')]]"
+            )
+
+            scrapers = [
+                self._scrape_url(get_scraped_url(Tag(name="a", attrs={"href": tag["href"]}), self.base_url))
+                for tag in open_access_article_tag_list
+            ]
+
+            pdf_tag_list = [
+                pdf_tag
+                for scraper in scrapers
+                if (pdf_tag := scraper.find(
+                    "a",
+                    href=lambda href: href and ".pdf" in href,
+                    class_=lambda class_: class_ and "c-pdf-download__link" in class_))
+            ]
+
+            self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
+            return pdf_tag_list
+        except Exception as e:
+            self._logger.error(f"Failed to process URL {url}. Error: {e}")
             return None

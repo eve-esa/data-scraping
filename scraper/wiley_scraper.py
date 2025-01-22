@@ -2,7 +2,7 @@ from typing import Type, List
 from bs4 import ResultSet, Tag
 from selenium.webdriver.common.by import By
 
-from helper.utils import get_scraped_url, get_link_for_accessible_article
+from helper.utils import get_scraped_url, get_link_for_accessible_article, remove_query_string_from_url
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from model.wiley_models import WileyConfig
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
@@ -54,7 +54,7 @@ class WileyScraper(BasePaginationPublisherScraper):
         """
         self._logger.info(f"Processing Landing Page {landing_page_url}")
 
-        return self._scrape_pagination(landing_page_url, source_number, starting_page_number=0)
+        return self._scrape_pagination(landing_page_url, source_number, base_zero=True)
 
     def _scrape_page(self, url: str) -> List[Tag] | None:
         """
@@ -126,7 +126,7 @@ class WileyScraper(BasePaginationPublisherScraper):
             if not direct_pdf_tag:
                 return None
 
-            return Tag(name="a", attrs={"href": direct_pdf_tag.get("href").replace("?download=true", "")})
+            return Tag(name="a", attrs={"href": remove_query_string_from_url(direct_pdf_tag.get("href"))})
         except Exception as e:
             self._logger.error(f"Failed to process URL {url}. Error: {e}")
             return None

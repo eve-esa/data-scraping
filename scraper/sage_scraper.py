@@ -1,7 +1,7 @@
 from typing import Type, List
 from bs4 import Tag
 
-from helper.utils import get_scraped_url
+from helper.utils import get_scraped_url, remove_query_string_from_url
 from model.base_pagination_publisher_models import BasePaginationPublisherConfig, BasePaginationPublisherScrapeOutput
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
 
@@ -67,7 +67,7 @@ class SageScraper(BasePaginationPublisherScraper):
 
             # Now, visit each article link and find the PDF link
             pdf_tag_list = [
-                Tag(name="a", attrs={"href": tag.get("href", "").replace("?download=true", "")})
+                Tag(name="a", attrs={"href": remove_query_string_from_url(tag.get("href", ""))})
                 for article_link in articles_links
                 if (tag := self._scrape_url(article_link).find(
                     "a",

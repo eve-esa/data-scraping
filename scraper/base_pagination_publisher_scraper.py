@@ -39,7 +39,7 @@ class BasePaginationPublisherScraper(BaseScraper):
             self._logger.info(f"Processing Pagination {page_url}")
 
             page_tag_list = self._scrape_page(page_url)
-            if not page_tag_list:
+            if not self._check_tag_list(page_tag_list):
                 break
 
             pdf_tag_list.extend(page_tag_list)
@@ -58,6 +58,9 @@ class BasePaginationPublisherScraper(BaseScraper):
             List[str]: A list of strings containing the PDF links
         """
         return get_unique([link for links in scrape_output.values() for link in links])
+
+    def _check_tag_list(self, page_tag_list: List | None) -> bool:
+        return page_tag_list is not None and len(page_tag_list) > 0
 
     @abstractmethod
     def scrape(self, model: BaseConfig) -> BasePaginationPublisherScrapeOutput | None:
