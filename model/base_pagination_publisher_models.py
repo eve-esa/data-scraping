@@ -13,6 +13,7 @@ class BasePaginationPublisherSource(BaseModel):
         landing_page_url (str): The landing URL to scrape
     """
     landing_page_url: str
+    page_size: int | None = None
 
 
 class BasePaginationPublisherConfig(BaseConfig):

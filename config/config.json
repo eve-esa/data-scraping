@@ -80,111 +80,134 @@
     },
     "MDPIScraper": {
         "bucket_key": "raw_data/mdpi",
-        "base_url": "https://www.mdpi.com",
-        "journals": [
+        "sources": [
             {
-                "url": "https://www.mdpi.com/2072-4292",
-                "name": "remotesensing",
-                "start_volume": 1,
-                "end_volume": 16,
-                "start_issue": 1,
-                "end_issue": 30
+                "name": "MDPI Journals",
+                "scraper": "MDPIJournalsScraper",
+                "config": {
+                    "base_url": "https://www.mdpi.com",
+                    "cookie_selector": "[id='CybotCookiebotDialogBodyButtonAccept']",
+                    "journals": [
+                        {
+                            "url": "https://www.mdpi.com/2072-4292",
+                            "name": "remotesensing",
+                            "start_volume": 1,
+                            "end_volume": 16,
+                            "start_issue": 1,
+                            "end_issue": 30
+                        },
+                        {
+                            "url": "https://www.mdpi.com/2076-3263",
+                            "name": "geosciences",
+                            "start_volume": 1,
+                            "end_volume": 12,
+                            "start_issue": 1,
+                            "end_issue": 30
+                        },
+                        {
+                            "url": "https://www.mdpi.com/2073-4433",
+                            "name": "atmosphere",
+                            "start_volume": 1,
+                            "end_volume": 12,
+                            "start_issue": 1,
+                            "end_issue": 30
+                        },
+                        {
+                            "url": "https://www.mdpi.com/2220-9964",
+                            "name": "ijgi",
+                            "start_volume": 1,
+                            "end_volume": 12,
+                            "start_issue": 1,
+                            "end_issue": 30
+                        },
+                        {
+                            "url": "https://www.mdpi.com/2071-1050",
+                            "name": "sustainability",
+                            "start_volume": 1,
+                            "end_volume": 12,
+                            "start_issue": 1,
+                            "end_issue": 30
+                        },
+                        {
+                            "url": "https://www.mdpi.com/2306-5729",
+                            "name": "data",
+                            "start_volume": 1,
+                            "end_volume": 12,
+                            "start_issue": 1,
+                            "end_issue": 30
+                        },
+                        {
+                            "url": "https://www.mdpi.com/2673-964X",
+                            "name": "coasts",
+                            "start_volume": 1,
+                            "end_volume": 12,
+                            "start_issue": 1,
+                            "end_issue": 30
+                        },
+                        {
+                            "url": "https://www.mdpi.com/2673-4834",
+                            "name": "earth",
+                            "start_volume": 1,
+                            "end_volume": 12,
+                            "start_issue": 1,
+                            "end_issue": 30
+                        },
+                        {
+                            "url": "https://www.mdpi.com/2624-795X",
+                            "name": "geohazards",
+                            "start_volume": 1,
+                            "end_volume": 12,
+                            "start_issue": 1,
+                            "end_issue": 30
+                        },
+                        {
+                            "url": "https://www.mdpi.com/2673-4931",
+                            "name": "environsciproc",
+                            "start_volume": 1,
+                            "end_volume": 12,
+                            "start_issue": 1,
+                            "end_issue": 30
+                        },
+                        {
+                            "url": "https://www.mdpi.com/2073-445X",
+                            "name": "land",
+                            "start_volume": 1,
+                            "end_volume": 12,
+                            "start_issue": 1,
+                            "end_issue": 30
+                        },
+                        {
+                            "url": "https://www.mdpi.com/2673-1924",
+                            "name": "oceans",
+                            "start_volume": 1,
+                            "end_volume": 12,
+                            "start_issue": 1,
+                            "end_issue": 30
+                        },
+                        {
+                            "url": "https://www.mdpi.com/2073-4441",
+                            "name": "water",
+                            "start_volume": 1,
+                            "end_volume": 12,
+                            "start_issue": 1,
+                            "end_issue": 30
+                        }
+                    ]
+                }
             },
             {
-                "url": "https://www.mdpi.com/2076-3263",
-                "name": "geosciences",
-                "start_volume": 1,
-                "end_volume": 12,
-                "start_issue": 1,
-                "end_issue": 30
-            },
-            {
-                "url": "https://www.mdpi.com/2073-4433",
-                "name": "atmosphere",
-                "start_volume": 1,
-                "end_volume": 12,
-                "start_issue": 1,
-                "end_issue": 30
-            },
-            {
-                "url": "https://www.mdpi.com/2220-9964",
-                "name": "ijgi",
-                "start_volume": 1,
-                "end_volume": 12,
-                "start_issue": 1,
-                "end_issue": 30
-            },
-            {
-                "url": "https://www.mdpi.com/2071-1050",
-                "name": "sustainability",
-                "start_volume": 1,
-                "end_volume": 12,
-                "start_issue": 1,
-                "end_issue": 30
-            },
-            {
-                "url": "https://www.mdpi.com/2306-5729",
-                "name": "data",
-                "start_volume": 1,
-                "end_volume": 12,
-                "start_issue": 1,
-                "end_issue": 30
-            },
-            {
-                "url": "https://www.mdpi.com/2673-964X",
-                "name": "coasts",
-                "start_volume": 1,
-                "end_volume": 12,
-                "start_issue": 1,
-                "end_issue": 30
-            },
-            {
-                "url": "https://www.mdpi.com/2673-4834",
-                "name": "earth",
-                "start_volume": 1,
-                "end_volume": 12,
-                "start_issue": 1,
-                "end_issue": 30
-            },
-            {
-                "url": "https://www.mdpi.com/2624-795X",
-                "name": "geohazards",
-                "start_volume": 1,
-                "end_volume": 12,
-                "start_issue": 1,
-                "end_issue": 30
-            },
-            {
-                "url": "https://www.mdpi.com/2673-4931",
-                "name": "environsciproc",
-                "start_volume": 1,
-                "end_volume": 12,
-                "start_issue": 1,
-                "end_issue": 30
-            },
-            {
-                "url": "https://www.mdpi.com/2073-445X",
-                "name": "land",
-                "start_volume": 1,
-                "end_volume": 12,
-                "start_issue": 1,
-                "end_issue": 30
-            },
-            {
-                "url": "https://www.mdpi.com/2673-1924",
-                "name": "oceans",
-                "start_volume": 1,
-                "end_volume": 12,
-                "start_issue": 1,
-                "end_issue": 30
-            },
-            {
-                "url": "https://www.mdpi.com/2073-4441",
-                "name": "water",
-                "start_volume": 1,
-                "end_volume": 12,
-                "start_issue": 1,
-                "end_issue": 30
+                "name": "MDPI Google Search",
+                "scraper": "MDPIGoogleSearchScraper",
+                "config": {
+                    "base_url": "https://www.mdpi.com",
+                    "cookie_selector": "[id='CybotCookiebotDialogBodyButtonAccept']",
+                    "sources": [
+                        {
+                            "landing_page_url": "https://www.google.com/search?start={start_index}&q=%28%22earth+observation%22+OR+%22remote+sensing%22+OR+%22earth+monitoring%22+OR+%22environmental+monitoring%22+OR+%22satellite+observation%22+OR+%22synthetic+aperture+radar%22+OR+%22multispectral+imaging%22+OR+%22lidar%22+OR+%22light+detection+and+ranging%22+OR+%22geospatial+monitoring%22+OR+%22atmospheric+observations%22+OR+%22land+use%2Fland+cover%22+OR+%22lulc%22%29+%28site%3Amdpi.com%29",
+                            "page_size": 10
+                        }
+                    ]
+                }
             }
         ]
     },

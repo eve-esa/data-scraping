@@ -48,7 +48,7 @@ class BaseMappedPublisherScraper(BaseScraper):
         """
         links = {}
         for source in model.sources:
-            self._logger.info(f"Processing source {source.name}")
+            self._logger.info(f"Processing source {source.name} with scraper {source.scraper}")
 
             results = ScrapeAdapter(source.config, self.mapping.get(source.scraper)).scrape()
             if results is not None:
