@@ -26,7 +26,6 @@ class ElsevierSource(BaseModel):
 
 class ElsevierConfig(BaseConfig):
     base_url: str
-    cookie_selector: str
     sources: List[ElsevierSource]
 
 

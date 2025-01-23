@@ -2,7 +2,6 @@
     "IOPScraper": {
         "bucket_key": "raw_data/iopscience",
         "base_url": "https://iopscience.iop.org",
-        "cookie_selector": "div.cky-consent-container.cky-classic-bottom > div.cky-consent-bar > div > div > div.cky-notice-btn-wrapper > button.cky-btn.cky-btn-accept",
         "sources": [
             {
                 "url": "https://iopscience.iop.org/issue/1755-1315/169/1",
@@ -218,7 +217,6 @@
                 "name": "Springer journals / collections",
                 "scraper": "SpringerUrlScraper",
                 "config": {
-                    "cookie_selector": "button.cc-banner__button-accept",
                     "base_url": "https://link.springer.com",
                     "sources": [
                         {
@@ -268,7 +266,6 @@
                 "name": "Springer search engine",
                 "scraper": "SpringerSearchEngineScraper",
                 "config": {
-                    "cookie_selector": "button.cc-banner__button-accept",
                     "base_url": "https://link.springer.com",
                     "sources": [
                         {
@@ -568,7 +565,6 @@
     "CambridgeUniversityPressScraper": {
         "bucket_key": "raw_data/cambridge_university_press",
         "base_url": "https://www.cambridge.org",
-        "cookie_selector": "a.cookie-close",
         "sources": [
             {
                 "landing_page_url": "https://www.cambridge.org/core/journals/journal-of-glaciology/all-issues"
@@ -581,7 +577,6 @@
     "OxfordAcademicScraper": {
         "bucket_key": "raw_data/oxford_academic",
         "base_url": "https://academic.oup.com",
-        "cookie_selector": "[id='accept-button']",
         "journals": [
             {
                 "url": "https://academic.oup.com/oocc",
@@ -602,7 +597,6 @@
                 "scraper": "IEEEJournalsScraper",
                 "config": {
                     "base_url": "https://ieeexplore.ieee.org",
-                    "cookie_selector": "button.osano-cm-accept-all",
                     "sources": [
                         {
                             "landing_page_url": "https://ieeexplore.ieee.org/xpl/issues?punumber=4609443&isnumber=10766875"
@@ -618,7 +612,6 @@
                 "scraper": "IEEESearchScraper",
                 "config": {
                     "base_url": "https://ieeexplore.ieee.org",
-                    "cookie_selector": "button.osano-cm-accept-all",
                     "sources": [
                         {
                             "landing_page_url": "https://ieeexplore.ieee.org/search/searchresult.jsp?queryText=(%22earth%20observation%22%20OR%20%22remote%20sensing%22%20OR%20%22earth%20monitoring%22%20OR%20%22environmental%20monitoring%22%20OR%20%22satellite%20observation%22%20OR%20%22synthetic%20aperture%20radar%22%20OR%20%22multispectral%20imaging%22%20OR%20%22lidar%22%20OR%20%22light%20detection%20and%20ranging%22%20OR%20%22geospatial%20monitoring%22%20OR%20%22atmospheric%20observations%22%20OR%20%22land%20use%2Fland%20cover%22%20OR%20%22lulc%22)&highlight=true&returnFacets=ALL&returnType=SEARCH&matchPubs=true&openAccess=true&rowsPerPage=100&pageNumber={page_number}"
@@ -631,7 +624,6 @@
     "TaylorAndFrancisScraper": {
         "bucket_key": "raw_data/taylor_and_francis",
         "base_url": "https://www.tandfonline.com",
-        "cookie_selector": "[id='onetrust-accept-btn-handler']",
         "sources": [
             {
                 "url": "https://www.tandfonline.com/journals/tgda21/sections/earth-observations?startPage=0&pageSize=1000",
@@ -658,7 +650,6 @@
     "FrontiersScraper": {
         "bucket_key": "raw_data/frontiers",
         "base_url": "https://www.frontiersin.org/",
-        "cookie_selector": "[id='onetrust-accept-btn-handler']",
         "sources": [
             {
                 "url": "https://www.frontiersin.org/journals/remote-sensing/articles?sort=3",
@@ -669,7 +660,6 @@
     "SageScraper": {
         "bucket_key": "raw_data/sage",
         "base_url": "https://journals.sagepub.com",
-        "cookie_selector": "div.qc-cmp2-summary-buttons > button.css-1pdnrb0",
         "sources": [
             {
                 "landing_page_url": "https://journals.sagepub.com/action/doSearch?AllField=\"remote+sensing\"&startPage={page_number}&rel=&access=18&pageSize=500"
@@ -698,7 +688,6 @@
     },
     "WileyScraper": {
         "bucket_key": "raw_data/wiley",
-        "cookie_selector": "button.osano-cm-accept-all",
         "sources": [
             {
                 "landing_page_url": "https://rmets.onlinelibrary.wiley.com/action/doSearch?SeriesKey=1530261x&sortBy=Earliest&pageSize=100&startPage={page_number}",
@@ -845,7 +834,6 @@
     "EOSScraper": {
         "bucket_key": "raw_data/eos",
         "base_url": "https://eos.org/",
-        "cookie_selector": "a.cc-dismiss",
         "sources": [
             {
                 "url": "https://eos.org/archive-2025",
@@ -902,7 +890,6 @@
                 "scraper": "EsaUrlScraper",
                 "config": {
                     "base_url": "https://earth.esa.int/",
-                    "cookie_selector": "div#__next > div.fixed.bottom-0.left-0.right-0.bg-brand-bg-darker.text-white.font-esa > div.mx-auto.p-8.flex.flex-col > div.pt-4.flex.flex-col.gap-8.items-center.justify-center > button.p-1.uppercase.border.transition-colors",
                     "file_extension": ".html",
                     "read_more_button": {
                         "selector": "button",
@@ -932,7 +919,6 @@
                 "scraper": "EsaUrlScraper",
                 "config": {
                     "base_url": "https://www.eoportal.org/",
-                    "cookie_selector": "div#__next > main > div.cy-page-content > div.cy-cookie-popup.css-1pa6g3f > div.css-1r4dq04 > button.chakra-button.css-122lbyf",
                     "file_extension": ".html",
                     "sources": [
                         {
@@ -949,7 +935,6 @@
                 "scraper": "EsaUrlScraper",
                 "config": {
                     "base_url": "https://sentiwiki.copernicus.eu/",
-                    "cookie_selector": "div#vp-js-cookies__notice > div.vp-cookies__notice.no-print.vp-non-modal-dialog.fixed.bottom-0.z-non-modal-dialog.w-full.p-4.shadow-lg > div.flex.flex-row.items-center.space-x-2 > button.vp-button.vp-button--primary",
                     "sources": [
                         {
                             "url": "https://sentiwiki.copernicus.eu/web/document-library",
@@ -1021,7 +1006,6 @@
     "ElsevierScraper": {
         "bucket_key": "raw_data/elsevier",
         "base_url": "https://www.sciencedirect.com",
-        "cookie_selector": "[id='onetrust-accept-btn-handler']",
         "sources":[
             {
                 "url": "https://www.sciencedirect.com/journal/international-journal-of-applied-earth-observation-and-geoinformation/issues",
@@ -1210,7 +1194,6 @@
     "UKMetOfficeScraper": {
         "bucket_key": "raw_data/uk_met_office",
         "base_url": "https://library.metoffice.gov.uk",
-        "cookie_selector": "button.cc-btn.cc-allow",
         "sources": [
             {
                 "url": "https://library.metoffice.gov.uk/Portal/Default/en-GB/Search/AdvancedSearch?userSearchId=319",

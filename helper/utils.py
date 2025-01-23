@@ -262,6 +262,21 @@ def get_proxy_config() -> str:
     return f"http://{os.getenv('PROXY_USER')}:{os.getenv('PROXY_PASSWORD')}@{os.getenv('PROXY_HOST')}:{os.getenv('PROXY_PORT')}"
 
 
+def get_webdriver_config() -> Tuple[str, str, str]:
+    """
+    This method integrates Bright Data's web driver service. It returns a string with the configuration to pass to
+    Selenium.
+
+    Returns:
+        Tuple[str, str, str]: The web driver configuration (host, user and password).
+    """
+    return (
+        f"https://{os.getenv('WEBDRIVER_HOST')}:{os.getenv('WEBDRIVER_PORT')}",
+        os.getenv('WEBDRIVER_USER'),
+        os.getenv('WEBDRIVER_PASSWORD')
+    )
+
+
 def parse_google_drive_link(google_drive_link: str) -> Tuple[str, str]:
     """
     Extract the ID and download URL from the Google Drive link.

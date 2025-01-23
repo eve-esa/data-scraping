@@ -3,14 +3,12 @@ import os
 import random
 from typing import List, Type, Any
 from bs4 import BeautifulSoup
-from selenium.common import TimeoutException
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-import undetected_chromedriver as uc
+from selenium.webdriver import Remote, ChromeOptions
+from selenium.webdriver.chromium.remote_connection import ChromiumRemoteConnection
+from selenium.webdriver.remote.client_config import ClientConfig
 import time
 
-from helper.constants import OUTPUT_FOLDER, ROTATE_USER_AGENT_EVERY, CHROME_DRIVER_VERSION
+from helper.constants import OUTPUT_FOLDER
 from helper.logger import setup_logger
 from model.base_models import BaseConfig
 from service.storage import S3Storage
@@ -18,19 +16,15 @@ from service.storage import S3Storage
 
 class BaseScraper(ABC):
     def __init__(self) -> None:
-        self._driver: uc.Chrome | None = None
+        self._driver: Remote | None = None
 
         self._logger = setup_logger(self.__class__.__name__)
-        self._cookie_handled = False
-        self._num_requests = 0
         self._config_model = None
         self._download_folder_path = None
 
         self._s3_client = S3Storage()
 
     def __call__(self, config_model: BaseConfig):
-        self.setup_driver()
-
         name_scraper = self.__class__.__name__
         path_file_results = os.path.join(OUTPUT_FOLDER, f"{name_scraper}.json")
         if os.path.exists(path_file_results):
@@ -40,8 +34,8 @@ class BaseScraper(ABC):
         self._logger.info(f"Running scraper {self.__class__.__name__}")
         self._config_model = config_model
 
+        self.setup_driver()
         scraping_results = self.scrape(config_model)
-
         self.shutdown_driver()
 
         if scraping_results is None:
@@ -60,31 +54,9 @@ class BaseScraper(ABC):
         self._logger.warning(f"Something went wrong with Scraper {self.__class__.__name__}: unsuccessfully completed.")
 
     def setup_driver(self):
-        from helper.utils import get_user_agent, get_random_proxy
+        from helper.utils import get_webdriver_config
 
-        chrome_options = uc.ChromeOptions()
-
-        # Basic configuration
-        chrome_options.add_argument("--start-maximized")
-        chrome_options.add_argument("--disable-blink-features=AutomationControlled")
-        chrome_options.add_argument(f"--user-agent={get_user_agent()}")
-        chrome_options.add_argument("--headless=new")  # Run in headless mode (no browser UI)
-        chrome_options.add_argument('--window-size=1920,1080')
-        chrome_options.add_argument('--start-maximized')
-
-        # Add proxy support
-        chrome_options.add_argument(f"--proxy-server={get_random_proxy()}")
-
-        # Performance options
-        chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-
-        # Cookies and security
-        chrome_options.add_argument("--enable-cookies")
-        chrome_options.add_argument("--disable-web-security")
-        chrome_options.add_argument("--ignore-certificate-errors")
-
+        chrome_options = ChromeOptions()
         if self._download_folder_path:
             os.makedirs(self._download_folder_path, exist_ok=True)
 
@@ -95,11 +67,19 @@ class BaseScraper(ABC):
                 "safebrowsing.enabled": True
             })
 
-        # Create WebDriver instance
-        self._driver = uc.Chrome(options=chrome_options, user_multi_procs=True, version_main=int(CHROME_DRIVER_VERSION))
+        remote_url, remote_user, remote_password = get_webdriver_config()
 
-        # emulating hardware characteristics
-        self._driver.execute_cdp_cmd("Emulation.setHardwareConcurrencyOverride", {"hardwareConcurrency": 8})
+        # Create a client config
+        client_config = ClientConfig(
+            remote_url, keep_alive=True, username=remote_user, password=remote_password
+        )
+
+        # Create WebDriver instance
+        sbr_connection = ChromiumRemoteConnection(
+            remote_url, "goog", "chrome", client_config=client_config
+        )
+
+        self._driver = Remote(sbr_connection, options=chrome_options)
 
     def shutdown_driver(self):
         if self._driver:
@@ -112,33 +92,14 @@ class BaseScraper(ABC):
         Args:
             url (str): url contains volume and issue number. Eg: https://www.mdpi.com/2072-4292/1/3
             pause_time (int): time to pause between scrolls
+            max_retries (int): maximum number of retries to scrape the URL
 
         Returns:
             BeautifulSoup: the fully rendered HTML of the URL.
         """
-        from helper.utils import get_user_agent
-
-        self._driver.get("about:blank")
-
-        self._num_requests += 1
-        if self._num_requests % ROTATE_USER_AGENT_EVERY == 0:
-            self._driver.execute_cdp_cmd("Network.setUserAgentOverride", {
-                "userAgent": get_user_agent()
-            })
 
         self._driver.get(url)
         self._wait_for_page_load()
-
-        # Handle cookie popup only once, for the first request
-        if not self._cookie_handled and self._config_model.cookie_selector:
-            try:
-                cookie_button = WebDriverWait(self._driver, 5).until(
-                    EC.element_to_be_clickable((By.CSS_SELECTOR, self._config_model.cookie_selector))
-                )
-                self._driver.execute_script("arguments[0].click();", cookie_button)
-                self._cookie_handled = True
-            except TimeoutException as e:
-                raise Exception(f"Cookie popup not found, perhaps due to anti-bot protection. Error: {e}")
 
         # Scroll through the page to load all articles
         last_height = self._driver.execute_script("return document.body.scrollHeight")
@@ -188,11 +149,6 @@ class BaseScraper(ABC):
                 break
             last_height = new_height
 
-        # Sleep for some time to avoid being blocked by the server on the next request
-        time.sleep(random.uniform(0.5, 3.5))
-
-        # Get the fully rendered HTML
-        return self._get_parsed_page_source()
 
     def _wait_for_page_load(self):
         WebDriverWait(self._driver, 20).until(
