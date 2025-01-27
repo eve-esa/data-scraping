@@ -1,7 +1,7 @@
 from typing import List
 from bs4 import Tag
 
-from helper.utils import get_scraped_url
+from helper.utils import get_scraped_url, get_parsed_page_source
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper, BaseUrlPublisherSource, SourceType
 
 
@@ -19,10 +19,10 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
         self._logger.info(f"Processing Journal {source.url}")
 
         try:
-            self._scrape_url(source.url)
+            _, driver = self._scrape_url(source.url)
 
             # Click all the volume links to load all the issues
-            self._driver.execute_script("""
+            driver.execute_script("""
                 async function clickButtons() {
                     const buttons = document.querySelectorAll('button.volume_link');
                     for (const button of buttons) {
@@ -34,7 +34,8 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
             """)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
-            issues_tag_list = self._get_parsed_page_source().find_all("a", href=True, class_="issue-link")
+            issues_tag_list = get_parsed_page_source(driver).find_all("a", href=True, class_="issue-link")
+            driver.quit()
 
             # For each tag of issues previously collected, scrape the issue as a collection of articles
             pdf_tag_list = [
@@ -69,7 +70,8 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
         try:
-            scraper = self._scrape_url(source.url)
+            scraper, driver = self._scrape_url(source.url)
+            driver.quit()
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             article_tag_list = scraper.find_all(
@@ -108,7 +110,8 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
         self._logger.info(f"Processing Article {source.url}")
 
         try:
-            scraper = self._scrape_url(source.url)
+            scraper, driver = self._scrape_url(source.url)
+            driver.quit()
 
             # Find the PDF link using appropriate class or tag (if lambda returns True, it will be included in the list)
             return scraper.find("a", href=lambda href: href and "/doi/" in href and "/pdf/" in href, class_="show-pdf")

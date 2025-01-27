@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 import os
 import random
-from typing import List, Type, Any
+from typing import List, Type, Any, Tuple
 from bs4 import BeautifulSoup
 from selenium.webdriver import Remote, ChromeOptions
+from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.chromium.remote_connection import ChromiumRemoteConnection
 from selenium.webdriver.remote.client_config import ClientConfig
 import time
@@ -16,8 +17,6 @@ from service.storage import S3Storage
 
 class BaseScraper(ABC):
     def __init__(self) -> None:
-        self._driver: Remote | None = None
-
         self._logger = setup_logger(self.__class__.__name__)
         self._config_model = None
         self._download_folder_path = None
@@ -34,9 +33,7 @@ class BaseScraper(ABC):
         self._logger.info(f"Running scraper {self.__class__.__name__}")
         self._config_model = config_model
 
-        self.setup_driver()
         scraping_results = self.scrape(config_model)
-        self.shutdown_driver()
 
         if scraping_results is None:
             return
@@ -53,8 +50,18 @@ class BaseScraper(ABC):
 
         self._logger.warning(f"Something went wrong with Scraper {self.__class__.__name__}: unsuccessfully completed.")
 
-    def setup_driver(self):
-        from helper.utils import get_webdriver_config
+    def _scrape_url(self, url: str, pause_time: int = 2) -> Tuple[BeautifulSoup, Remote]:
+        """
+        Scrape the URL using Selenium and BeautifulSoup.
+
+        Args:
+            url (str): url contains volume and issue number. Eg: https://www.mdpi.com/2072-4292/1/3
+            pause_time (int): time to pause between scrolls
+
+        Returns:
+            Tuple[BeautifulSoup, Remote]: A tuple containing the BeautifulSoup object and the WebDriver instance.
+        """
+        from helper.utils import get_webdriver_config, get_parsed_page_source
 
         chrome_options = ChromeOptions()
         if self._download_folder_path:
@@ -79,30 +86,13 @@ class BaseScraper(ABC):
             remote_url, "goog", "chrome", client_config=client_config
         )
 
-        self._driver = Remote(sbr_connection, options=chrome_options)
+        driver = Remote(sbr_connection, options=chrome_options)
 
-    def shutdown_driver(self):
-        if self._driver:
-            self._driver.quit()
-
-    def _scrape_url(self, url: str, pause_time: int = 2) -> BeautifulSoup:
-        """
-        Scrape the URL using Selenium and BeautifulSoup.
-
-        Args:
-            url (str): url contains volume and issue number. Eg: https://www.mdpi.com/2072-4292/1/3
-            pause_time (int): time to pause between scrolls
-            max_retries (int): maximum number of retries to scrape the URL
-
-        Returns:
-            BeautifulSoup: the fully rendered HTML of the URL.
-        """
-
-        self._driver.get(url)
-        self._wait_for_page_load()
+        driver.get(url)
+        self._wait_for_page_load(driver)
 
         # Scroll through the page to load all articles
-        last_height = self._driver.execute_script("return document.body.scrollHeight")
+        last_height = driver.execute_script("return document.body.scrollHeight")
 
         scrollable_js = """
             function getScrollableElement() {
@@ -119,7 +109,7 @@ class BaseScraper(ABC):
 
         while True:
             # Scroll down to the bottom
-            self._driver.execute_script(f"""
+            driver.execute_script(f"""
                 {scrollable_js}
                 if (scrollable) {{
                     scrollable.scrollTop = scrollable.scrollHeight;
@@ -129,7 +119,7 @@ class BaseScraper(ABC):
             """)
 
             if self._config_model.read_more_button:
-                self._driver.execute_script(f"""
+                driver.execute_script(f"""
                     const button = Array.from(document.querySelectorAll('{self._config_model.read_more_button.selector}')).find(btn => 
                       btn.textContent.trim().toUpperCase() === "{self._config_model.read_more_button.text}".toUpperCase()
                     );
@@ -141,7 +131,7 @@ class BaseScraper(ABC):
             time.sleep(pause_time)
 
             # Calculate new scroll height and compare with the last height
-            new_height = self._driver.execute_script(f"""
+            new_height = driver.execute_script(f"""
                 {scrollable_js}
                 return scrollable ? scrollable.scrollHeight : document.body.scrollHeight;
             """)
@@ -149,20 +139,16 @@ class BaseScraper(ABC):
                 break
             last_height = new_height
 
+        # Sleep for some time to avoid being blocked by the server on the next request
+        time.sleep(random.uniform(0.5, 3.5))
 
-    def _wait_for_page_load(self):
-        WebDriverWait(self._driver, 20).until(
+        # Get the fully rendered HTML
+        return get_parsed_page_source(driver), driver
+
+    def _wait_for_page_load(self, driver: Remote):
+        WebDriverWait(driver, 20).until(
             lambda d: d.execute_script("return document.readyState") == "complete"
         )
-
-    def _get_parsed_page_source(self) -> BeautifulSoup:
-        """
-        Get the page source parsed by BeautifulSoup.
-
-        Returns:
-            BeautifulSoup: The parsed page source.
-        """
-        return BeautifulSoup(self._driver.page_source, "html.parser")
 
     def _upload_to_s3(self, sources_links: List[str]) -> bool:
         """

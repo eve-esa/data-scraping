@@ -71,7 +71,8 @@ class ElsevierScraper(BaseScraper):
         self._logger.info(f"Scraping Journal: {source.name}")
 
         try:
-            scraper = self._scrape_url(source.url)
+            scraper, driver = self._scrape_url(source.url)
+            driver.quit()
 
             # get the first link (i.e., the newest issue) in the page with the tag "a", class "js-issue-item-link"
             first_issue_tag = scraper.find("a", class_="js-issue-item-link")
@@ -117,7 +118,7 @@ class ElsevierScraper(BaseScraper):
         self._logger.info(f"Scraping Issue: {source.name}, URL: {source.url}")
 
         try:
-            scraper = self._scrape_url(source.url)
+            scraper, driver = self._scrape_url(source.url)
 
             # find the element with tag "a", class "anchor" and attribute `navname` equal to "prev-next-issue"
             next_issue_tag = scraper.find("a", class_="anchor", navname="prev-next-issue")
@@ -135,11 +136,12 @@ class ElsevierScraper(BaseScraper):
                 return ElsevierScrapeIssueOutput(was_scraped=False, next_issue_url=next_issue_link)
 
             # wait for the page to load and get the element with tag "button", child of "form.js-download-full-issue-form"
-            button_download = WebDriverWait(self._driver, 10).until(
+            button_download = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "form.js-download-full-issue-form button"))
             )
             # click on the button to download the issue
-            self._driver.execute_script("arguments[0].click();", button_download)
+            driver.execute_script("arguments[0].click();", button_download)
+            driver.quit()
 
             # wait for the download to complete
             self._logger.info(f"Downloading PDFs from {source.url}")

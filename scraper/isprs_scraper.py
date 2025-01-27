@@ -16,7 +16,8 @@ class ISPRSScraper(BaseScraper):
             try:
                 self._logger.info(f"Scraping URL: {source.url}")
 
-                scraper = self._scrape_url(source.url)
+                scraper, driver = self._scrape_url(source.url)
+                driver.quit()
 
                 archive_links = [tag.get("href") for tag in scraper.find_all(
                     "a", href=lambda href: href and "isprs-archives" in href and "search" not in href
@@ -40,7 +41,10 @@ class ISPRSScraper(BaseScraper):
 
             archive_result = []
             try:
-                article_tags = self._scrape_url(link).find_all("a", href=True, class_="article-title")
+                scraper, driver = self._scrape_url(link)
+                driver.quit()
+
+                article_tags = scraper.find_all("a", href=True, class_="article-title")
                 for article_tag in article_tags:
                     article_link = article_tag.get("href")
                     self._logger.info(f"Scraping archive's article: {article_link}")
@@ -58,7 +62,10 @@ class ISPRSScraper(BaseScraper):
 
     def __scrape_archive_article(self, article_link: str) -> str | None:
         try:
-            if (pdf_tag := self._scrape_url(article_link).find(
+            scraper, driver = self._scrape_url(article_link)
+            driver.quit()
+
+            if (pdf_tag := scraper.find(
                 "a",
                 href=lambda href: href and ".pdf" in href,
                 class_=lambda class_: class_ and "pdf-icon" in class_
@@ -76,9 +83,12 @@ class ISPRSScraper(BaseScraper):
             self._logger.info(f"Scraping proceedings: {link}")
 
             try:
+                scraper, driver = self._scrape_url(link)
+                driver.quit()
+
                 result.extend([
                     get_scraped_url(tag, link if link.endswith("/") else link[:link.rfind('/')])
-                    for tag in self._scrape_url(link).find_all("a", href=lambda href: href and ".pdf" in href)
+                    for tag in scraper.find_all("a", href=lambda href: href and ".pdf" in href)
                 ])
             except Exception as e:
                 self._logger.error(f"An error occurred while scraping the proceedings {link}: {e}")

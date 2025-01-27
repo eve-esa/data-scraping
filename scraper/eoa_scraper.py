@@ -19,13 +19,14 @@ class EOAScraper(BaseScraper):
         pdf_links = []
         for source in model.sources:
             try:
-                self._scrape_url(source.url)
+                _, driver = self._scrape_url(source.url)
 
                 # with Selenium, look for all "a" tags with "drive.google.com" in "href" and containing the "low" within the lowercased text
-                tags = self._driver.find_elements(
+                tags = driver.find_elements(
                     By.XPATH,
                     "//a[contains(@href, 'drive.google.com') and contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'low')]"
                 )
+                driver.quit()
 
                 pdf_links.extend([
                     get_scraped_url(Tag(name="a", attrs={"href": tag.get_attribute("href")}), self.base_url)

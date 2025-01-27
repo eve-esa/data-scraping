@@ -17,7 +17,6 @@ class ScrapeAdapter:
         else:
             scraper = self.__scraper_type()
             scraper._config_model = self.__config_model
-            scraper.setup_driver()
 
             results = scraper.scrape(self.__config_model)
 
@@ -25,6 +24,5 @@ class ScrapeAdapter:
                 results = [
                     get_scraped_url(tag, self.__config_model.base_url) for tag in results
                 ]
-            scraper.shutdown_driver()
 
         return results

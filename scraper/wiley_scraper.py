@@ -67,13 +67,15 @@ class WileyScraper(BasePaginationPublisherScraper):
             ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
         """
         try:
-            self._scrape_url(url)
+            _, driver = self._scrape_url(url)
 
             # Find all article links in the pagination URL, using the appropriate class or tag (if lambda returns True, it will be included in the list)
-            article_tags = self._driver.find_elements(
+            article_tags = driver.find_elements(
                 By.XPATH,
                 "//a[contains(@class, 'publication_title') and contains(@class, 'visitable') and contains(@href, '/doi/')]"
             )
+            driver.quit()
+
             articles_links = [
                 link
                 for article_tag in article_tags
@@ -108,7 +110,8 @@ class WileyScraper(BasePaginationPublisherScraper):
         self._logger.info(f"Processing Article {url}")
 
         try:
-            scraper = self._scrape_url(url)
+            scraper, driver = self._scrape_url(url)
+            driver.quit()
 
             # look for the ePDF link in the article page
             epdf_tag = scraper.find(
@@ -120,10 +123,10 @@ class WileyScraper(BasePaginationPublisherScraper):
                 return None
 
             # now, scrape the ePDF page to get the final PDF link, and return this latter tag
-            direct_pdf_tag = self._scrape_url(
-                get_scraped_url(epdf_tag, self.__base_url)
-            ).find("a", href=lambda href: href and "/doi/pdfdirect/" in href)
-            if not direct_pdf_tag:
+            scraper, driver = self._scrape_url(get_scraped_url(epdf_tag, self.__base_url))
+            driver.quit()
+
+            if not (direct_pdf_tag := scraper.find("a", href=lambda href: href and "/doi/pdfdirect/" in href)):
                 return None
 
             return Tag(name="a", attrs={"href": remove_query_string_from_url(direct_pdf_tag.get("href"))})

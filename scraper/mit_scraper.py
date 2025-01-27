@@ -14,16 +14,22 @@ class MITScraper(BaseUrlPublisherScraper):
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
         try:
-            scraper = self._scrape_url(source.url)
+            scraper, driver = self._scrape_url(source.url)
+            driver.quit()
 
-            pdf_tag_list = [
-                pdf_tag for tag in scraper.find_all(
-                    "a", href=lambda href: href and "/courses/" in href and "/resources/earthsurface_" in href
-                )
-                if (pdf_tag := self._scrape_url(get_scraped_url(tag, self.base_url)).find(
+            nav_tags = scraper.find_all(
+                "a", href=lambda href: href and "/courses/" in href and "/resources/earthsurface_" in href
+            )
+
+            pdf_tag_list = []
+            for tag in nav_tags:
+                scraper_inner, driver_inner = self._scrape_url(get_scraped_url(tag, self.base_url))
+                driver_inner.quit()
+
+                if (pdf_tag := scraper_inner.find(
                     "a", href=lambda href: href and ".pdf" in href, class_="download-file"
-                ))
-            ]
+                )):
+                    pdf_tag_list.append(pdf_tag)
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list

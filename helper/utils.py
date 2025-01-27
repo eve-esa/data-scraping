@@ -7,10 +7,11 @@ from multiprocessing import Process
 import zipfile
 from typing import Dict, List, Type, Tuple
 import yaml
-from bs4 import Tag
+from bs4 import Tag, BeautifulSoup
 from pydantic import ValidationError
 from urllib.parse import urlparse, parse_qs
 from fake_useragent import UserAgent
+from selenium.webdriver import Remote
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.by import By
 from selenium.common import NoSuchElementException
@@ -299,3 +300,13 @@ def parse_google_drive_link(google_drive_link: str) -> Tuple[str, str]:
     download_url = f"https://drive.google.com/uc?id={file_id}"
 
     return file_id, download_url
+
+
+def get_parsed_page_source(driver: Remote) -> BeautifulSoup:
+    """
+    Get the page source parsed by BeautifulSoup.
+
+    Returns:
+        BeautifulSoup: The parsed page source.
+    """
+    return BeautifulSoup(driver.page_source, "html.parser")

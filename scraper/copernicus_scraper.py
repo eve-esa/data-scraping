@@ -84,7 +84,8 @@ class CopernicusScraper(BaseIterativeWithConstraintPublisherScraper):
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
         try:
-            scraper = self._scrape_url(issue_url)
+            scraper, driver = self._scrape_url(issue_url)
+            driver.quit()
 
             # find all the URLs to the articles where I can grab the PDF links (one per article URL, if lambda returns
             # True, it will be included in the list)
@@ -116,7 +117,8 @@ class CopernicusScraper(BaseIterativeWithConstraintPublisherScraper):
         self._logger.info(f"Processing Article URL: {article_url}")
 
         try:
-            scraper = self._scrape_url(article_url)
+            scraper, driver = self._scrape_url(article_url)
+            driver.quit()
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             pdf_tag = scraper.find("a", href=lambda href: href and ".pdf" in href)

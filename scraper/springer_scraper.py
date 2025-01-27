@@ -38,7 +38,8 @@ class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
         article_tag_list = []
         while True:
             try:
-                scraper = self._scrape_url(f"{source.url}?filterOpenAccess=false&page={counter}")
+                scraper, driver = self._scrape_url(f"{source.url}?filterOpenAccess=false&page={counter}")
+                driver.quit()
 
                 # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
                 tags = scraper.find_all("a", href=lambda href: href and "/article/" in href)
@@ -80,7 +81,8 @@ class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
         try:
-            scraper = self._scrape_url(source.url)
+            scraper, driver = self._scrape_url(source.url)
+            driver.quit()
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             pdf_tag_list = scraper.find_all("a", href=lambda href: href and "/pdf/" in href)
@@ -104,7 +106,8 @@ class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
         self._logger.info(f"Processing Article {source.url}")
 
         try:
-            scraper = self._scrape_url(source.url)
+            scraper, driver = self._scrape_url(source.url)
+            driver.quit()
 
             # Find the PDF link using appropriate class or tag (if lambda returns True, it will be included in the list)
             return scraper.find("a", href=lambda href: href and "/pdf/" in href)
@@ -168,33 +171,33 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedScra
             ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
         """
         try:
-            scraper = self._scrape_url(url)
+            scraper, driver = self._scrape_url(url)
 
             article_tag_list = scraper.find_all("a", href=True, class_="app-card-open__link")
             if not article_tag_list:
                 return None
 
-            # by using Selenium self._driver, search for all "a" tags, with class "app-card-open__link", href attribute and which parent has the previous sibling:
+            # by using Selenium driver, search for all "a" tags, with class "app-card-open__link", href attribute and which parent has the previous sibling:
             # - with class "app-entitlement"
             # - containing a svg with class "app-entitlement__icon.app-entitlement__icon--full-access
-            open_access_article_tag_list = self._driver.find_elements(
+            open_access_article_tag_list = driver.find_elements(
                 By.XPATH,
                 "//a[contains(@class, 'app-card-open__link')]/parent::h3/preceding-sibling::div[contains(@class, 'app-entitlement') and .//svg[contains(@class, 'app-entitlement__icon--full-access')]]"
             )
+            driver.quit()
 
-            scrapers = [
-                self._scrape_url(get_scraped_url(Tag(name="a", attrs={"href": tag.get_attribute("href")}), self.base_url))
-                for tag in open_access_article_tag_list
-            ]
-
-            pdf_tag_list = [
-                pdf_tag
-                for scraper in scrapers
+            pdf_tag_list = []
+            for tag in open_access_article_tag_list:
+                scraper_inner, driver_inner = self._scrape_url(
+                    get_scraped_url(Tag(name="a", attrs={"href": tag.get_attribute("href")}), self.base_url)
+                )
+                driver_inner.quit()
                 if (pdf_tag := scraper.find(
                     "a",
                     href=lambda href: href and ".pdf" in href,
-                    class_=lambda class_: class_ and "c-pdf-download__link" in class_))
-            ]
+                    class_=lambda class_: class_ and "c-pdf-download__link" in class_
+                )):
+                    pdf_tag_list.append(pdf_tag)
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list

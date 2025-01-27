@@ -21,7 +21,8 @@ class ESAUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
         try:
-            scraper = self._scrape_url(source.url)
+            scraper, driver = self._scrape_url(source.url)
+            driver.quit()
 
             href_fnc = lambda href: href and source.href in href and "##" not in href
 
