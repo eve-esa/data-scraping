@@ -118,6 +118,6 @@ class S3Storage:
 
             return True
         except Exception as e:
-            self.logger.error(f"Failed to upload source {source_name} to {s3_key}. Error: {e}")
+            self.logger.error(f"Failed to upload content from {source_name} to {s3_key}. Error: {e}")
 
             return False
