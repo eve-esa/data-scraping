@@ -146,6 +146,17 @@ class MDPIGoogleSearchScraper(BasePaginationPublisherScraper, BaseMappedScraper)
         return self._scrape_pagination(landing_page_url, source_number, base_zero=True, page_size=self.__page_size)
 
     def _scrape_page(self, url: str) -> ResultSet | List[Tag] | None:
+        def get_mdpi_pdf_tags(mdpi_tag: Tag):
+            mdpi_url = mdpi_tag.get("href")
+            tags = self._scrape_url(mdpi_url).find_all(
+                "a",
+                href=True,
+                class_=lambda class_: class_ and ("UD_Listings_ArticlePDF" in class_ or "UD_ArticlePDF" in class_),
+            )
+            self._logger.info(f"MDPI URL {mdpi_url} processed; PDF links found: {len(tags)}")
+            return tags
+
+
         try:
             # first of all, scrape the Google Search URL
             scraper = self._scrape_url(url)
@@ -157,15 +168,7 @@ class MDPIGoogleSearchScraper(BasePaginationPublisherScraper, BaseMappedScraper)
             )
 
             self._config_model.cookie_selector = self.__cookie_selector
-            pdf_tag_list = [
-                tag
-                for mdpi_tag in mdpi_tags
-                for tag in self._scrape_url(mdpi_tag.get("href")).find_all(
-                    "a",
-                    href=True,
-                    class_=lambda class_: class_ and ("UD_Listings_ArticlePDF" in class_ or "UD_ArticlePDF" in class_),
-                )
-            ]
+            pdf_tag_list = [tag for mdpi_tag in mdpi_tags for tag in get_mdpi_pdf_tags(mdpi_tag)]
 
             self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list

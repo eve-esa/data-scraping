@@ -5,7 +5,7 @@ import scrapy
 from urllib.parse import urljoin
 from scrapy.http import Response
 
-from helper.utils import get_user_agent, get_random_proxy
+from helper.utils import get_user_agent, get_proxy_config
 
 
 class CustomUserAgentMiddleware:
@@ -21,7 +21,7 @@ class CustomProxyMiddleware:
     Middleware to set a dynamic proxy
     """
     def process_request(self, request, spider):
-        request.meta["proxy"] = get_random_proxy()
+        request.meta["proxy"] = get_proxy_config()
 
 
 class EveSpider(scrapy.Spider):

@@ -124,10 +124,7 @@ class BaseScraper(ABC):
             })
 
         self._driver.get(url)
-        # Wait for initial page load
-        WebDriverWait(self._driver, 20).until(
-            lambda d: d.execute_script("return document.readyState") == "complete"
-        )
+        self._wait_for_page_load()
 
         # Handle cookie popup only once, for the first request
         if not self._cookie_handled and self._config_model.cookie_selector:
@@ -193,6 +190,11 @@ class BaseScraper(ABC):
 
         # Get the fully rendered HTML
         return self._get_parsed_page_source()
+
+    def _wait_for_page_load(self):
+        WebDriverWait(self._driver, 20).until(
+            lambda d: d.execute_script("return document.readyState") == "complete"
+        )
 
     def _get_parsed_page_source(self) -> BeautifulSoup:
         """

@@ -3,8 +3,8 @@ from bs4 import ResultSet, Tag
 from selenium.webdriver.common.by import By
 
 from helper.utils import get_scraped_url
-from model.base_mapped_models import BaseMappedUrlSource
-from model.base_pagination_publisher_models import BasePaginationPublisherConfig, BasePaginationPublisherScrapeOutput
+from model.base_mapped_models import BaseMappedUrlSource, BaseMappedPaginationConfig
+from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
 from scraper.base_scraper import BaseMappedScraper
@@ -113,23 +113,23 @@ class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
             return None
 
 
-class SpringerSearchEngineScraper(BasePaginationPublisherScraper):
+class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedScraper):
     @property
-    def config_model_type(self) -> Type[BasePaginationPublisherConfig]:
+    def config_model_type(self) -> Type[BaseMappedPaginationConfig]:
         """
         Return the configuration model type.
 
         Returns:
-            Type[BasePaginationPublisherConfig]: The configuration model type
+            Type[BaseMappedPaginationConfig]: The configuration model type
         """
-        return BasePaginationPublisherConfig
+        return BaseMappedPaginationConfig
 
-    def scrape(self, model: BasePaginationPublisherConfig) -> BasePaginationPublisherScrapeOutput | None:
+    def scrape(self, model: BaseMappedPaginationConfig) -> BasePaginationPublisherScrapeOutput | None:
         """
         Scrape the Springer sources from Search Engine tools for PDF links.
 
         Args:
-            model (BasePaginationPublisherConfig): The configuration model.
+            model (BaseMappedPaginationConfig): The configuration model.
 
         Returns:
             BasePaginationPublisherScrapeOutput: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.

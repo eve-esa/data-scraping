@@ -138,13 +138,14 @@ def remove_query_string_from_url(url: str | None = None) -> str | None:
     return f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
 
 
-def get_scraped_url(tag: Tag, base_url: str) -> str:
+def get_scraped_url(tag: Tag, base_url: str, with_querystring: bool | None = False) -> str:
     """
     Get the URL from the Tag.
 
     Args:
         tag (Tag): The BeautifulSoup tag.
         base_url (str): The base URL.
+        with_querystring (bool): Whether to include the query string in the URL.
 
     Returns:
         List[str]: A list of URLs of the articles in the issue.
@@ -158,7 +159,8 @@ def get_scraped_url(tag: Tag, base_url: str) -> str:
         prefix += "//"
 
     # Join with single slash
-    return remove_query_string_from_url(f"{prefix}/{tag.get('href').lstrip('/')}")
+    result = f"{prefix}/{tag.get('href').lstrip('/')}"
+    return result if with_querystring else remove_query_string_from_url(result)
 
 
 def get_filename(url: str, file_extension: str) -> str:
@@ -251,15 +253,14 @@ def get_user_agent(include_mobile: bool = False) -> str:
     return random_ua
 
 
-def get_random_proxy() -> str:
+def get_proxy_config() -> str:
     """
-    This method integrates Bright Data's proxy service with the requests library. It returns a dictionary with the
-    proxy configuration. The proxy is a residential proxy that rotates the IP address for each request.
+    This method integrates Bright Data's proxy service. It returns a string with the proxy configuration.
 
     Returns:
         str: The proxy configuration.
     """
-    return f"http://{os.getenv('BRIGHTDATA_USERNAME')}:{os.getenv('BRIGHTDATA_PASSWORD')}@{os.getenv('BRIGHTDATA_PROXY')}"
+    return f"http://{os.getenv('PROXY_USER')}:{os.getenv('PROXY_PASSWORD')}@{os.getenv('PROXY_HOST')}:{os.getenv('PROXY_PORT')}"
 
 
 def parse_google_drive_link(google_drive_link: str) -> Tuple[str, str]:
