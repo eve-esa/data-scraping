@@ -62,7 +62,7 @@ class EveSpider(scrapy.Spider):
             Generator: A generator of the next requests to make.
         """
         if not response.headers.get("Content-Type", b"").startswith(b"text/html"):
-            self.logger.info(f"Skipping non-HTML content: {response.url}")
+            self.logger.debug(f"Skipping non-HTML content: {response.url}")
             return
 
         page_name = response.url.split("/")[-2] or "index"

@@ -18,7 +18,7 @@ class JAXAScraper(BaseUrlPublisherScraper):
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             html_tag_list = scraper.find_all("a", href=True, class_="btn--outline")
 
-            self._logger.info(f"HTML links found: {len(html_tag_list)}")
+            self._logger.debug(f"HTML links found: {len(html_tag_list)}")
             return html_tag_list
         except Exception as e:
             self._logger.error(f"Failed to process Issue / Collection {source.url}. Error: {e}")

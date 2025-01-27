@@ -96,7 +96,7 @@ class CopernicusScraper(BaseIterativeWithConstraintPublisherScraper):
                 if pdf_link
             ]
 
-            self._logger.info(f"PDF links found: {len(pdf_links)}")
+            self._logger.debug(f"PDF links found: {len(pdf_links)}")
             return pdf_links
         except Exception as e:
             self._logger.error(f"Failed to process Issue {issue_num} in Volume {volume_num}. Error: {e}")

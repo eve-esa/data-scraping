@@ -23,7 +23,7 @@ class OpenNightLightsScraper(BaseUrlPublisherScraper):
                 class_=lambda class_: class_ and "reference" in class_ and "internal" in class_
             )
 
-            self._logger.info(f"HTML links found: {len(html_tag_list)}")
+            self._logger.debug(f"HTML links found: {len(html_tag_list)}")
             return html_tag_list
         except Exception as e:
             self._logger.error(f"Failed to process Issue / Collection {source.url}. Error: {e}")

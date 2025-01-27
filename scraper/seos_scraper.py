@@ -59,7 +59,7 @@ class SeosScraper(BaseScraper):
                 self._logger.error(f"Failed to process Chapter {i}. Error: {e}")
 
         html_links = get_unique([get_scraped_url(tag, os.path.join(self.base_url, source.folder)) for tag in html_tags])
-        self._logger.info(f"HTML links found: {len(html_links)}")
+        self._logger.debug(f"HTML links found: {len(html_links)}")
 
         return html_links
 

@@ -51,7 +51,7 @@ class CrawlingScraper(BaseScraper):
         return list(scrape_output.values())
 
     def _upload_to_s3(self, sources_links: List[str]) -> bool:
-        self._logger.info("Uploading files to S3")
+        self._logger.debug("Uploading files to S3")
 
         all_done = True
 

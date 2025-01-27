@@ -49,7 +49,7 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
                 )
                 for tag in tags
             ]
-            self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
+            self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
 
             return pdf_tag_list
         except Exception as e:
@@ -88,7 +88,7 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
                     )
                 )
             ]
-            self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
+            self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
 
             return pdf_tag_list
         except Exception as e:

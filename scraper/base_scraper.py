@@ -9,9 +9,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 import undetected_chromedriver as uc
 import time
-import logging
 
 from helper.constants import OUTPUT_FOLDER, ROTATE_USER_AGENT_EVERY, CHROME_DRIVER_VERSION
+from helper.logger import setup_logger
 from model.base_models import BaseConfig
 from service.storage import S3Storage
 
@@ -20,7 +20,7 @@ class BaseScraper(ABC):
     def __init__(self) -> None:
         self._driver: uc.Chrome | None = None
 
-        self._logger = logging.getLogger(self.__class__.__name__)
+        self._logger = setup_logger(self.__class__.__name__)
         self._cookie_handled = False
         self._num_requests = 0
         self._config_model = None
@@ -57,7 +57,7 @@ class BaseScraper(ABC):
             self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")
             return
 
-        self._logger.info(f"Something went wrong with Scraper {self.__class__.__name__}: unsuccessfully completed.")
+        self._logger.warning(f"Something went wrong with Scraper {self.__class__.__name__}: unsuccessfully completed.")
 
     def setup_driver(self):
         from helper.utils import get_user_agent
@@ -215,7 +215,7 @@ class BaseScraper(ABC):
         Returns:
             bool: True if the upload was successful, False otherwise.
         """
-        self._logger.info("Uploading files to S3")
+        self._logger.debug("Uploading files to S3")
 
         all_done = True
         for link in sources_links:

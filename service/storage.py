@@ -1,4 +1,3 @@
-import logging
 import os
 from typing import Final
 import boto3
@@ -6,6 +5,7 @@ import cloudscraper
 from botocore.exceptions import ClientError
 from pydantic import BaseModel
 
+from helper.logger import setup_logger
 from helper.singleton import singleton
 
 
@@ -26,7 +26,7 @@ class S3Storage:
             aws_secret_access_key=os.getenv("AWS_SECRET_KEY")
         )
         self.bucket_name: Final[str] = os.getenv("AWS_BUCKET_NAME")
-        self.logger: Final = logging.getLogger(__name__)
+        self.logger: Final = setup_logger(__name__)
 
         self.create_bucket_if_not_existing()
 
@@ -44,7 +44,7 @@ class S3Storage:
         # Check if the bucket already exists
         for bucket in self.client.list_buckets()["Buckets"]:
             if bucket["Name"] == self.bucket_name:
-                self.logger.info(f"Bucket {self.bucket_name} already exists in S3.")
+                self.logger.debug(f"Bucket {self.bucket_name} already exists in S3.")
                 return
 
         # Create bucket, if it does not exist

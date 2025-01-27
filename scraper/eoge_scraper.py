@@ -49,7 +49,7 @@ class EOGEScraper(BaseUrlPublisherScraper):
                     for tag in issues_tag_list
                 )
                 if tags for tag in tags]
-            self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
+            self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
 
             return pdf_tag_list
         except Exception as e:
@@ -75,7 +75,7 @@ class EOGEScraper(BaseUrlPublisherScraper):
             pdf_tag_list = scraper.find_all(
                 "a", href=lambda href: href and "/article" in href and ".pdf" in href, class_="pdf_link"
             )
-            self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
+            self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
 
             return pdf_tag_list
         except Exception as e:

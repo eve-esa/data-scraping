@@ -48,7 +48,7 @@ class FrontiersScraper(BaseUrlPublisherScraper):
                     for tag in article_tag_list
                 ) if tag
             ]
-            self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
+            self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
 
             return pdf_tag_list
         except Exception as e:

@@ -7,7 +7,6 @@ from multiprocessing import Process
 import zipfile
 from typing import Dict, List, Type, Tuple
 import yaml
-import logging
 from bs4 import Tag
 from pydantic import ValidationError
 from urllib.parse import urlparse, parse_qs
@@ -16,10 +15,10 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.by import By
 from selenium.common import NoSuchElementException
 
+from helper.logger import setup_logger
 from scraper.base_scraper import BaseScraper, BaseMappedScraper
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = setup_logger(__name__)
 
 
 # Load the YAML file
@@ -88,7 +87,7 @@ def discover_scrapers(base_package: str) -> Dict[str, Type[BaseScraper]]:
                and hasattr(obj_type, "scrape")
         }
 
-    logger.info(f"Discovered scrapers: {list(discovered_scrapers.keys())}")
+    logger.debug(f"Discovered scrapers: {list(discovered_scrapers.keys())}")
 
     return discovered_scrapers
 

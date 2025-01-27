@@ -30,7 +30,7 @@ class ESAUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
                 pdf_tag_list = scraper.find_all("a", href=href_fnc, class_=source.class_)
             else:
                 pdf_tag_list = scraper.find_all("a", href=href_fnc)
-            self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
+            self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
 
             return pdf_tag_list
         except Exception as e:

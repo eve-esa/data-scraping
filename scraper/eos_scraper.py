@@ -39,7 +39,7 @@ class EOSScraper(BaseUrlPublisherScraper):
                 href=lambda href: href and "/wp-content/uploads/" in href and ".pdf" in href,
                 class_=lambda class_: class_ and "wp-element-button" in class_,
             )
-            self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
+            self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
 
             return pdf_tag_list
         except Exception as e:

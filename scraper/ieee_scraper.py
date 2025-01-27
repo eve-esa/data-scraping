@@ -99,7 +99,7 @@ class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedScraper):
                 class_=lambda class_: class_ and "u-flex-display-flex" in class_
             )
 
-            self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
+            self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
             self._logger.error(f"Failed to process URL {url}. Error: {e}")
@@ -175,7 +175,7 @@ class IEEESearchScraper(BasePaginationPublisherScraper, BaseMappedScraper):
                 class_=lambda class_: class_ and "u-flex-display-flex" in class_
             )
 
-            self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
+            self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
             self._logger.error(f"Failed to process URL {url}. Error: {e}")

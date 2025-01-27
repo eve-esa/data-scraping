@@ -83,7 +83,7 @@ class BaseMappedPublisherScraper(BaseScraper):
         Returns:
             bool: True if the upload was successful, False otherwise.
         """
-        self._logger.info("Uploading files to S3")
+        self._logger.debug("Uploading files to S3")
 
         all_done = True
         for source_name, source_links in sources_links.items():

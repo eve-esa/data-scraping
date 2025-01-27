@@ -18,7 +18,7 @@ class WikipediaScraper(BaseUrlPublisherScraper):
 
             html_tag_list = self._driver.find_elements(By.CSS_SELECTOR, "div.mw-category-generated a")
 
-            self._logger.info(f"HTML links found: {len(html_tag_list)}")
+            self._logger.debug(f"HTML links found: {len(html_tag_list)}")
             return [Tag(name="a", attrs={"href": tag.get_attribute("href")}) for tag in html_tag_list]
         except Exception as e:
             self._logger.error(f"Failed to process Issue / Collection {source.url}. Error: {e}")

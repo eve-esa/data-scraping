@@ -101,7 +101,7 @@ class MDPIJournalsScraper(BaseIterativePublisherScraper, BaseMappedScraper):
             tags = scraper.find_all("a", class_="UD_Listings_ArticlePDF", href=True)
             pdf_links = [get_scraped_url(tag, self.base_url) for tag in tags]
 
-            self._logger.info(f"PDF links found: {len(pdf_links)}")
+            self._logger.debug(f"PDF links found: {len(pdf_links)}")
             return pdf_links
         except Exception as e:
             self._logger.error(
@@ -153,9 +153,8 @@ class MDPIGoogleSearchScraper(BasePaginationPublisherScraper, BaseMappedScraper)
                 href=True,
                 class_=lambda class_: class_ and ("UD_Listings_ArticlePDF" in class_ or "UD_ArticlePDF" in class_),
             )
-            self._logger.info(f"MDPI URL {mdpi_url} processed; PDF links found: {len(tags)}")
+            self._logger.debug(f"MDPI URL {mdpi_url} processed; PDF links found: {len(tags)}")
             return tags
-
 
         try:
             # first of all, scrape the Google Search URL
@@ -170,7 +169,7 @@ class MDPIGoogleSearchScraper(BasePaginationPublisherScraper, BaseMappedScraper)
             self._config_model.cookie_selector = self.__cookie_selector
             pdf_tag_list = [tag for mdpi_tag in mdpi_tags for tag in get_mdpi_pdf_tags(mdpi_tag)]
 
-            self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
+            self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
             self._logger.error(f"Failed to process URL {url}. Error: {e}")

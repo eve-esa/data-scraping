@@ -69,7 +69,7 @@ class ArxivScraper(BasePaginationPublisherScraper):
             # Now, visit each article link and find the PDF link
             pdf_tag_list = scraper.find_all("a", href=lambda href: href and "/pdf/" in href)
 
-            self._logger.info(f"PDF links found: {len(pdf_tag_list)}")
+            self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
             self._logger.error(f"Failed to process URL {url}. Error: {e}")
