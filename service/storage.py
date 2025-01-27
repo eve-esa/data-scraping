@@ -94,7 +94,7 @@ class S3Storage:
                     "http": proxy,
                     "https": proxy,
                 },
-                verify=False  # Equivalent to -k flag in curl (ignore SSL certificate warnings)
+                verify=False,  # Equivalent to -k flag in curl (ignore SSL certificate warnings)
             )
             response.raise_for_status()  # Check for request errors
 
