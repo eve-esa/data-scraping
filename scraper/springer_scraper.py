@@ -183,7 +183,7 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedScra
             )
 
             scrapers = [
-                self._scrape_url(get_scraped_url(Tag(name="a", attrs={"href": tag["href"]}), self.base_url))
+                self._scrape_url(get_scraped_url(Tag(name="a", attrs={"href": tag.get_attribute("href")}), self.base_url))
                 for tag in open_access_article_tag_list
             ]
 

@@ -18,7 +18,7 @@ from service.storage import S3Storage
 
 class BaseScraper(ABC):
     def __init__(self) -> None:
-        self._driver = None
+        self._driver: uc.Chrome | None = None
 
         self._logger = logging.getLogger(self.__class__.__name__)
         self._cookie_handled = False
