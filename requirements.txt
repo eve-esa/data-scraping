@@ -1,6 +1,5 @@
 beautifulsoup4==4.12.3
 boto3==1.35.90
-cloudscraper==1.2.71
 colorlog==6.9.0
 fake-useragent==2.0.3
 pydantic==2.10.4

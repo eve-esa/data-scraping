@@ -1,7 +1,7 @@
 import os
 from typing import Final
 import boto3
-import cloudscraper
+import requests
 from botocore.exceptions import ClientError
 from pydantic import BaseModel
 
@@ -80,11 +80,9 @@ class S3Storage:
             return False
 
         try:
-            scraper = cloudscraper.create_scraper()
-
             # Download content from the URL
             proxy = get_proxy_config()
-            response = scraper.get(
+            response = requests.get(
                 source_url,
                 headers={
                     "User-Agent": get_user_agent(),
