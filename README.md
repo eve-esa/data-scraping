@@ -16,7 +16,8 @@ The name of the key is the name of the scraper and the value is a dictionary con
 ## Usage
 
 ### Testing
-For the usage with testing purposes, please create a `.env` file in the root of the project with the following content:
+For the usage with testing purposes, please create a `.env` file in the root of the project with the following content
+(ask to the project maintainer for the values of the `PROXY_USER` and `PROXY_PASSWORD` keys):
 ```bash
 AWS_URL=http://localhost:9100
 AWS_REGION=us-east-1
@@ -25,6 +26,11 @@ AWS_SECRET_KEY=minio1234
 AWS_BUCKET_NAME=esa-eve
 
 MINIO_URL=http://minio:9100
+
+PROXY_HOST=brd.superproxy.io
+PROXY_PORT=33335
+PROXY_USER=<username>
+PROXY_PASSWORD=<password>
 ```
 
 Then, you can run the following command to execute the ETL pipeline:
