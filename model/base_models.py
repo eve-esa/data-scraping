@@ -8,6 +8,7 @@ class ReadMoreButton(BaseModel):
 
 
 class Config(ABC, BaseModel):
+    headless: bool | None = True
     bucket_key: str
 
 

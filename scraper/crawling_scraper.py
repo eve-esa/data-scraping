@@ -14,7 +14,7 @@ class CrawlingScraper(BaseScraper):
     def __init__(self):
         super().__init__()
 
-        self._download_folder_path = os.path.join(os.getcwd(), "downloads", "crawled")
+        self._download_folder_path = os.path.join(self._download_folder_path, "crawled")
 
     @property
     def config_model_type(self) -> Type[CrawlingConfig]:

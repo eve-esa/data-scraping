@@ -1,6 +1,5 @@
 import os.path
 import random
-import shutil
 import time
 from typing import Type, List
 from selenium.webdriver.common.by import By
@@ -19,11 +18,6 @@ from scraper.base_scraper import BaseScraper
 
 
 class ElsevierScraper(BaseScraper):
-    def __init__(self):
-        super().__init__()
-
-        self._download_folder_path = os.path.join(os.getcwd(), "downloads")
-
     @property
     def config_model_type(self) -> Type[ElsevierConfig]:
         return ElsevierConfig
@@ -187,21 +181,22 @@ class ElsevierScraper(BaseScraper):
 
         # upload files to S3
         for file in os.listdir(self._download_folder_path):
-            if not os.path.isfile(os.path.join(self._download_folder_path, file)):
+            zip_path = os.path.join(self._download_folder_path, file)
+            if not os.path.isfile(zip_path):
                 continue
 
             if not file.endswith(self.file_extension):
                 continue
 
-            with open(os.path.join(self._download_folder_path, file), "rb") as f:
+            with open(zip_path, "rb") as f:
                 result = self._s3_client.upload_content(self.bucket_key, file, f.read())
                 if not result:
                     all_done = False
 
+            # remove the zip file
+            os.remove(zip_path)
+
             # Sleep after each successful download to avoid overwhelming the server
             time.sleep(random.uniform(2, 5))
-
-        # remove the entire download folder
-        shutil.rmtree(self._download_folder_path)
 
         return all_done
