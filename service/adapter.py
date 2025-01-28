@@ -16,6 +16,7 @@ class ScrapeAdapter:
         scraper = self.__scraper_type()
         scraper._config_model = self.__config_model
 
+        scraper.setup_driver()
         results = scraper.set_config_model(self.__config_model).scrape()
 
         return results

@@ -38,7 +38,7 @@ def setup_logger(name: str, log_file: str = "scraping.log") -> logging.Logger:
 
     # File handler
     file_formatter = logging.Formatter(
-        "%(asctime)s [%(processName)s] [%(name)s] %(levelname)s: %(message)s",
+        "%(asctime)s [%(name)s] %(levelname)s: %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S"
     )
     file_handler = logging.FileHandler(log_file, mode="w")
