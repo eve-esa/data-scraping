@@ -7,6 +7,7 @@ ENV WATCHFILES_FORCE_POLLING=true
 RUN apt-get update && apt-get install -y \
     wget \
     unzip \
+    xvfb \
     libzip-dev \
     gnupg \
     make \
