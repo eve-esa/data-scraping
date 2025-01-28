@@ -4,13 +4,13 @@ import random
 from typing import List, Type, Any, Dict
 from bs4 import BeautifulSoup
 from selenium.common import TimeoutException
+from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-import undetected_chromedriver as uc
 import time
 
-from helper.constants import OUTPUT_FOLDER, ROTATE_USER_AGENT_EVERY, CHROME_DRIVER_VERSION
+from helper.constants import OUTPUT_FOLDER, ROTATE_USER_AGENT_EVERY
 from helper.logger import setup_logger
 from model.base_models import BaseConfig
 from service.storage import S3Storage
@@ -18,7 +18,7 @@ from service.storage import S3Storage
 
 class BaseScraper(ABC):
     def __init__(self) -> None:
-        self._driver: uc.Chrome | None = None
+        self._driver: Chrome | None = None
 
         self._logger = setup_logger(self.__class__.__name__)
         self._cookie_handled = False
@@ -29,8 +29,6 @@ class BaseScraper(ABC):
         self._s3_client = S3Storage()
 
     def __call__(self, config_model: BaseConfig):
-        self.setup_driver()
-
         name_scraper = self.__class__.__name__
         path_file_results = os.path.join(OUTPUT_FOLDER, f"{name_scraper}.json")
         if os.path.exists(path_file_results):
@@ -40,8 +38,8 @@ class BaseScraper(ABC):
         self._logger.info(f"Running scraper {self.__class__.__name__}")
         self.set_config_model(config_model)
 
+        self.setup_driver()
         scraping_results = self.scrape()
-
         self.shutdown_driver()
 
         if scraping_results is None:
@@ -66,7 +64,7 @@ class BaseScraper(ABC):
     def setup_driver(self):
         from helper.utils import get_user_agent
 
-        chrome_options = uc.ChromeOptions()
+        chrome_options = ChromeOptions()
 
         # Basic configuration
         chrome_options.add_argument("--start-maximized")
@@ -80,6 +78,7 @@ class BaseScraper(ABC):
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-setuid-sandbox")
 
         # Cookies and security
         chrome_options.add_argument("--enable-cookies")
@@ -97,7 +96,7 @@ class BaseScraper(ABC):
             })
 
         # Create WebDriver instance
-        self._driver = uc.Chrome(options=chrome_options, user_multi_procs=True, version_main=int(CHROME_DRIVER_VERSION))
+        self._driver = Chrome(options=chrome_options)
 
         # emulating hardware characteristics
         self._driver.execute_cdp_cmd("Emulation.setHardwareConcurrencyOverride", {"hardwareConcurrency": 8})

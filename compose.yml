@@ -1,5 +1,17 @@
 services:
 
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: build
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - minio
+
   minio:
     image: minio/minio
     ports:
@@ -9,7 +21,7 @@ services:
       MINIO_ROOT_USER: ${AWS_ACCESS_KEY}
       MINIO_ROOT_PASSWORD: ${AWS_SECRET_KEY}
       CONSOLE_DEV_MODE: on
-    command: ["minio", "server", "/data", "--console-address", ":9101", "--address", ":9100"]
+    command: [ "minio", "server", "/data", "--console-address", ":9101", "--address", ":9100" ]
 
   mc:
     image: minio/mc

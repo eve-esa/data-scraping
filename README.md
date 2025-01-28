@@ -5,7 +5,7 @@ Code for the main ETL pipeline to be utilized to collect, scrape and transform t
 
 For the local usage, please create a `.env` file in the root of the project with the following content:
 ```bash
-AWS_URL=http://localhost:9100
+AWS_URL=http://minio:9100
 AWS_REGION=us-east-1
 AWS_ACCESS_KEY=minio
 AWS_SECRET_KEY=minio1234
