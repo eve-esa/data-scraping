@@ -3,22 +3,23 @@ import inspect
 import json
 import os
 import pkgutil
-from multiprocessing import Process
+import queue
+from logging.handlers import QueueListener
+from multiprocessing import Queue, Process
 import zipfile
 from typing import Dict, List, Type, Tuple
 import yaml
 from bs4 import Tag
-from pydantic import ValidationError
+from pydantic import ValidationError, BaseModel
 from urllib.parse import urlparse, parse_qs
 from fake_useragent import UserAgent
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.by import By
 from selenium.common import NoSuchElementException
+import time
 
-from helper.logger import setup_logger
+from helper.logger import setup_logger, setup_worker_logging
 from scraper.base_scraper import BaseScraper, BaseMappedScraper
-
-logger = setup_logger(__name__)
 
 
 # Load the YAML file
@@ -71,6 +72,8 @@ def discover_scrapers(base_package: str) -> Dict[str, Type[BaseScraper]]:
     Returns:
         Dict[str, BaseScraper]: A dictionary of scraper names and their classes (i.e., the type).
     """
+    logger = setup_logger(__name__)
+
     package = importlib.import_module(base_package)
 
     discovered_scrapers = {}
@@ -92,32 +95,77 @@ def discover_scrapers(base_package: str) -> Dict[str, Type[BaseScraper]]:
     return discovered_scrapers
 
 
-def run_scrapers(discovered_scrapers: Dict[str, Type[BaseScraper]], config: Dict[str, Dict]):
+def run_scraper_process(scraper_obj: BaseScraper, config_model: BaseModel, log_queue: Queue, logger_name: str):
     """
-    Find all scraper classes in the specified package and run them in separate threads.
+    Wrapper function to run a scraper with logging configuration.
 
     Args:
-        discovered_scrapers (Dict[str, Type[BaseScraper]]): A dictionary of scraper names and their classes (i.e., types).
-        config (Dict[str, Dict]): A dictionary of scraper names and their configurations.
+        scraper_obj (BaseScraper): The scraper object to run.
+        config_model (BaseModel): The configuration model for the scraper.
+        log_queue (Queue): The logging queue.
+        logger_name (str): The name of the logger.
     """
-    processes = []
-    for name_scraper, class_type_scraper in discovered_scrapers.items():
-        config_scraper = config.get(name_scraper)
-        if config_scraper is None:
-            logger.error(f"Scraper {name_scraper} not found in configured scrapers")
-            continue
+    setup_worker_logging(log_queue, logger_name)
+    scraper_obj(config_model)
 
-        scraper_obj = class_type_scraper()
-        config_model = scraper_obj.config_model_type(**config_scraper)
-        try:
-            process = Process(target=lambda: scraper_obj(config_model))
-            process.start()
-            processes.append(process)
-        except ValidationError as e:
-            logger.error(f"Error running scraper {name_scraper}: {e}")
 
-    for process in processes:
-        process.join()
+def run_scrapers(
+    discovered_scrapers: Dict[str, Type[BaseScraper]], config: Dict[str, Dict], log_file: str = "scraping.log"
+):
+    """
+    Find all scraper classes in the specified package and run them in separate processes with configured logging.
+
+    Args:
+        discovered_scrapers (Dict[str, Type[BaseScraper]]): A dictionary of scraper names and their classes.
+        config (Dict[str, Dict]): A dictionary of scraper names and their configurations.
+        log_file (str): Path to the log file.
+    """
+    # Create logging queue
+    log_queue = Queue()
+
+    # Setup main process logger
+    logger = setup_logger(__name__, log_file)
+
+    # Create and start listener
+    listener = QueueListener(log_queue, *logger.handlers, respect_handler_level=True)
+    listener.start()
+
+    try:
+        processes = []
+        for name_scraper, class_type_scraper in discovered_scrapers.items():
+            config_scraper = config.get(name_scraper)
+            if config_scraper is None:
+                logger.error(f"Scraper {name_scraper} not found in configured scrapers")
+                continue
+
+            scraper_obj = class_type_scraper()
+            try:
+                config_model = scraper_obj.config_model_type(**config_scraper)
+                process = Process(
+                    target=run_scraper_process,
+                    args=(scraper_obj, config_model, log_queue, __name__),
+                    name=name_scraper
+                )
+                process.start()
+                processes.append(process)
+            except ValidationError as e:
+                logger.error(f"Error running scraper {name_scraper}: {e}")
+
+        # Wait for all processes to complete
+        for process in processes:
+            process.join()
+    finally:
+        # Ensure the queue is empty before stopping
+        while not log_queue.empty():
+            try:
+                record = log_queue.get_nowait()
+                logger.handle(record)
+            except queue.Empty:
+                break
+
+        listener.stop()
+        # Small delay to ensure all logs are processed
+        time.sleep(0.1)
 
 
 def remove_query_string_from_url(url: str | None = None) -> str | None:
