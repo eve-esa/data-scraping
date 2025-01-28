@@ -24,7 +24,8 @@ stop:  ## Stop docker containers
 	docker compose ${docker-compose-files} stop
 
 sync-requirements: ## Update the local virtual environment with the latest requirements.
-	$(PYTHON) -m pip install -r requirements.txt
+	docker exec -it $(shell docker ps -qf "name=app") /bin/bash -c "pip install --no-cache-dir -r requirements.txt"
+	$(PYTHON) -m pip install --no-cache-dir -r requirements.txt
 
 run:  ## Run the application
-	$(PYTHON) -m main ${args}
+	docker exec -it $(shell docker ps -qf "name=app") /bin/bash -c "python -m main ${args}"

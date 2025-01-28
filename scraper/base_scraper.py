@@ -34,7 +34,6 @@ class BaseScraper(ABC):
         self.set_config_model(config_model)
 
         scraping_results = self.scrape()
-
         if scraping_results is None:
             return
 
