@@ -28,18 +28,15 @@ class ElsevierScraper(BaseScraper):
     def config_model_type(self) -> Type[ElsevierConfig]:
         return ElsevierConfig
 
-    def scrape(self, model: ElsevierConfig) -> ElsevierScraperOutput | None:
+    def scrape(self) -> ElsevierScraperOutput | None:
         """
         Scrape the Elsevier website for the PDF links.
-
-        Args:
-            model (ElsevierConfig): The Elsevier configuration model.
 
         Returns:
             ElsevierScraperOutput | None: The PDF links scraped from the website.
         """
         pdf_links = {}
-        for source in model.sources:
+        for source in self._config_model.sources:
             if source.type == SourceType.JOURNAL:
                 links = self.__scrape_journal(source)
             else:

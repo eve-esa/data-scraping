@@ -16,17 +16,14 @@ class BaseCrawlingScraper(BaseScraper):
     def config_model_type(self) -> Type[BaseCrawlingConfig]:
         return BaseCrawlingConfig
 
-    def scrape(self, model: BaseCrawlingConfig) -> BaseCrawlingScraperOutput | None:
+    def scrape(self) -> BaseCrawlingScraperOutput | None:
         """
         Scrape the website, even better crawl the website.
-
-        Args:
-            model (BaseCrawlingConfig): The configuration model.
 
         Returns:
             BaseCrawledPublisherScraperOutput: The output of the scraper, or None if the scraping failed.
         """
-        start_urls = [source.url for source in model.sources]
+        start_urls = [source.url for source in self._config_model.sources]
         if not start_urls:
             self._logger.error("No start URLs provided in the configuration model.")
             return None

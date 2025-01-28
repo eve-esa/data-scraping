@@ -18,18 +18,15 @@ class SeosScraper(BaseScraper):
         """
         return SeosConfig
 
-    def scrape(self, model: SeosConfig) -> Dict[str, List[str]] | None:
+    def scrape(self) -> Dict[str, List[str]] | None:
         """
         Scrape the Seos sources for HTML links.
-
-        Args:
-            model (SeosConfig): The configuration model.
 
         Returns:
             Dict[str, List[str]]: a dictionary collecting, for each source, the corresponding list of the HTML links. If no link was found, return None.
         """
         links = {}
-        for source in model.sources:
+        for source in self._config_model.sources:
             links[source.url] = self.__scrape_source(source)
 
         return links if links else None

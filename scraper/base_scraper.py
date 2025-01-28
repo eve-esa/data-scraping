@@ -38,9 +38,9 @@ class BaseScraper(ABC):
             return
 
         self._logger.info(f"Running scraper {self.__class__.__name__}")
-        self._config_model = config_model
+        self.set_config_model(config_model)
 
-        scraping_results = self.scrape(config_model)
+        scraping_results = self.scrape()
 
         self.shutdown_driver()
 
@@ -58,6 +58,10 @@ class BaseScraper(ABC):
             return
 
         self._logger.warning(f"Something went wrong with Scraper {self.__class__.__name__}: unsuccessfully completed.")
+
+    def set_config_model(self, config_model: BaseConfig):
+        self._config_model = config_model
+        return self
 
     def setup_driver(self):
         from helper.utils import get_user_agent
@@ -259,12 +263,9 @@ class BaseScraper(ABC):
         return self._config_model.file_extension
 
     @abstractmethod
-    def scrape(self, model: BaseConfig) -> Any | None:
+    def scrape(self) -> Any | None:
         """
         Scrape the resources links. This method must be implemented in the derived class.
-
-        Args:
-            model (BaseConfig): The configuration model.
 
         Returns:
             Any: The output of the scraping, or None if something went wrong.

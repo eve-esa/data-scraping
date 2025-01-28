@@ -23,18 +23,15 @@ class WileyScraper(BasePaginationPublisherScraper):
         """
         return WileyConfig
 
-    def scrape(self, model: WileyConfig) -> BasePaginationPublisherScrapeOutput | None:
+    def scrape(self) -> BasePaginationPublisherScrapeOutput | None:
         """
         Scrape the Sage sources for PDF links.
-
-        Args:
-            model (WileyConfig): The configuration model.
 
         Returns:
             BasePaginationPublisherScrapeOutput | None: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.
         """
         pdf_tags = {}
-        for idx, source in enumerate(model.sources):
+        for idx, source in enumerate(self._config_model.sources):
             self.__base_url = source.base_url
             pdf_tags_journal = self._scrape_landing_page(source.landing_page_url, idx + 1)
             if pdf_tags_journal:

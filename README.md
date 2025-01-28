@@ -1,22 +1,9 @@
 # data-pipeline
 Code for the main ETL pipeline to be utilized to collect, scrape and transform training data.
 
-## Installation
-1. Clone the repository
-2. Install the required packages using the following command:
-```bash
-make sync-requirements
-```
+## Pre-requisites
 
-## Configuration
-The configuration file is located in the `config` folder and is named `config.json`. The configuration file contains the parameters
-to be used in the ETL pipeline. Each main key of the JSON file represents the configuration of a different scraper.
-The name of the key is the name of the scraper and the value is a dictionary containing the Pydantic model of the scraper configuration. For more examples, please take a look to the already implemented scrapers and their configurations.
-
-## Usage
-
-### Testing
-For the usage with testing purposes, please create a `.env` file in the root of the project with the following content:
+For the local usage, please create a `.env` file in the root of the project with the following content:
 ```bash
 AWS_URL=http://localhost:9100
 AWS_REGION=us-east-1
@@ -27,7 +14,29 @@ AWS_BUCKET_NAME=esa-eve
 MINIO_URL=http://minio:9100
 ```
 
-Then, you can run the following command to execute the ETL pipeline:
+The MinIO server is used to store the data and emulate a remote S3 bucket. The `AWS_URL` key must be set to the URL of
+the MinIO server.
+MinIO has not to be configured for the production usage, since the data will be stored in a remote S3 bucket. In the latter case,
+please populate all the keys in the `.env` file with the correct values.
+
+In the `.env` file, you could also customize the `CHROME_DRIVER_VERSION` key (integer, default 131), which represents the
+version of the Chrome driver to be used by the Selenium scraper.
+
+## Installation
+1. Clone the repository
+2. Create the docker containers by running the following command: `make up`
+3. Install the required packages using the following command: `make sync-requirements`
+
+## Configuration
+The configuration file is located in the `config` folder and is named `config.json`. The configuration file contains the parameters
+to be used in the ETL pipeline. Each main key of the JSON file represents the configuration of a different scraper.
+The name of the key is the name of the scraper and the value is a dictionary containing the Pydantic model of the scraper configuration. For more examples, please take a look to the already implemented scrapers and their configurations.
+
+## Usage
+
+### Testing
+For the usage with testing purposes, please create a `.env` file in the root of the project with the following content, as
+per the [Pre-requisites](#pre-requisites) section. Then, you can run the following command to execute the ETL pipeline:
 ```bash
 make up
 make run
@@ -43,7 +52,7 @@ or
 make run args="--scrapers IOPScraper SpringerScraper"
 ```
 
-The docker container are locally required, since a MinIO server is used to store the data and emulate a remote S3 bucket.
+The docker containers are locally required, since a MinIO server is used to store the data and emulate a remote S3 bucket.
 Every time the ETL pipeline is executed, the data is stored in the MinIO server and the configuration file is updated with the `done` key set to `True`.
 
 **Note**: The `make up` command must be executed only once, since the docker container is started and the MinIO server is started.
@@ -51,17 +60,8 @@ The `make run` command can be executed multiple times to run the ETL pipeline.
 The `make down` command can be executed to stop the docker container.
 
 ### Production
-For the usage with productive purposes, please create a `.env` file in the root of the project with the following content:
-```bash
-AWS_URL=<the_url_of_your_s3_bucket>
-AWS_REGION=<aws_region>
-AWS_ACCESS_KEY=<aws_access_key>
-AWS_SECRET_KEY=<aws_secret_key>
-AWS_BUCKET_NAME=<aws_bucket_name>
-```
-
-Then, you can run the ETL pipeline as described in the previous section. In the `.env` file you could also customize
-the `CHROME_DRIVER_VERSION` key (integer, default 131), which represents the version of the Chrome driver to be used by the Selenium scraper.
+For the usage with productive purposes, please create a `.env` file in the root of the project as per the [Pre-requisites](#pre-requisites) section. 
+Then, you can run the ETL pipeline as described in the previous section.
 
 ## HowTo: add a new Scraper
 In order to add a new scraper, the following steps are required:
