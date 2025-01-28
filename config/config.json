@@ -1137,6 +1137,22 @@
                         "https://earthobservatory.nasa.gov/glossary/all"
                     ]
                 }
+            },
+            {
+                "name": "NASA Crawled Sites",
+                "scraper": "NASACrawlingScraper",
+                "config": {
+                    "sources": [
+                        {
+                            "name": "NASA Climate Change",
+                            "url": "https://science.nasa.gov/climate-change/"
+                        },
+                        {
+                            "name": "NASA Climate Kids",
+                            "url": "https://climatekids.nasa.gov/image-use/"
+                        }
+                    ]
+                }
             }
         ]
     },
@@ -1219,32 +1235,32 @@
             }
         ]
     },
-    "CrawlingScraper": {
-        "bucket_key": "raw_data/crawling",
+    "EUMETSATScraper": {
+        "bucket_key": "raw_data/eumetsat",
         "sources": [
             {
-                "name": "NASA Climate Change",
-                "url": "https://science.nasa.gov/climate-change/"
-            },
-            {
-                "name": "NASA Climate Kids",
-                "url": "https://climatekids.nasa.gov/image-use/"
-            },
-            {
-                "name": "EOCAT API",
-                "url": "https://eocat.esa.int/eo-catalogue/intro.html"
-            },
-            {
-                "name": "EUMETSAT User Portal",
-                "url": "https://user.eumetsat.int/resources/user-guides/getting-started-using-data"
-            },
-            {
-                "name": "EUMETRAIN Climatology of snow cover and snow water equivalent based on satellite data",
-                "url": "https://resources.eumetrain.org/data/3/358/index.htm"
-            },
-            {
-                "name": "EUMETRAIN Identification of volcanic ash and sulfur dioxide plumes from satellite imagery",
-                "url": "https://resources.eumetrain.org/data/7/734/index.htm"
+                "name": "EUMETSAT Crawled Sites",
+                "scraper": "EUMETSATCrawlingScraper",
+                "config": {
+                    "sources": [
+                        {
+                            "name": "EOCAT API",
+                            "url": "https://eocat.esa.int/eo-catalogue/intro.html"
+                        },
+                        {
+                            "name": "EUMETSAT User Portal",
+                            "url": "https://user.eumetsat.int/resources/user-guides/getting-started-using-data"
+                        },
+                        {
+                            "name": "EUMETRAIN Climatology of snow cover and snow water equivalent based on satellite data",
+                            "url": "https://resources.eumetrain.org/data/3/358/index.htm"
+                        },
+                        {
+                            "name": "EUMETRAIN Identification of volcanic ash and sulfur dioxide plumes from satellite imagery",
+                            "url": "https://resources.eumetrain.org/data/7/734/index.htm"
+                        }
+                    ]
+                }
             }
         ]
     },

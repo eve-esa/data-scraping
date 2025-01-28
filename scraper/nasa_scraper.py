@@ -1,9 +1,11 @@
+import os
 from typing import List, Type, Dict
 from bs4 import Tag, ResultSet
 
 from helper.utils import get_scraped_url, get_parsed_page_source
-from model.base_mapped_models import BaseMappedUrlSource, BaseMappedPaginationConfig
+from model.base_mapped_models import BaseMappedUrlSource, BaseMappedPaginationConfig, BaseMappedCrawlingConfig
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
+from scraper.base_crawling_scraper import BaseCrawlingScraper
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
 from scraper.base_scraper import BaseMappedScraper
@@ -19,6 +21,7 @@ class NASAScraper(BaseMappedPublisherScraper):
             "NASAEOSScraper": NASAEOSScraper,
             "NASAEarthDataScraper": NASAEarthDataScraper,
             "NASAEarthDataPDFScraper": NASAEarthDataPDFScraper,
+            "NASACrawlingScraper": NASACrawlingScraper,
         }
 
 
@@ -203,3 +206,13 @@ class NASAEarthDataPDFScraper(NASAEarthDataScraper):
         except Exception as e:
             self._logger.error(f"Failed to process URL {url}. Error: {e}")
             return None
+
+
+class NASACrawlingScraper(BaseCrawlingScraper, BaseMappedScraper):
+    @property
+    def config_model_type(self) -> Type[BaseMappedCrawlingConfig]:
+        return BaseMappedCrawlingConfig
+
+    @property
+    def crawling_folder_path(self) -> str:
+        return os.path.join(os.getcwd(), "crawled", "nasa")

@@ -1,9 +1,7 @@
-from typing import Any, Type
+from typing import Any, Type, List
 
-from helper.utils import get_scraped_url
 from model.base_mapped_models import BaseMappedSourceConfig
 from scraper.base_scraper import BaseScraper
-from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
 
 
 class ScrapeAdapter:
@@ -13,16 +11,28 @@ class ScrapeAdapter:
 
     def scrape(self) -> Any:
         if self.__scraper_type is None:
-            results = self.__config_model.urls
-        else:
-            scraper = self.__scraper_type()
-            scraper._config_model = self.__config_model
+            return self.__config_model.urls
 
-            results = scraper.scrape(self.__config_model)
+        scraper = self.__scraper_type()
+        scraper._config_model = self.__config_model
 
-            if results is not None and issubclass(self.__scraper_type, BaseUrlPublisherScraper):
-                results = [
-                    get_scraped_url(tag, self.__config_model.base_url) for tag in results
-                ]
+        results = scraper.scrape(self.__config_model)
 
         return results
+
+    def post_process(self, scrape_output: Any) -> Any:
+        if self.__scraper_type is None:
+            return scrape_output
+
+        scraper = self.__scraper_type()
+        return scraper.post_process(scrape_output)
+
+    def upload_to_s3(self, scrape_output: List[str], bucket_key: str, file_extension: str) -> bool:
+        from scraper.direct_links_scraper import DirectLinksScraper
+
+        if self.__scraper_type is not None:
+            scraper = self.__scraper_type()
+            return scraper.upload_to_s3(scrape_output)
+
+        scraper = DirectLinksScraper()
+        return scraper.upload_to_s3(scrape_output, bucket_key=bucket_key, file_extension=file_extension)

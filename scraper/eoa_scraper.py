@@ -40,7 +40,7 @@ class EOAScraper(BaseScraper):
     def post_process(self, scrape_output: List[str]) -> List[str]:
         return scrape_output
 
-    def _upload_to_s3(self, sources_links: List[str]) -> bool:
+    def upload_to_s3(self, sources_links: List[str], **kwargs) -> bool:
         self._logger.debug("Uploading files to S3")
 
         all_done = True
