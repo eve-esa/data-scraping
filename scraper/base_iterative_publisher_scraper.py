@@ -4,7 +4,6 @@ from pydantic import BaseModel
 
 from helper.utils import get_unique
 from model.base_iterative_publisher_models import (
-    BaseIterativePublisherConfig,
     BaseIterativePublisherJournal,
     BaseIterativeWithConstraintPublisherJournal,
     IterativePublisherScrapeJournalOutput,
@@ -16,19 +15,16 @@ from scraper.base_scraper import BaseScraper
 
 
 class BaseIterativePublisherScraper(BaseScraper):
-    def scrape(self, model: BaseIterativePublisherConfig) -> IterativePublisherScrapeOutput | None:
+    def scrape(self) -> IterativePublisherScrapeOutput | None:
         """
         Scrape the journals for PDF links.
-
-        Args:
-            model (BaseIterativePublisherConfig): The configuration model.
 
         Returns:
             IterativePublisherScrapeOutput | None: A dictionary containing the PDF links, or None if no link was found.
         """
         links = {}
 
-        for journal in model.journals:
+        for journal in self._config_model.journals:
             if scraped_tags := self._scrape_journal(journal):
                 links[self.journal_identifier(journal)] = scraped_tags
 

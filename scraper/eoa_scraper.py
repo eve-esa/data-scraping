@@ -15,9 +15,9 @@ class EOAScraper(BaseScraper):
     def config_model_type(self) -> Type[EOAConfig]:
         return EOAConfig
 
-    def scrape(self, model: EOAConfig) -> List[str] | None:
+    def scrape(self) -> List[str] | None:
         pdf_links = []
-        for source in model.sources:
+        for source in self._config_model.sources:
             try:
                 self._scrape_url(source.url)
 

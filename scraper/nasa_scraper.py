@@ -75,9 +75,9 @@ class NASANTRSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
     def config_model_type(self) -> Type[BaseMappedPaginationConfig]:
         return BaseMappedPaginationConfig
 
-    def scrape(self, model: BaseMappedPaginationConfig) -> BasePaginationPublisherScrapeOutput | None:
+    def scrape(self) -> BasePaginationPublisherScrapeOutput | None:
         pdf_tags = []
-        for idx, source in enumerate(model.sources):
+        for idx, source in enumerate(self._config_model.sources):
             self.__page_size = source.page_size
             pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
 
@@ -107,9 +107,9 @@ class NASAEOSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
     def config_model_type(self) -> Type[BaseMappedPaginationConfig]:
         return BaseMappedPaginationConfig
 
-    def scrape(self, model: BaseMappedPaginationConfig) -> BasePaginationPublisherScrapeOutput | None:
+    def scrape(self) -> BasePaginationPublisherScrapeOutput | None:
         pdf_tags = []
-        for idx, source in enumerate(model.sources):
+        for idx, source in enumerate(self._config_model.sources):
             pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
 
         return {"NASA EOS": [get_scraped_url(tag, self.base_url) for tag in pdf_tags]} if pdf_tags else None
@@ -141,9 +141,9 @@ class NASAEarthDataScraper(BasePaginationPublisherScraper, BaseMappedScraper):
     def config_model_type(self) -> Type[BaseMappedPaginationConfig]:
         return BaseMappedPaginationConfig
 
-    def scrape(self, model: BaseMappedPaginationConfig) -> BasePaginationPublisherScrapeOutput | None:
+    def scrape(self) -> BasePaginationPublisherScrapeOutput | None:
         html_tags = []
-        for idx, source in enumerate(model.sources):
+        for idx, source in enumerate(self._config_model.sources):
             self.__href = source.href
             html_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
 
@@ -168,9 +168,9 @@ class NASAEarthDataScraper(BasePaginationPublisherScraper, BaseMappedScraper):
 
 
 class NASAEarthDataPDFScraper(NASAEarthDataScraper):
-    def scrape(self, model: BaseMappedPaginationConfig) -> BasePaginationPublisherScrapeOutput | None:
+    def scrape(self) -> BasePaginationPublisherScrapeOutput | None:
         pdf_tags = []
-        for idx, source in enumerate(model.sources):
+        for idx, source in enumerate(self._config_model.sources):
             self.__href = source.href
             pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
 

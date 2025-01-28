@@ -17,7 +17,7 @@ class ScrapeAdapter:
         scraper._config_model = self.__config_model
         scraper.setup_driver()
 
-        results = scraper.scrape(self.__config_model)
+        results = scraper.set_config_model(self.__config_model).scrape()
         scraper.shutdown_driver()
 
         return results

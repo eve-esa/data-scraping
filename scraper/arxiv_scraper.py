@@ -22,18 +22,15 @@ class ArxivScraper(BasePaginationPublisherScraper):
         """
         return ArxivConfig
 
-    def scrape(self, model: ArxivConfig) -> BasePaginationPublisherScrapeOutput | None:
+    def scrape(self) -> BasePaginationPublisherScrapeOutput | None:
         """
         Scrape the Arxiv sources for PDF links.
-
-        Args:
-            model (ArxivConfig): The configuration model.
 
         Returns:
             BasePaginationPublisherScrapeOutput | None: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.
         """
         pdf_tags = []
-        for idx, source in enumerate(model.sources):
+        for idx, source in enumerate(self._config_model.sources):
             self.__page_size = source.page_size
             pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
 
