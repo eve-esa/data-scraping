@@ -1246,6 +1246,10 @@
             {
                 "name": "NASA Climate Kids",
                 "url": "https://climatekids.nasa.gov/image-use/"
+            },
+            {
+                "name": "EOCAT API",
+                "url": "https://eocat.esa.int/eo-catalogue/intro.html"
             }
         ]
     },
