@@ -13,22 +13,23 @@ def setup_logger(name: str, log_file: str = "scraping.log"):
     Returns:
         logging.Logger: Configured logger instance
     """
-    # Create logger
     logger = logging.getLogger(name)
+
+    if logger.handlers:
+        return logger
+
     logger.setLevel(logging.DEBUG)
 
-    # Format for both handlers
-    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
 
-    # File handler
     file_handler = logging.FileHandler(log_file, mode="w")
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
-    # Colored console handler
     console_handler = colorlog.StreamHandler(sys.stdout)
     color_formatter = colorlog.ColoredFormatter(
-        "%(log_color)s%(asctime)s - %(name)s - %(levelname)s - %(message)s%(reset)s",
+        "%(log_color)s%(asctime)s [%(name)s] %(levelname)s: %(message)s%(reset)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
         log_colors={
             "DEBUG": "blue",
             "INFO": "white",
@@ -39,5 +40,7 @@ def setup_logger(name: str, log_file: str = "scraping.log"):
     )
     console_handler.setFormatter(color_formatter)
     logger.addHandler(console_handler)
+
+    logger.propagate = False
 
     return logger

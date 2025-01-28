@@ -12,8 +12,8 @@ class BaseMappedPublisherScraper(BaseScraper):
     def __init__(self):
         super().__init__()
 
-        self.__bucket_keys = {}
-        self.__file_extensions = {}
+        self._bucket_keys = {}
+        self._file_extensions = {}
 
     @property
     @abstractmethod
@@ -53,8 +53,8 @@ class BaseMappedPublisherScraper(BaseScraper):
             results = ScrapeAdapter(source.config, self.mapping.get(source.scraper)).scrape()
             if results is not None:
                 links[source.name] = results
-                self.__bucket_keys[source.name] = f"{self.bucket_key}/{source.config.bucket_key or ''}".rstrip("/")
-                self.__file_extensions[source.name] = source.config.file_extension or self.file_extension
+                self._bucket_keys[source.name] = f"{self.bucket_key}/{source.config.bucket_key or ''}".rstrip("/")
+                self._file_extensions[source.name] = source.config.file_extension or self.file_extension
 
         return links
 
@@ -69,11 +69,12 @@ class BaseMappedPublisherScraper(BaseScraper):
         Returns:
             Dict[str, List[str]]: The results of the scraping
         """
-        return {source_name: source_links if isinstance(source_links, list) else [
-                link for links in source_links.values() for link in links
-            ] for source_name, source_links in scrape_output.items()}
+        return {
+            source.name: ScrapeAdapter(source.config, self.mapping.get(source.scraper)).post_process(scrape_output[source.name])
+            for source in self._config_model.sources
+        }
 
-    def _upload_to_s3(self, sources_links: Dict[str, List[str]]) -> bool:
+    def upload_to_s3(self, sources_links: Dict[str, List[str]], **kwargs) -> bool:
         """
         Upload the source files to S3.
 
@@ -83,19 +84,19 @@ class BaseMappedPublisherScraper(BaseScraper):
         Returns:
             bool: True if the upload was successful, False otherwise.
         """
-        self._logger.debug("Uploading files to S3")
 
         all_done = True
-        for source_name, source_links in sources_links.items():
-            bucket_key = self.__bucket_keys[source_name]
-            file_extension = self.__file_extensions[source_name]
+        for source in self._config_model.sources:
+            adapter = ScrapeAdapter(source.config, self.mapping.get(source.scraper))
+            result = adapter.upload_to_s3(sources_links[source.name],
+                self._bucket_keys[source.name],
+                self._file_extensions[source.name],
+            )
 
-            for link in source_links:
-                result = self._s3_client.upload(bucket_key, link, file_extension)
-                if not result:
-                    all_done = False
+            if not result:
+                all_done = False
 
-                # Sleep after each successful download to avoid overwhelming the server
-                time.sleep(random.uniform(2, 5))
+            # Sleep after each successful download to avoid overwhelming the server
+            time.sleep(random.uniform(2, 5))
 
         return all_done

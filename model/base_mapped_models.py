@@ -1,7 +1,7 @@
 from typing import List, TypeAlias
 from pydantic import BaseModel
 
-from helper.base_enum import Enum
+from model.base_crawling_models import BaseCrawlingConfig
 from model.base_direct_publisher_models import BaseDirectPublisherConfig
 from model.base_iterative_publisher_models import (
     BaseIterativePublisherJournal,
@@ -11,14 +11,6 @@ from model.base_iterative_publisher_models import (
 from model.base_models import BaseConfig, Config
 from model.base_pagination_publisher_models import BasePaginationPublisherSource, BasePaginationPublisherConfig
 from model.base_url_publisher_models import BaseUrlPublisherSource, BaseUrlPublisherConfig
-
-
-class SourceType(Enum):
-    ITERATIVE = "iterative"
-    ITERATIVE_WITH_CONSTRAINT = "iterative_with_constraint"
-    PAGINATION = "pagination"
-    URL = "url"
-    DIRECT = "direct"
 
 
 class BaseMappedItemSource(BaseModel):
@@ -68,12 +60,17 @@ class BaseMappedDirectConfig(BaseDirectPublisherConfig):
     bucket_key: str | None = None
 
 
+class BaseMappedCrawlingConfig(BaseCrawlingConfig):
+    bucket_key: str | None = None
+
+
 BaseMappedSourceConfig: TypeAlias = (
     BaseMappedIterativeConfig
     | BaseMappedIterativeWithConstraintConfig
     | BaseMappedPaginationConfig
     | BaseMappedUrlConfig
     | BaseMappedDirectConfig
+    | BaseMappedCrawlingConfig
 )
 
 
