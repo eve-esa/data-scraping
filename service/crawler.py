@@ -1,4 +1,5 @@
 import os
+from uuid import uuid4
 from typing import Any
 from urllib.parse import urlparse
 import scrapy
@@ -65,7 +66,14 @@ class EveSpider(scrapy.Spider):
             self.logger.debug(f"Skipping non-HTML content: {response.url}")
             return
 
-        page_name = response.url.split("/")[-2] or "index"
+        splitted_url = response.url.split("/")
+        if not splitted_url[-1] or "/" in splitted_url[-1]:
+            page_name = splitted_url[-2] or "index"
+        elif "." in splitted_url[-1]:
+            page_name = splitted_url[-1].split(".")[0]
+        else:
+            page_name = uuid4()
+
         with open(os.path.join(self._download_folder_path, f"{page_name}.html"), "wb") as f:
             f.write(response.body)
 
@@ -91,10 +99,16 @@ class EveSpider(scrapy.Spider):
         if base_parts.netloc != target_parts.netloc:
             return False
 
-        if not base_parts.path or base_parts.path == '/':
+        if not base_parts.path or base_parts.path == "/":
             return base_parts.netloc == target_parts.netloc
 
-        return target_parts.path.rstrip('/').startswith(base_parts.path.rstrip('/'))
+        base_path = base_parts.path.rstrip("/")
+        target_path = target_parts.path.rstrip("/")
+
+        base_directory = "/".join(base_path.split("/")[:-1]) if "." in base_path.split("/")[-1] else base_path
+        target_directory = "/".join(target_path.split("/")[:-1]) if "." in target_path.split("/")[-1] else target_path
+
+        return target_directory.startswith(base_directory)
 
     def is_resource_file(self, url: str) -> bool:
         """
@@ -107,8 +121,8 @@ class EveSpider(scrapy.Spider):
             bool: True if the URL points to a resource file, False otherwise.
         """
         resource_extensions = {
-            '.jpg', '.jpeg', '.png', '.gif', '.pdf', '.doc', '.docx',
-            '.xls', '.xlsx', '.zip', '.rar', '.mp3', '.mp4', '.avi',
-            '.mov', '.wmv', '.flv', '.svg', '.webp'
+            ".jpg", ".jpeg", ".png", ".gif", ".pdf", ".doc", ".docx",
+            ".xls", ".xlsx", ".zip", ".rar", ".mp3", ".mp4", ".avi",
+            ".mov", ".wmv", ".flv", ".svg", ".webp"
         }
         return any(url.lower().endswith(ext) for ext in resource_extensions)

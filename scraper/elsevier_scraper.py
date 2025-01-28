@@ -165,7 +165,7 @@ class ElsevierScraper(BaseScraper):
 
             time.sleep(0.1)
 
-    def _upload_to_s3(self, sources_links: List[str]) -> bool:
+    def upload_to_s3(self, sources_links: List[str], **kwargs) -> bool:
         """
         Upload the source files to S3.
 

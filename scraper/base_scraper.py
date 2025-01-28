@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import os
 import random
-from typing import List, Type, Any
+from typing import List, Type, Any, Dict
 from bs4 import BeautifulSoup
 from selenium.common import TimeoutException
 from selenium.webdriver.support.wait import WebDriverWait
@@ -46,7 +46,7 @@ class BaseScraper(ABC):
             return
 
         links = self.post_process(scraping_results)
-        all_done = self._upload_to_s3(links)
+        all_done = self.upload_to_s3(links)
 
         if all_done:
             from helper.utils import write_json_file, is_json_serializable
@@ -157,12 +157,12 @@ class BaseScraper(ABC):
         """
         return BeautifulSoup(self._driver.get_page_source(), "html.parser")
 
-    def _upload_to_s3(self, sources_links: List[str]) -> bool:
+    def upload_to_s3(self, sources_links: Dict[str, List[str]] | List[str], **kwargs) -> bool:
         """
         Upload the source files to S3.
 
         Args:
-            sources_links (List[str]): The list of links of the various sources.
+            sources_links (Dict[str, List[str]] | List[str]): The list of links of the various sources.
 
         Returns:
             bool: True if the upload was successful, False otherwise.
@@ -224,7 +224,7 @@ class BaseScraper(ABC):
         pass
 
     @abstractmethod
-    def post_process(self, scrape_output: Any) -> List[str]:
+    def post_process(self, scrape_output: Any) -> Dict[str, List[str]] | List[str]:
         """
         Post-process the scraped output. This method is called after the sources have been scraped. It is used to
         retrieve the final list of processed URLs. This method must be implemented in the derived class.
@@ -233,7 +233,7 @@ class BaseScraper(ABC):
             scrape_output (Any): The scraped output
 
         Returns:
-            List[str]: A list of processed links
+            Dict[str, List[str]] | List[str]: A dictionary or a list containing the processed links
         """
         pass
 

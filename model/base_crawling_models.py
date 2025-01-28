@@ -4,14 +4,14 @@ from pydantic import BaseModel
 from model.base_models import BaseConfig
 
 
-class CrawlingSource(BaseModel):
+class BaseCrawlingSource(BaseModel):
     name: str
     url: str
 
 
-class CrawlingConfig(BaseConfig):
+class BaseCrawlingConfig(BaseConfig):
     file_extension: str | None = ".html"
-    sources: List[CrawlingSource]
+    sources: List[BaseCrawlingSource]
 
 
-CrawlingScraperOutput: TypeAlias = Dict[str, str]
+BaseCrawlingScraperOutput: TypeAlias = Dict[str, str]
