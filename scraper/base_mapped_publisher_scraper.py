@@ -36,18 +36,15 @@ class BaseMappedPublisherScraper(BaseScraper):
         """
         return BaseMappedConfig
 
-    def scrape(self, model: BaseMappedConfig) -> Dict[str, List[str] | Dict[str, List[str]]]:
+    def scrape(self) -> Dict[str, List[str] | Dict[str, List[str]]]:
         """
         Scrape the resources links.
-
-        Args:
-            model (BaseMappedConfig): The configuration model.
 
         Returns:
             Dict[str, List | Dict]: The output of the scraping.
         """
         links = {}
-        for source in model.sources:
+        for source in self._config_model.sources:
             self._logger.info(f"Processing source {source.name}")
 
             results = ScrapeAdapter(source.config, self.mapping.get(source.scraper)).scrape()

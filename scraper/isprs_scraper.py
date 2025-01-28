@@ -10,9 +10,9 @@ class ISPRSScraper(BaseScraper):
     def config_model_type(self) -> Type[ISPRSConfig]:
         return ISPRSConfig
 
-    def scrape(self, model: ISPRSConfig) -> List[str] | None:
+    def scrape(self) -> List[str] | None:
         pdf_tags = []
-        for source in model.sources:
+        for source in self._config_model.sources:
             try:
                 self._logger.info(f"Scraping URL: {source.url}")
 

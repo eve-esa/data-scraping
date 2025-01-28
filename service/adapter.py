@@ -16,7 +16,7 @@ class ScrapeAdapter:
         scraper = self.__scraper_type()
         scraper._config_model = self.__config_model
 
-        results = scraper.scrape(self.__config_model)
+        results = scraper.set_config_model(self.__config_model).scrape()
 
         return results
 
@@ -25,14 +25,14 @@ class ScrapeAdapter:
             return scrape_output
 
         scraper = self.__scraper_type()
-        return scraper.post_process(scrape_output)
+        return scraper.set_config_model(self.__config_model).post_process(scrape_output)
 
     def upload_to_s3(self, scrape_output: List[str], bucket_key: str, file_extension: str) -> bool:
         from scraper.direct_links_scraper import DirectLinksScraper
 
         if self.__scraper_type is not None:
             scraper = self.__scraper_type()
-            return scraper.upload_to_s3(scrape_output)
+            return scraper.set_config_model(self.__config_model).upload_to_s3(scrape_output)
 
         scraper = DirectLinksScraper()
         return scraper.upload_to_s3(scrape_output, bucket_key=bucket_key, file_extension=file_extension)

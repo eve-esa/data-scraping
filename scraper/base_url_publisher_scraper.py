@@ -18,18 +18,15 @@ class BaseUrlPublisherScraper(BaseScraper):
         """
         return BaseUrlPublisherConfig
 
-    def scrape(self, model: BaseUrlPublisherConfig) -> ResultSet | List[Tag] | None:
+    def scrape(self) -> ResultSet | List[Tag] | None:
         """
         Scrape the source URLs of for PDF links.
-
-        Args:
-            model (BaseUrlPublisherConfig): The configuration model.
 
         Returns:
             ResultSet | List[Tag]: A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF links. If no tag was found, return None.
         """
         pdf_tags = []
-        for source in model.sources:
+        for source in self._config_model.sources:
             if source.type == SourceType.JOURNAL:
                 scraped_tags = self._scrape_journal(source)
             elif source.type == SourceType.ISSUE_OR_COLLECTION:

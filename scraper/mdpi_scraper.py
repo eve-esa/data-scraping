@@ -131,11 +131,11 @@ class MDPIGoogleSearchScraper(BasePaginationPublisherScraper, BaseMappedScraper)
     def config_model_type(self) -> Type[BaseMappedPaginationConfig]:
         return BaseMappedPaginationConfig
 
-    def scrape(self, model: BaseMappedPaginationConfig) -> BasePaginationPublisherScrapeOutput | None:
+    def scrape(self) -> BasePaginationPublisherScrapeOutput | None:
         pdf_tags = []
         self.__cookie_selector = self._config_model.cookie_selector
         self._config_model.cookie_selector = None
-        for idx, source in enumerate(model.sources):
+        for idx, source in enumerate(self._config_model.sources):
             self.__page_size = source.page_size
             pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
 
