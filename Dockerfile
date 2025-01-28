@@ -21,10 +21,6 @@ RUN apt-get update && apt-get install -y \
 
 FROM system AS build
 
-# Set environment variable for Chrome
-ENV CHROME_PATH=/usr/bin/google-chrome
-ENV CHROME_OPTIONS="--no-sandbox --disable-gpu --disable-dev-shm-usage"
-
 WORKDIR /app
 
 COPY requirements.txt .
