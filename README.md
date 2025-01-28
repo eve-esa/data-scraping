@@ -16,13 +16,13 @@ MINIO_URL=http://minio:9100
 
 PROXY_HOST=brd.superproxy.io
 PROXY_PORT=33335
-PROXY_USER=username
-PROXY_PASSWORD=password
+PROXY_USER=<username>
+PROXY_PASSWORD=<password>
 
 WEBDRIVER_HOST=brd.superproxy.io
 WEBDRIVER_PORT=9515
-WEBDRIVER_USER=username
-WEBDRIVER_PASSWORD=password
+WEBDRIVER_USER=<username>
+WEBDRIVER_PASSWORD=<password>
 ```
 
 The MinIO server is used to store the data and emulate a remote S3 bucket. The `AWS_URL` key must be set to the URL of
