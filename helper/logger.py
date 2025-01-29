@@ -23,7 +23,7 @@ def setup_logger(name: str, log_file: str = "scraping.log") -> logging.Logger:
 
     console_handler = colorlog.StreamHandler(sys.stdout)
     color_formatter = colorlog.ColoredFormatter(
-        "%(log_color)s%(asctime)s [%(processName)s] [%(name)s] %(levelname)s: %(message)s%(reset)s",
+        "%(log_color)s%(asctime)s [%(name)s] %(levelname)s: %(message)s%(reset)s",
         datefmt="%Y-%m-%d %H:%M:%S",
         log_colors={
             "DEBUG": "blue",

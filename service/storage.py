@@ -70,7 +70,7 @@ class S3Storage:
             return False
 
     def upload(self, root_key: str, source_url: str, file_extension: str, referer_url: str | None = None) -> bool:
-        from helper.utils import get_filename, get_user_agent, get_proxy_config
+        from helper.utils import get_filename, get_user_agent, get_interacting_proxy_config
 
         referer_url = referer_url if referer_url is not None else "https://www.google.com"
         s3_key = os.path.join(root_key, get_filename(source_url, file_extension))  # Construct S3 key
@@ -81,7 +81,7 @@ class S3Storage:
 
         try:
             # Download content from the URL
-            proxy = get_proxy_config()
+            proxy = get_interacting_proxy_config()
             response = requests.get(
                 source_url,
                 headers={

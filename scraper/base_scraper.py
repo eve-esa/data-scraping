@@ -64,7 +64,7 @@ class BaseScraper(ABC):
         Returns:
             Tuple[BeautifulSoup, Remote]: A tuple containing the BeautifulSoup object and the WebDriver instance.
         """
-        from helper.utils import get_webdriver_config, get_parsed_page_source
+        from helper.utils import get_scraping_browser_config, get_parsed_page_source
 
         chrome_options = ChromeOptions()
         if self._download_folder_path:
@@ -77,7 +77,7 @@ class BaseScraper(ABC):
                 "safebrowsing.enabled": True
             })
 
-        remote_url, remote_user, remote_password = get_webdriver_config()
+        remote_url, remote_user, remote_password = get_scraping_browser_config()
 
         # Create a client config
         client_config = ClientConfig(

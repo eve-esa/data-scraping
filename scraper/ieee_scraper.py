@@ -1,8 +1,8 @@
 from abc import ABC
 from typing import List, Type, Dict
 from bs4 import Tag, ResultSet
-from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver import Remote
+from selenium.webdriver.support.wait import WebDriverWait
 
 from helper.utils import get_scraped_url
 from model.base_mapped_models import BaseMappedPaginationConfig
