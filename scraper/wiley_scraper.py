@@ -68,8 +68,8 @@ class WileyScraper(BasePaginationPublisherScraper):
 
             # Find all article links in the pagination URL, using the appropriate class or tag (if lambda returns True, it will be included in the list)
             article_tags = self._driver.find_elements(
-                By.XPATH,
-                "//a[contains(@class, 'publication_title') and contains(@class, 'visitable') and contains(@href, '/doi/')]"
+                value="//a[contains(@class, 'publication_title') and contains(@class, 'visitable') and contains(@href, '/doi/')]",
+                by=By.XPATH,
             )
             articles_links = [
                 link

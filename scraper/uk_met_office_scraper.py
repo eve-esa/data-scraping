@@ -20,7 +20,7 @@ class UKMetOfficeScraper(BaseUrlPublisherScraper):
 
             pdf_tag_list = []
 
-            page_buttons = self._driver.find_elements(By.CSS_SELECTOR, "a.role-button.page-link")
+            page_buttons = self._driver.find_elements(value="a.role-button.page-link", by=By.CSS_SELECTOR)
             for page_button in page_buttons:
                 page_button.click()
                 self.__wait_for_loader_hidden()

@@ -23,8 +23,8 @@ class EOAScraper(BaseScraper):
 
                 # with Selenium, look for all "a" tags with "drive.google.com" in "href" and containing the "low" within the lowercased text
                 tags = self._driver.find_elements(
-                    By.XPATH,
-                    "//a[contains(@href, 'drive.google.com') and contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'low')]"
+                    value="//a[contains(@href, 'drive.google.com') and contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'low')]",
+                    by=By.XPATH,
                 )
 
                 pdf_links.extend([

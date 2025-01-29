@@ -4,7 +4,8 @@ Code for the main ETL pipeline to be utilized to collect, scrape and transform t
 ## Pre-requisites
 
 For the local usage, please create a `.env` file in the root of the project with the following content (ask to the
-project maintainer for the values of the `PROXY_USER` and `PROXY_PASSWORD` keys):
+project maintainer for the values of the `STATIC_PROXY_USER`, `STATIC_PROXY_PASSWORD`, `INTERACTING_PROXY_USER` and
+`INTERACTING_PROXY_PASSWORD` keys):
 ```bash
 AWS_URL=http://minio:9100
 AWS_REGION=us-east-1
@@ -14,19 +15,21 @@ AWS_BUCKET_NAME=esa-eve
 
 MINIO_URL=http://minio:9100
 
-PROXY_HOST=brd.superproxy.io
-PROXY_PORT=33335
-PROXY_USER=<username>
-PROXY_PASSWORD=<password>
+STATIC_PROXY_HOST=brd.superproxy.io
+STATIC_PROXY_PORT=33335
+STATIC_PROXY_USER=<username>
+STATIC_PROXY_PASSWORD=<password>
+
+INTERACTING_PROXY_HOST=brd.superproxy.io
+INTERACTING_PROXY_PORT=33335
+INTERACTING_PROXY_USER=<username>
+INTERACTING_PROXY_PASSWORD=<password>
 ```
 
 The MinIO server is used to store the data and emulate a remote S3 bucket. The `AWS_URL` key must be set to the URL of
 the MinIO server.
 MinIO has not to be configured for the production usage, since the data will be stored in a remote S3 bucket. In the latter case,
 please populate all the keys in the `.env` file with the correct values.
-
-In the `.env` file, you could also customize the `CHROME_DRIVER_VERSION` key (integer, default 131), which represents the
-version of the Chrome driver to be used by the Selenium scraper.
 
 ## Installation
 1. Clone the repository

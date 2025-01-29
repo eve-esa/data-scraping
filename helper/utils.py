@@ -301,14 +301,26 @@ def get_user_agent(include_mobile: bool = False) -> str:
     return random_ua
 
 
-def get_proxy_config() -> str:
+def get_static_proxy_config() -> str:
     """
-    This method integrates Bright Data's proxy service. It returns a string with the proxy configuration.
+    This method integrates an external provider of proxy service. It returns a string with the proxy configuration. It
+    returns a string with the configuration to pass to Selenium or Scrapy.
 
     Returns:
         str: The proxy configuration.
     """
-    return f"http://{os.getenv('PROXY_USER')}:{os.getenv('PROXY_PASSWORD')}@{os.getenv('PROXY_HOST')}:{os.getenv('PROXY_PORT')}"
+    return f"{os.getenv('STATIC_PROXY_USER')}:{os.getenv('STATIC_PROXY_PASSWORD')}@{os.getenv('STATIC_PROXY_HOST')}:{os.getenv('STATIC_PROXY_PORT')}"
+
+
+def get_interacting_proxy_config() -> str:
+    """
+    This method integrates an external provider of proxy service able to interact with the browser (no navigation). It
+    returns a string with the configuration to pass to the HTTP requests.
+
+    Returns:
+        str: The web unlocker configuration.
+    """
+    return f"{os.getenv('INTERACTING_PROXY_USER')}:{os.getenv('INTERACTING_PROXY_PASSWORD')}@{os.getenv('INTERACTING_PROXY_HOST')}:{os.getenv('INTERACTING_PROXY_PORT')}"
 
 
 def parse_google_drive_link(google_drive_link: str) -> Tuple[str, str]:

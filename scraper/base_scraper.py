@@ -62,17 +62,35 @@ class BaseScraper(ABC):
         return self
 
     def setup_driver(self):
-        self._driver = Driver(uc=True, locale_code="en", headless=self._config_model.headless)
+        from helper.utils import get_user_agent, get_static_proxy_config
+
+        self._driver = Driver(
+            browser="chrome",
+            uc=True,
+            locale_code="en",
+            headless=self._config_model.headless,
+            headless1=self._config_model.headless,
+            headless2=self._config_model.headless,
+            proxy=get_static_proxy_config(),
+            disable_cookies=False,
+            disable_gpu=True,
+            no_sandbox=True,
+            window_size="1920,1080",
+            window_position="0,0",
+            agent=get_user_agent(),
+            disable_ws=True,
+        )
 
     def shutdown_driver(self):
         self._driver.quit()
 
-    def _scrape_url(self, url: str, pause_time: int = 2) -> BeautifulSoup:
+    def _scrape_url(self, url: str, cookie_wait: int = 3, pause_time: int = 2) -> BeautifulSoup:
         """
         Scrape the URL using Selenium and BeautifulSoup.
 
         Args:
             url (str): url contains volume and issue number. Eg: https://www.mdpi.com/2072-4292/1/3
+            cookie_wait (int): time to wait for the cookie popup to appear
             pause_time (int): time to pause between scrolls
 
         Returns:
@@ -85,13 +103,13 @@ class BaseScraper(ABC):
         # Handle cookie popup only once, for the first request
         if not self._cookie_handled and self._config_model.cookie_selector:
             try:
-                cookie_button = WebDriverWait(self._driver, 5).until(
+                cookie_button = WebDriverWait(self._driver, cookie_wait).until(
                     EC.element_to_be_clickable((By.CSS_SELECTOR, self._config_model.cookie_selector))
                 )
                 self._driver.execute_script("arguments[0].click();", cookie_button)
                 self._cookie_handled = True
             except TimeoutException as e:
-                raise Exception(f"Cookie popup not found, perhaps due to anti-bot protection. Error: {e}")
+                self._logger.warning(f"Cookie popup not found. Error: {e}")
 
         # Scroll through the page to load all articles
         last_height = self._driver.execute_script("return document.body.scrollHeight")
