@@ -95,6 +95,20 @@ def discover_scrapers(base_package: str) -> Dict[str, Type[BaseScraper]]:
     return discovered_scrapers
 
 
+def run_scraper_process(scraper_obj: BaseScraper, config_model: BaseModel, log_queue: Queue, logger_name: str):
+    """
+    Wrapper function to run a scraper with logging configuration.
+
+    Args:
+        scraper_obj (BaseScraper): The scraper object to run.
+        config_model (BaseModel): The configuration model for the scraper.
+        log_queue (Queue): The logging queue.
+        logger_name (str): The name of the logger.
+    """
+    setup_worker_logging(log_queue, logger_name)
+    scraper_obj(config_model)
+
+
 def run_scrapers(
     discovered_scrapers: Dict[str, Type[BaseScraper]], config: Dict[str, Dict], log_file: str = "scraping.log"
 ):
@@ -106,21 +120,53 @@ def run_scrapers(
         config (Dict[str, Dict]): A dictionary of scraper names and their configurations.
         log_file (str): Path to the log file.
     """
+    # Create logging queue
+    log_queue = Queue()
+
     # Setup main process logger
     logger = setup_logger(__name__, log_file)
 
-    for name_scraper, class_type_scraper in discovered_scrapers.items():
-        config_scraper = config.get(name_scraper)
-        if config_scraper is None:
-            logger.error(f"Scraper {name_scraper} not found in configured scrapers")
-            continue
+    # Create and start listener
+    listener = QueueListener(log_queue, *logger.handlers, respect_handler_level=True)
+    listener.start()
 
-        scraper_obj = class_type_scraper()
-        config_model = scraper_obj.config_model_type(**config_scraper)
-        try:
-            scraper_obj(config_model)
-        except ValidationError as e:
-            logger.error(f"Error running scraper {name_scraper}: {e}")
+    try:
+        processes = []
+        for name_scraper, class_type_scraper in discovered_scrapers.items():
+            config_scraper = config.get(name_scraper)
+            if config_scraper is None:
+                logger.error(f"Scraper {name_scraper} not found in configured scrapers")
+                continue
+
+            scraper_obj = class_type_scraper()
+            try:
+                config_model = scraper_obj.config_model_type(**config_scraper)
+                process = Process(
+                    target=run_scraper_process,
+                    args=(scraper_obj, config_model, log_queue, __name__),
+                    name=name_scraper
+                )
+                process.start()
+                time.sleep(0.5)
+                processes.append(process)
+            except ValidationError as e:
+                logger.error(f"Error running scraper {name_scraper}: {e}")
+
+        # Wait for all processes to complete
+        for process in processes:
+            process.join()
+    finally:
+        # Ensure the queue is empty before stopping
+        while not log_queue.empty():
+            try:
+                record = log_queue.get_nowait()
+                logger.handle(record)
+            except queue.Empty:
+                break
+
+        listener.stop()
+        # Small delay to ensure all logs are processed
+        time.sleep(0.1)
 
 
 def remove_query_string_from_url(url: str | None = None) -> str | None:
