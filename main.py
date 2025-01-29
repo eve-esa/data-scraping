@@ -6,6 +6,10 @@ from helper.utils import read_json_file, discover_scrapers, run_scrapers
 
 
 def main(args):
+    # first of all, remove the scraping.log file
+    with open("scraping.log", "w") as f:
+        f.write("")
+
     scraper_config = read_json_file(CONFIG_PATH)
     scrapers = discover_scrapers("scraper")
 
