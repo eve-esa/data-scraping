@@ -148,8 +148,8 @@ class BaseScraper(ABC):
         # Get the fully rendered HTML
         return get_parsed_page_source(driver), driver
 
-    def _wait_for_page_load(self, driver: Remote):
-        WebDriverWait(driver, 20).until(
+    def _wait_for_page_load(self, driver: Remote, timeout: int | None = 20):
+        WebDriverWait(driver, timeout).until(
             lambda d: d.execute_script("return document.readyState") == "complete"
         )
 
