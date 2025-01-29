@@ -62,17 +62,18 @@ def is_json_serializable(data) -> bool:
         return False
 
 
-def discover_scrapers(base_package: str) -> Dict[str, Type[BaseScraper]]:
+def discover_scrapers(base_package: str, log_file: str = "scraping.log") -> Dict[str, Type[BaseScraper]]:
     """
     Find all scraper classes in the specified package and run them in separate threads.
 
     Args:
         base_package (str): The base package to search for scrapers.
+        log_file (str): Path to the log file.
 
     Returns:
         Dict[str, BaseScraper]: A dictionary of scraper names and their classes (i.e., the type).
     """
-    logger = setup_logger(__name__)
+    logger = setup_logger(__name__, log_file)
 
     package = importlib.import_module(base_package)
 
