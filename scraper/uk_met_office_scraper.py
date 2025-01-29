@@ -1,5 +1,6 @@
 from typing import List
 from bs4 import ResultSet, Tag
+from selenium.common import TimeoutException
 from selenium.webdriver import Remote
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
@@ -58,5 +59,5 @@ class UKMetOfficeScraper(BaseUrlPublisherScraper):
                 lambda x: "display: none" in loader.get_attribute("style")
             )
             return True
-        except:
+        except TimeoutException:
             return False
