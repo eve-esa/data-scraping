@@ -32,6 +32,10 @@ COPY Makefile .
 
 RUN pip install -U pip && pip install --no-cache-dir -r requirements.txt
 
+# Install ChromeDriver
+RUN seleniumbase get chromedriver
+ENV PATH="/usr/local/bin:${PATH}"
+
 COPY . .
 
 CMD ["tail", "-f", "/dev/null"]
