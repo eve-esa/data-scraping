@@ -1,3 +1,4 @@
+from abc import ABC
 from typing import List, Type, Dict
 from bs4 import Tag, ResultSet
 from selenium.webdriver.support.wait import WebDriverWait
@@ -7,7 +8,15 @@ from model.base_mapped_models import BaseMappedPaginationConfig
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
-from scraper.base_scraper import BaseMappedScraper
+from scraper.base_scraper import BaseMappedScraper, BaseScraper
+
+
+class IEEEMixin(BaseScraper, ABC):
+    def _wait_for_page_load(self, timeout: int | None = 20):
+        WebDriverWait(self._driver, timeout).until(
+            lambda d: d.execute_script("return document.readyState") == "complete"
+                      and not d.execute_script("return document.querySelector('i.fa-spinner')")
+        )
 
 
 class IEEEScraper(BaseMappedPublisherScraper):
@@ -19,7 +28,7 @@ class IEEEScraper(BaseMappedPublisherScraper):
         }
 
 
-class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedScraper):
+class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedScraper, IEEEMixin):
     @property
     def config_model_type(self) -> Type[BaseMappedPaginationConfig]:
         """
@@ -29,12 +38,6 @@ class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedScraper):
             Type[BaseMappedPaginationConfig]: The configuration model type
         """
         return BaseMappedPaginationConfig
-
-    def _wait_for_page_load(self):
-        WebDriverWait(self._driver, 20).until(
-            lambda d: d.execute_script("return document.readyState") == "complete"
-                      and not d.execute_script("return document.querySelector('i.fa-spinner')")
-        )
 
     def scrape(self) -> BasePaginationPublisherScrapeOutput | None:
         """
@@ -103,7 +106,7 @@ class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedScraper):
             return None
 
 
-class IEEESearchScraper(BasePaginationPublisherScraper, BaseMappedScraper):
+class IEEESearchScraper(BasePaginationPublisherScraper, BaseMappedScraper, IEEEMixin):
     @property
     def config_model_type(self) -> Type[BaseMappedPaginationConfig]:
         """
@@ -113,12 +116,6 @@ class IEEESearchScraper(BasePaginationPublisherScraper, BaseMappedScraper):
             Type[BaseMappedPaginationConfig]: The configuration model type
         """
         return BaseMappedPaginationConfig
-
-    def _wait_for_page_load(self):
-        WebDriverWait(self._driver, 20).until(
-            lambda d: d.execute_script("return document.readyState") == "complete"
-                      and not d.execute_script("return document.querySelector('i.fa-spinner')")
-        )
 
     def scrape(self) -> BasePaginationPublisherScrapeOutput | None:
         """

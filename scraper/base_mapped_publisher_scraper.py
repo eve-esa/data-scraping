@@ -36,7 +36,7 @@ class BaseMappedPublisherScraper(BaseScraper):
         """
         return BaseMappedConfig
 
-    def scrape(self) -> Dict[str, List[str] | Dict[str, List[str]]]:
+    def scrape(self) -> Dict[str, List[str] | Dict[str, List[str]]] | None:
         """
         Scrape the resources links.
 
@@ -53,7 +53,7 @@ class BaseMappedPublisherScraper(BaseScraper):
                 self._bucket_keys[source.name] = f"{self.bucket_key}/{source.config.bucket_key or ''}".rstrip("/")
                 self._file_extensions[source.name] = source.config.file_extension or self.file_extension
 
-        return links
+        return links if links else None
 
     def post_process(self, scrape_output: Dict[str, List[str] | Dict[str, List[str]]]) -> Dict[str, List[str]]:
         """
