@@ -15,7 +15,8 @@ MINIO_URL=http://minio:9100
 ```
 
 The MinIO server is used to store the data and emulate a remote S3 bucket. The `AWS_URL` key must be set to the URL of
-the MinIO server.
+the MinIO server. 
+When in production mode please remove the `AWS_URL` from the configuration. You may have to rebuild your Docker image for the changes to take effect.
 MinIO has not to be configured for the production usage, since the data will be stored in a remote S3 bucket. In the latter case,
 please populate all the keys in the `.env` file with the correct values.
 
