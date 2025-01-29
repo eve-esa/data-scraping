@@ -28,4 +28,4 @@ sync-requirements: ## Update the local virtual environment with the latest requi
 	$(PYTHON) -m pip install --no-cache-dir -r requirements.txt
 
 run:  ## Run the application
-	docker exec -it $(shell docker ps -qf "name=app") /bin/sh -c "python -m main ${args}"
+	docker exec $(shell docker ps -qf "name=app") /bin/sh -c "python -m main ${args}"
