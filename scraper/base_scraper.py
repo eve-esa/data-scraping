@@ -97,7 +97,7 @@ class BaseScraper(ABC):
             BeautifulSoup: the fully rendered HTML of the URL.
         """
 
-        self._driver.get(url)
+        self._driver.get(url.replace('"', '\\\"'))
         self._wait_for_page_load()
 
         # Handle cookie popup only once, for the first request
