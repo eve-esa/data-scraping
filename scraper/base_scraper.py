@@ -13,6 +13,7 @@ import time
 from helper.constants import OUTPUT_FOLDER, ROTATE_USER_AGENT_EVERY
 from helper.logger import setup_logger
 from model.base_models import BaseConfig
+from service.resource_manager import ResourceManager, Resource
 from service.storage import S3Storage
 
 
@@ -20,13 +21,14 @@ class BaseScraper(ABC):
     def __init__(self) -> None:
         self._driver: Chrome | None = None
 
-        self._logger = setup_logger(self.__class__.__name__)
         self._cookie_handled = False
         self._num_requests = 0
         self._config_model = None
         self._download_folder_path = None
 
+        self._logger = setup_logger(self.__class__.__name__)
         self._s3_client = S3Storage()
+        self._resource_manager = ResourceManager()
 
     def __call__(self, config_model: BaseConfig):
         name_scraper = self.__class__.__name__
@@ -208,7 +210,7 @@ class BaseScraper(ABC):
         """
         return BeautifulSoup(self._driver.page_source, "html.parser")
 
-    def upload_to_s3(self, sources_links: Dict[str, List[str]] | List[str], **kwargs) -> bool:
+    def upload_to_s3(self, sources_links: Dict[str, List[str]] | List[str]) -> bool:
         """
         Upload the source files to S3.
 
@@ -222,44 +224,41 @@ class BaseScraper(ABC):
 
         all_done = True
         for link in sources_links:
-            result = self._s3_client.upload(self.bucket_key, link, self.file_extension)
-            if not result:
-                all_done = False
+            current_resource = self._resource_manager.get_by_url(
+                self.__class__.__name__.replace("Scraper", ""),
+                self._config_model.bucket_key,
+                link,
+                self._config_model.file_extension
+            )
+            if not self._check_valid_resource(current_resource, link):
+                continue
 
-            # Sleep after each successful download to avoid overwhelming the server
-            time.sleep(random.uniform(2, 5))
+            if not self._upload_resource_to_s3_and_store_to_db(current_resource):
+                all_done = False
 
         return all_done
 
-    @property
-    def base_url(self) -> str:
-        """
-        Return the base URL of the publisher.
+    def _check_valid_resource(self, resource: Resource, resource_name: str) -> bool:
+        if resource.id:
+            self._logger.warning(f"Resource {resource_name} already exists in the database, skipping upload.")
+            return False
+        if not resource.content:
+            self._logger.warning(f"We were unable to retrieve the content from {resource_name}, skipping upload.")
+            return False
+        return True
 
-        Returns:
-            str: The base URL of the publisher
-        """
-        return self._config_model.base_url
+    def _upload_resource_to_s3_and_store_to_db(self, resource: Resource) -> bool:
+        result = self._s3_client.upload_content(resource)
+        all_done = True
+        if not result:
+            all_done = False
+        else:
+            self._resource_manager.store(resource)
 
-    @property
-    def bucket_key(self) -> str:
-        """
-        Return the bucket key of the publisher.
+        # Sleep after each successful download to avoid overwhelming the server
+        time.sleep(random.uniform(2, 5))
 
-        Returns:
-            str: The bucket key of the publisher
-        """
-        return self._config_model.bucket_key
-
-    @property
-    def file_extension(self) -> str:
-        """
-        Return the file extension linked to the publisher.
-
-        Returns:
-            str: The file extension linked to the publisher
-        """
-        return self._config_model.file_extension
+        return all_done
 
     @abstractmethod
     def scrape(self) -> Any | None:

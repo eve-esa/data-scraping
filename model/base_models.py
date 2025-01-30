@@ -9,10 +9,10 @@ class ReadMoreButton(BaseModel):
 
 class Config(ABC, BaseModel):
     bucket_key: str
+    file_extension: str | None = "pdf"
 
 
 class BaseConfig(Config, ABC):
     base_url: str | None = None
     cookie_selector: str | None = None
-    file_extension: str | None = ".pdf"
     read_more_button: ReadMoreButton | None = None

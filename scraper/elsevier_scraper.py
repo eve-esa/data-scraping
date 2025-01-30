@@ -118,7 +118,9 @@ class ElsevierScraper(BaseScraper):
 
             # find the element with tag "a", class "anchor" and attribute `navname` equal to "prev-next-issue"
             next_issue_tag = scraper.find("a", class_="anchor", navname="prev-next-issue")
-            next_issue_link = get_scraped_url(next_issue_tag, self.base_url) if next_issue_tag.get("href") else None
+            next_issue_link = get_scraped_url(
+                next_issue_tag, self._config_model.base_url
+            ) if next_issue_tag.get("href") else None
 
             # check for the presence of tags "a", class "pdf-download" with attribute `href` containing ".pdf"
             pdf_tags = scraper.find_all(
@@ -143,7 +145,9 @@ class ElsevierScraper(BaseScraper):
             self.__wait_end_download()
 
             # unpack zip files before uploading
-            unpack_zip_files(self._download_folder_path)
+            if not unpack_zip_files(self._download_folder_path):
+                self._logger.warning("No zip files found or timeout reached")
+                return ElsevierScrapeIssueOutput(was_scraped=False, next_issue_url=next_issue_link)
 
             return ElsevierScrapeIssueOutput(was_scraped=True, next_issue_url=next_issue_link)
         except Exception as e:
@@ -168,7 +172,7 @@ class ElsevierScraper(BaseScraper):
 
             time.sleep(0.1)
 
-    def upload_to_s3(self, sources_links: List[str], **kwargs) -> bool:
+    def upload_to_s3(self, sources_links: List[str]) -> bool:
         """
         Upload the source files to S3.
 
@@ -181,19 +185,22 @@ class ElsevierScraper(BaseScraper):
         self._logger.debug("Uploading files to S3")
 
         all_done = True
-
-        # upload files to S3
         for file in os.listdir(self._download_folder_path):
-            if not os.path.isfile(os.path.join(self._download_folder_path, file)):
+            if not file.endswith(self._config_model.file_extension):
                 continue
 
-            if not file.endswith(self.file_extension):
+            file_path = os.path.join(self._download_folder_path, file)
+            if not os.path.isfile(file_path):
                 continue
 
-            with open(os.path.join(self._download_folder_path, file), "rb") as f:
-                result = self._s3_client.upload_content(self.bucket_key, file, f.read())
-                if not result:
-                    all_done = False
+            current_resource = self._resource_manager.get_by_content(
+                self.__class__.__name__.replace("Scraper", ""), self._config_model.bucket_key, file_path
+            )
+            if not self._check_valid_resource(current_resource, file):
+                continue
+
+            if not self._upload_resource_to_s3_and_store_to_db(current_resource):
+                all_done = False
 
             # Sleep after each successful download to avoid overwhelming the server
             time.sleep(random.uniform(2, 5))

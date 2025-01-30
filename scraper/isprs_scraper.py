@@ -23,7 +23,7 @@ class ISPRSScraper(BaseScraper):
                 )]
                 pdf_tags.extend(self.__scrape_archives(archive_links))
 
-                proceedings_links = [get_scraped_url(tag, self.base_url) for tag in scraper.find_all(
+                proceedings_links = [get_scraped_url(tag, self._config_model.base_url) for tag in scraper.find_all(
                     "a", href=lambda href: href and "www.isprs.org" in href and "proceedings" in href
                 )]
                 pdf_tags.extend(self.__scrape_proceedings(proceedings_links))

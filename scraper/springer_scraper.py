@@ -3,7 +3,7 @@ from bs4 import ResultSet, Tag
 from selenium.webdriver.common.by import By
 
 from helper.utils import get_scraped_url
-from model.base_mapped_models import BaseMappedUrlSource, BaseMappedPaginationConfig
+from model.base_mapped_models import BaseMappedUrlSource, BaseMappedPaginationConfig, BaseMappedUrlConfig
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
@@ -21,6 +21,16 @@ class SpringerScraper(BaseMappedPublisherScraper):
 
 
 class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
+    @property
+    def config_model_type(self) -> Type[BaseMappedUrlConfig]:
+        """
+        Return the configuration model type.
+
+        Returns:
+            Type[BaseMappedUrlConfig]: The configuration model type
+        """
+        return BaseMappedUrlConfig
+
     def _scrape_journal(self, source: BaseMappedUrlSource) -> List[Tag] | None:
         """
         Scrape all articles of a journal.
@@ -53,12 +63,14 @@ class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
         try:
             # For each tag of articles previously collected, scrape the article
             pdf_tag_list = [
-                tag for tag in (
-                    self._scrape_article(
-                        BaseMappedUrlSource(url=get_scraped_url(tag, self.base_url), type=str(SourceType.ARTICLE))
-                    )
+                tag
+                for tag in (
+                    self._scrape_article(BaseMappedUrlSource(
+                        url=get_scraped_url(tag, self._config_model.base_url), type=str(SourceType.ARTICLE)
+                    ))
                     for tag in article_tag_list
-                ) if tag
+                )
+                if tag
             ]
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
 
@@ -135,7 +147,9 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedScra
         for idx, source in enumerate(self._config_model.sources):
             pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
 
-        return {"Springer": [get_scraped_url(tag, self.base_url) for tag in pdf_tags]} if pdf_tags else None
+        return {"Springer": [
+            get_scraped_url(tag, self._config_model.base_url) for tag in pdf_tags
+        ]} if pdf_tags else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> ResultSet | List[Tag]:
         """
@@ -180,7 +194,9 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedScra
             )
 
             scrapers = [
-                self._scrape_url(get_scraped_url(Tag(name="a", attrs={"href": tag.get_attribute("href")}), self.base_url))
+                self._scrape_url(get_scraped_url(
+                    Tag(name="a", attrs={"href": tag.get_attribute("href")}), self._config_model.base_url
+                ))
                 for tag in open_access_article_tag_list
             ]
 

@@ -12,6 +12,8 @@ AWS_SECRET_KEY=minio1234
 AWS_BUCKET_NAME=esa-eve
 
 MINIO_URL=http://minio:9100
+
+DB_NAME=esa_eve
 ```
 
 The MinIO server is used to store the data and emulate a remote S3 bucket. The `AWS_URL` key must be set to the URL of

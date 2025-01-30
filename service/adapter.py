@@ -1,4 +1,4 @@
-from typing import Any, Type, List
+from typing import Any, Type, List, Dict
 
 from model.base_mapped_models import BaseMappedSourceConfig
 from scraper.base_scraper import BaseScraper
@@ -29,12 +29,17 @@ class ScrapeAdapter:
         scraper = self.__scraper_type()
         return scraper.set_config_model(self.__config_model).post_process(scrape_output)
 
-    def upload_to_s3(self, scrape_output: List[str], bucket_key: str, file_extension: str) -> bool:
+    def upload_to_s3(
+        self, scrape_output: List[str] | Dict[str, List[str]], bucket_key: str, file_extension: str
+    ) -> bool:
         from scraper.direct_links_scraper import DirectLinksScraper
+        if self.__config_model.bucket_key is None:
+            self.__config_model.bucket_key = bucket_key
+        if self.__config_model.file_extension is None:
+            self.__config_model.file_extension = file_extension
 
         if self.__scraper_type is not None:
-            scraper = self.__scraper_type()
-            return scraper.set_config_model(self.__config_model).upload_to_s3(scrape_output)
-
-        scraper = DirectLinksScraper()
-        return scraper.upload_to_s3(scrape_output, bucket_key=bucket_key, file_extension=file_extension)
+            scraper = self.__scraper_type().set_config_model(self.__config_model)
+        else:
+            scraper = DirectLinksScraper()
+        return scraper.upload_to_s3(scrape_output)

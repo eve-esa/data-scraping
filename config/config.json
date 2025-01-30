@@ -521,7 +521,7 @@
     "SeosScraper": {
         "bucket_key": "raw_data/seos",
         "base_url": "https://seos-project.eu",
-        "file_extension": ".html",
+        "file_extension": "html",
         "sources": [
             {
                 "url": "https://seos-project.eu/remotesensing/remotesensing-c00-p02.html",
@@ -903,7 +903,7 @@
                 "config": {
                     "base_url": "https://earth.esa.int/",
                     "cookie_selector": "div#__next > div.fixed.bottom-0.left-0.right-0.bg-brand-bg-darker.text-white.font-esa > div.mx-auto.p-8.flex.flex-col > div.pt-4.flex.flex-col.gap-8.items-center.justify-center > button.p-1.uppercase.border.transition-colors",
-                    "file_extension": ".html",
+                    "file_extension": "html",
                     "read_more_button": {
                         "selector": "button",
                         "text": "READ MORE"
@@ -921,7 +921,7 @@
             {
                 "name": "ESA Newcomers Earth Observation Guide",
                 "config": {
-                    "file_extension": ".html",
+                    "file_extension": "html",
                     "urls": [
                         "https://business.esa.int/newcomers-earth-observation-guide"
                     ]
@@ -933,7 +933,7 @@
                 "config": {
                     "base_url": "https://www.eoportal.org/",
                     "cookie_selector": "div#__next > main > div.cy-page-content > div.cy-cookie-popup.css-1pa6g3f > div.css-1r4dq04 > button.chakra-button.css-122lbyf",
-                    "file_extension": ".html",
+                    "file_extension": "html",
                     "sources": [
                         {
                             "url": "https://www.eoportal.org/satellite-missions?Mission+type=EO",
@@ -978,7 +978,7 @@
                 "scraper": "EsaUrlScraper",
                 "config": {
                     "base_url": "https://database.eohandbook.com/database/",
-                    "file_extension": ".html",
+                    "file_extension": "html",
                     "sources": [
                         {
                             "url": "https://database.eohandbook.com/database/instrumentindex.aspx",
@@ -998,7 +998,7 @@
                 "scraper": "EsaUrlScraper",
                 "config": {
                     "base_url": "https://opensciencedata.esa.int/",
-                    "file_extension": ".html",
+                    "file_extension": "html",
                     "sources": [
                         {
                             "url": "https://opensciencedata.esa.int/search",
@@ -1068,7 +1068,7 @@
                 "scraper": "NASAEarthDataWikiScraper",
                 "config": {
                     "base_url": "https://wiki.earthdata.nasa.gov/",
-                    "file_extension": ".html",
+                    "file_extension": "html",
                     "sources": [
                         {
                             "url": "https://wiki.earthdata.nasa.gov/display/CMR/Common+Metadata+Repository+Home",
@@ -1107,7 +1107,7 @@
                 "scraper": "NASAEarthDataScraper",
                 "config": {
                     "base_url": "https://www.earthdata.nasa.gov",
-                    "file_extension": ".html",
+                    "file_extension": "html",
                     "sources": [
                         {
                             "landing_page_url": "https://www.earthdata.nasa.gov/topics/glossary?%2Ftopics%2Fglossary%2Fall=&page={page_number}",
@@ -1148,7 +1148,7 @@
             {
                 "name": "NASA EO Glossary",
                 "config": {
-                    "file_extension": ".html",
+                    "file_extension": "html",
                     "urls": [
                         "https://earthobservatory.nasa.gov/glossary/all"
                     ]
@@ -1175,7 +1175,7 @@
     "OpenNightLightsScraper": {
         "bucket_key": "raw_data/open_night_lights_scraper",
         "base_url": "https://worldbank.github.io/OpenNightLights/",
-        "file_extension": ".html",
+        "file_extension": "html",
         "sources": [
             {
                 "url": "https://worldbank.github.io/OpenNightLights/welcome.html",
@@ -1186,7 +1186,7 @@
     "WikipediaScraper": {
         "bucket_key": "raw_data/wikipedia",
         "base_url": "https://en.wikipedia.org/",
-        "file_extension": ".html",
+        "file_extension": "html",
         "sources": [
             {
                 "url": "https://en.wikipedia.org/wiki/Category:Earth_observation_satellites",
@@ -1215,7 +1215,7 @@
     "JAXAScraper": {
         "bucket_key": "raw_data/jaxa",
         "base_url": "https://earth.jaxa.jp/en/eo-knowledge",
-        "file_extension": ".html",
+        "file_extension": "html",
         "sources": [
             {
                 "url": "https://earth.jaxa.jp/en/eo-knowledge/index.html",
@@ -1282,7 +1282,7 @@
         ]
     },
     "DirectLinksScraper": {
-        "bucket_key": "raw_data",
+        "bucket_key": "raw_data/miscellaneous",
         "sources": [
             {
                 "name": "Servir",

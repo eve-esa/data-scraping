@@ -5,6 +5,7 @@ from bs4 import Tag, ResultSet
 from helper.utils import get_scraped_url
 from model.base_mapped_models import BaseMappedUrlSource, BaseMappedPaginationConfig, BaseMappedCrawlingConfig
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
+from model.base_url_publisher_models import BaseUrlPublisherConfig
 from scraper.base_crawling_scraper import BaseCrawlingScraper
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
@@ -26,6 +27,16 @@ class NASAScraper(BaseMappedPublisherScraper):
 
 
 class NASAEarthDataWikiScraper(BaseUrlPublisherScraper, BaseMappedScraper):
+    @property
+    def config_model_type(self) -> Type[BaseUrlPublisherConfig]:
+        """
+        Return the configuration model type.
+
+        Returns:
+            Type[BaseUrlPublisherConfig]: The configuration model type
+        """
+        return BaseUrlPublisherConfig
+
     def _scrape_journal(self, source: BaseMappedUrlSource) -> ResultSet | List[Tag] | None:
         pass
 
@@ -81,7 +92,9 @@ class NASANTRSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
             self.__page_size = source.page_size
             pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
 
-        return {"NASA NTRS": [get_scraped_url(tag, self.base_url) for tag in pdf_tags]} if pdf_tags else None
+        return {"NASA NTRS": [
+            get_scraped_url(tag, self._config_model.base_url) for tag in pdf_tags
+        ]} if pdf_tags else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> ResultSet | List[Tag] | None:
         self._logger.info(f"Processing Landing Page {landing_page_url}")
@@ -112,7 +125,9 @@ class NASAEOSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
         for idx, source in enumerate(self._config_model.sources):
             pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
 
-        return {"NASA EOS": [get_scraped_url(tag, self.base_url) for tag in pdf_tags]} if pdf_tags else None
+        return {"NASA EOS": [
+            get_scraped_url(tag, self._config_model.base_url) for tag in pdf_tags
+        ]} if pdf_tags else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> ResultSet | List[Tag] | None:
         self._logger.info(f"Processing Landing Page {landing_page_url}")
@@ -147,7 +162,9 @@ class NASAEarthDataScraper(BasePaginationPublisherScraper, BaseMappedScraper):
             self.__href = source.href
             html_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
 
-        return {"NASA EarthData": [get_scraped_url(tag, self.base_url) for tag in html_tags]} if html_tags else None
+        return {"NASA EarthData": [
+            get_scraped_url(tag, self._config_model.base_url) for tag in html_tags
+        ]} if html_tags else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> ResultSet | List[Tag] | None:
         self._logger.info(f"Processing Landing Page {landing_page_url}")
@@ -174,14 +191,16 @@ class NASAEarthDataPDFScraper(NASAEarthDataScraper):
             self.__href = source.href
             pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
 
-        return {"NASA EarthData PDF": [get_scraped_url(tag, self.base_url) for tag in pdf_tags]} if pdf_tags else None
+        return {"NASA EarthData PDF": [
+            get_scraped_url(tag, self._config_model.base_url) for tag in pdf_tags
+        ]} if pdf_tags else None
 
     def _scrape_page(self, url: str) -> ResultSet | List[Tag] | None:
         try:
             scraper = self._scrape_url(url)
 
             html_links = [
-                get_scraped_url(tag, self.base_url)
+                get_scraped_url(tag, self._config_model.base_url)
                 for tag in scraper.find_all("a", href=lambda href: href and self.__href in href, hreflang="en")
             ]
 

@@ -99,7 +99,7 @@ class AMSScraper(BaseIterativePublisherScraper):
             IterativePublisherScrapeIssueOutput | None: A list of PDF links found in the issue, or None if something went wrong.
         """
         issue_url = os.path.join(
-            self.base_url,
+            self._config_model.base_url,
             f"view/journals/{journal.code}/{volume_num}/{issue_num}",
             f"{journal.code}.{volume_num}.issue-{issue_num}.xml"
         )
@@ -120,7 +120,7 @@ class AMSScraper(BaseIterativePublisherScraper):
                 )
                 if (link := get_link_for_accessible_article(
                     tag,
-                    self.base_url,
+                    self._config_model.base_url,
                     "../../preceding-sibling::div/div[contains(@class, 'ico-access-open') or contains(@class, 'ico-access-free')]"
                 ))
             ]
@@ -149,7 +149,7 @@ class AMSScraper(BaseIterativePublisherScraper):
 
             pdf_tag = scraper.find("a", href=True, class_="pdf-download")
             if pdf_tag:
-                return get_scraped_url(pdf_tag, self.base_url)
+                return get_scraped_url(pdf_tag, self._config_model.base_url)
 
             return None
         except Exception as e:

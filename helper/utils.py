@@ -210,28 +210,6 @@ def get_scraped_url(tag: Tag, base_url: str, with_querystring: bool | None = Fal
     return result if with_querystring else remove_query_string_from_url(result)
 
 
-def get_filename(url: str, file_extension: str) -> str:
-    """
-    Get the filename from the URL.
-
-    Args:
-        url (str): The URL of the file.
-        file_extension (str): The type of the file.
-
-    Returns:
-        str: The final name of the file.
-    """
-    parsed = urlparse(url)
-
-    path = parsed.path.lstrip("/")
-    # if the `path` contains the file extension, return the last part of the URL
-    if file_extension in path:
-        return path.split("/")[-1]
-
-    # otherwise, replace `/` with `_` and add the file extension
-    return path.replace("/", "_") + file_extension
-
-
 def get_unique(pdf_links: List[str]) -> List[str]:
     """
     Get the unique PDF links.
@@ -245,7 +223,7 @@ def get_unique(pdf_links: List[str]) -> List[str]:
     return list(set(pdf_links))
 
 
-def unpack_zip_files(directory: str):
+def unpack_zip_files(directory: str) -> bool:
     """
     Unpack the ZIP files in the directory.
 
@@ -254,7 +232,7 @@ def unpack_zip_files(directory: str):
     """
     zip_files = [f for f in os.listdir(directory) if f.endswith(".zip")]
     if not zip_files:
-        return
+        return False
 
     # Unpack the ZIP files
     for zip_file in zip_files:
@@ -264,6 +242,7 @@ def unpack_zip_files(directory: str):
             zip_ref.extractall(directory)
         # Remove the ZIP file
         os.remove(zip_file_path)
+    return True
 
 
 def get_link_for_accessible_article(article_tag: WebElement, base_url: str, xpath: str) -> str | None:

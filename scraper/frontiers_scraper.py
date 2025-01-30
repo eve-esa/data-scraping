@@ -1,12 +1,22 @@
-from typing import List
+from typing import List, Type
 from bs4 import Tag, ResultSet
 
 from helper.utils import get_scraped_url
-from model.base_url_publisher_models import BaseUrlPublisherSource, SourceType
+from model.base_url_publisher_models import BaseUrlPublisherSource, SourceType, BaseUrlPublisherConfig
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
 
 
 class FrontiersScraper(BaseUrlPublisherScraper):
+    @property
+    def config_model_type(self) -> Type[BaseUrlPublisherConfig]:
+        """
+        Return the configuration model type.
+
+        Returns:
+            Type[BaseUrlPublisherConfig]: The configuration model type
+        """
+        return BaseUrlPublisherConfig
+
     def _scrape_journal(self, source: BaseUrlPublisherSource) -> ResultSet | List[Tag] | None:
         """
         Scrape all articles of a journal.
@@ -41,12 +51,14 @@ class FrontiersScraper(BaseUrlPublisherScraper):
 
             # For each tag of articles previously collected, scrape the article
             pdf_tag_list = [
-                tag for tag in (
-                    self._scrape_article(
-                        BaseUrlPublisherSource(url=get_scraped_url(tag, self.base_url), type=str(SourceType.ARTICLE))
-                    )
+                tag
+                for tag in (
+                    self._scrape_article(BaseUrlPublisherSource(
+                        url=get_scraped_url(tag, self._config_model.base_url), type=str(SourceType.ARTICLE)
+                    ))
                     for tag in article_tag_list
-                ) if tag
+                )
+                if tag
             ]
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
 

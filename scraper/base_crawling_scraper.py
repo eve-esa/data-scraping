@@ -38,28 +38,31 @@ class BaseCrawlingScraper(BaseScraper):
         # log the end of the crawling process
         self._logger.info("Crawling process completed successfully.")
 
-        return {source.name: source.url for source in model.sources}
+        return {source.name: source.url for source in self._config_model.sources}
 
     def post_process(self, scrape_output: BaseCrawlingScraperOutput) -> List[str]:
         return list(scrape_output.values())
 
-    def upload_to_s3(self, sources_links: List[str], **kwargs) -> bool:
+    def upload_to_s3(self, sources_links: List[str]) -> bool:
         self._logger.debug("Uploading files to S3")
 
         all_done = True
-
-        # upload files to S3
         for file in os.listdir(self.crawling_folder_path):
-            if not os.path.isfile(os.path.join(self.crawling_folder_path, file)):
+            if not file.endswith(self._config_model.file_extension):
                 continue
 
-            if not file.endswith(self.file_extension):
+            file_path = os.path.join(self.crawling_folder_path, file)
+            if not os.path.isfile(file_path):
                 continue
 
-            with open(os.path.join(self.crawling_folder_path, file), "rb") as f:
-                result = self._s3_client.upload_content(self.bucket_key, file, f.read())
-                if not result:
-                    all_done = False
+            current_resource = self._resource_manager.get_by_content(
+                self.__class__.__name__.replace("Scraper", ""), self._config_model.bucket_key, file_path
+            )
+            if not self._check_valid_resource(current_resource, file):
+                continue
+
+            if not self._upload_resource_to_s3_and_store_to_db(current_resource):
+                all_done = False
 
             # Sleep after each successful download to avoid overwhelming the server
             time.sleep(random.uniform(2, 5))
