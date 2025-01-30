@@ -178,20 +178,17 @@ class ElsevierScraper(BaseScraper):
 
         # upload files to S3
         for file in os.listdir(self._download_folder_path):
-            zip_path = os.path.join(self._download_folder_path, file)
-            if not os.path.isfile(zip_path):
+            file_path = os.path.join(self._download_folder_path, file)
+            if not os.path.isfile(file_path):
                 continue
 
             if not file.endswith(self.file_extension):
                 continue
 
-            with open(zip_path, "rb") as f:
+            with open(file_path, "rb") as f:
                 result = self._s3_client.upload_content(self.bucket_key, file, f.read())
                 if not result:
                     all_done = False
-
-            # remove the zip file
-            os.remove(zip_path)
 
             # Sleep after each successful download to avoid overwhelming the server
             time.sleep(random.uniform(2, 5))

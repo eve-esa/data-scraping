@@ -247,7 +247,7 @@ def get_unique(pdf_links: List[str]) -> List[str]:
     return list(set(pdf_links))
 
 
-def unpack_zip_files(directory: str):
+def unpack_zip_files(directory: str) -> bool:
     """
     Unpack the ZIP files in the directory.
 
@@ -256,7 +256,7 @@ def unpack_zip_files(directory: str):
     """
     zip_files = [f for f in os.listdir(directory) if f.endswith(".zip")]
     if not zip_files:
-        return
+        return False
 
     # Unpack the ZIP files
     for zip_file in zip_files:
@@ -266,6 +266,7 @@ def unpack_zip_files(directory: str):
             zip_ref.extractall(directory)
         # Remove the ZIP file
         os.remove(zip_file_path)
+    return True
 
 
 def get_link_for_accessible_article(article_tag: WebElement, base_url: str, xpath: str) -> str | None:
