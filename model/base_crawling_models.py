@@ -10,7 +10,7 @@ class BaseCrawlingSource(BaseModel):
 
 
 class BaseCrawlingConfig(BaseConfig):
-    file_extension: str | None = ".html"
+    file_extension: str | None = "html"
     sources: List[BaseCrawlingSource]
 
 

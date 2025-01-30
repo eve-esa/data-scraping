@@ -1,23 +1,13 @@
 from abc import abstractmethod
-from typing import List, Type
+from typing import List
 from bs4 import ResultSet, Tag
 
 from helper.utils import get_scraped_url, get_unique
-from model.base_url_publisher_models import BaseUrlPublisherConfig, BaseUrlPublisherSource, SourceType
+from model.base_url_publisher_models import BaseUrlPublisherSource, SourceType
 from scraper.base_scraper import BaseScraper
 
 
 class BaseUrlPublisherScraper(BaseScraper):
-    @property
-    def config_model_type(self) -> Type[BaseUrlPublisherConfig]:
-        """
-        Return the configuration model type.
-
-        Returns:
-            Type[BaseUrlPublisherConfig]: The configuration model type
-        """
-        return BaseUrlPublisherConfig
-
     def scrape(self) -> ResultSet | List[Tag] | None:
         """
         Scrape the source URLs of for PDF links.
@@ -52,7 +42,7 @@ class BaseUrlPublisherScraper(BaseScraper):
         Returns:
             List[str]: A list of strings containing the PDF links
         """
-        return get_unique([get_scraped_url(tag, self.base_url) for tag in scrape_output])
+        return get_unique([get_scraped_url(tag, self._config_model.base_url) for tag in scrape_output])
 
     @abstractmethod
     def _scrape_journal(self, source: BaseUrlPublisherSource) -> ResultSet | List[Tag] | None:

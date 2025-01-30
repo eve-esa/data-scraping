@@ -1,12 +1,22 @@
-from typing import List
+from typing import List, Type
 from bs4 import Tag, ResultSet
 
 from helper.utils import get_scraped_url
-from model.base_url_publisher_models import BaseUrlPublisherSource, SourceType
+from model.base_url_publisher_models import BaseUrlPublisherSource, SourceType, BaseUrlPublisherConfig
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
 
 
 class EOGEScraper(BaseUrlPublisherScraper):
+    @property
+    def config_model_type(self) -> Type[BaseUrlPublisherConfig]:
+        """
+        Return the configuration model type.
+
+        Returns:
+            Type[BaseUrlPublisherConfig]: The configuration model type
+        """
+        return BaseUrlPublisherConfig
+
     def _scrape_journal(self, source: BaseUrlPublisherSource) -> List[Tag] | None:
         """
         Scrape all articles of a journal.
@@ -44,7 +54,7 @@ class EOGEScraper(BaseUrlPublisherScraper):
                 tag
                 for tags in (
                     self._scrape_issue_or_collection(BaseUrlPublisherSource(
-                        url=get_scraped_url(tag, self.base_url), type=str(SourceType.ISSUE_OR_COLLECTION)
+                        url=get_scraped_url(tag, self._config_model.base_url), type=str(SourceType.ISSUE_OR_COLLECTION)
                     ))
                     for tag in issues_tag_list
                 )

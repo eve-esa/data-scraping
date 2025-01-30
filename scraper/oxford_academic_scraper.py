@@ -75,7 +75,7 @@ class OxfordAcademicScraper(BaseIterativePublisherScraper):
         Returns:
             IterativePublisherScrapeIssueOutput | None: A list of PDF links found in the issue, or None is something went wrong.
         """
-        issue_url = os.path.join(self.base_url, journal.code, "issue", str(volume_num), str(issue_num))
+        issue_url = os.path.join(self._config_model.base_url, journal.code, "issue", str(volume_num), str(issue_num))
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
         try:
@@ -88,7 +88,7 @@ class OxfordAcademicScraper(BaseIterativePublisherScraper):
             pdf_links = [
                 pdf_link
                 for pdf_link in
-                map(lambda tag: self._scrape_article(get_scraped_url(tag, self.base_url)), tags)
+                map(lambda tag: self._scrape_article(get_scraped_url(tag, self._config_model.base_url)), tags)
                 if pdf_link
             ]
 
@@ -116,7 +116,7 @@ class OxfordAcademicScraper(BaseIterativePublisherScraper):
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             pdf_tag = scraper.find("a", href=lambda href: href and ".pdf" in href, class_="al-link pdf article-pdfLink")
             if pdf_tag:
-                return get_scraped_url(pdf_tag, self.base_url)
+                return get_scraped_url(pdf_tag, self._config_model.base_url)
 
             return None
         except Exception as e:

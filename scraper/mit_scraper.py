@@ -1,12 +1,22 @@
-from typing import List
+from typing import List, Type
 from bs4 import ResultSet, Tag
 
 from helper.utils import get_scraped_url
-from model.base_url_publisher_models import BaseUrlPublisherSource
+from model.base_url_publisher_models import BaseUrlPublisherSource, BaseUrlPublisherConfig
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
 
 
 class MITScraper(BaseUrlPublisherScraper):
+    @property
+    def config_model_type(self) -> Type[BaseUrlPublisherConfig]:
+        """
+        Return the configuration model type.
+
+        Returns:
+            Type[BaseUrlPublisherConfig]: The configuration model type
+        """
+        return BaseUrlPublisherConfig
+
     def _scrape_journal(self, source: BaseUrlPublisherSource) -> ResultSet | List[Tag] | None:
         pass
 
@@ -20,7 +30,7 @@ class MITScraper(BaseUrlPublisherScraper):
                 pdf_tag for tag in scraper.find_all(
                     "a", href=lambda href: href and "/courses/" in href and "/resources/earthsurface_" in href
                 )
-                if (pdf_tag := self._scrape_url(get_scraped_url(tag, self.base_url)).find(
+                if (pdf_tag := self._scrape_url(get_scraped_url(tag, self._config_model.base_url)).find(
                     "a", href=lambda href: href and ".pdf" in href, class_="download-file"
                 ))
             ]

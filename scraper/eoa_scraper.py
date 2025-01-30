@@ -1,11 +1,10 @@
 import random
 import time
 from typing import Type, List
-import requests
 from bs4 import Tag
 from selenium.webdriver.common.by import By
 
-from helper.utils import get_scraped_url, get_filename, parse_google_drive_link
+from helper.utils import get_scraped_url, parse_google_drive_link
 from model.eoa_models import EOAConfig
 from scraper.base_scraper import BaseScraper
 
@@ -28,40 +27,31 @@ class EOAScraper(BaseScraper):
                 )
 
                 pdf_links.extend([
-                    get_scraped_url(Tag(name="a", attrs={"href": tag.get_attribute("href")}), self.base_url)
+                    get_scraped_url(
+                        Tag(name="a", attrs={"href": tag.get_attribute("href")}), self._config_model.base_url
+                    )
                     for tag in tags
                 ])
             except Exception as e:
-                print(f"An error occurred while scraping the URL: {source.url}. Error: {e}")
+                self._logger.error(f"An error occurred while scraping the URL: {source.url}. Error: {e}")
 
         return pdf_links if pdf_links else None
 
     def post_process(self, scrape_output: List[str]) -> List[str]:
         return scrape_output
 
-    def upload_to_s3(self, sources_links: List[str], **kwargs) -> bool:
-        self._logger.debug("Uploading files to S3")
+    def upload_to_s3(self, sources_links: List[str]) -> bool:
+        download_urls = []
 
-        all_done = True
         for link in sources_links:
             try:
-                file_id, download_url = parse_google_drive_link(link)
-
-                self._logger.info(f"Retrieving file from {download_url}")
-
-                response = requests.get(download_url, stream=True)
-                response.raise_for_status()
-
-                result = self._s3_client.upload_content(
-                    self.bucket_key, get_filename(file_id, self.file_extension), response.content
-                )
-                if not result:
-                    all_done = False
+                self._logger.info(f"Parsing Google Drive link {link}")
+                _, download_url = parse_google_drive_link(link)
+                download_urls.append(download_url)
             except Exception as e:
-                self._logger.error(f"Error uploading file to S3: {e}")
-                all_done = False
+                self._logger.error(f"Error while parsing Google Drive link {link}: {e}")
 
             # Sleep after each successful download to avoid overwhelming the server
             time.sleep(random.uniform(2, 5))
 
-        return all_done
+        return super().upload_to_s3(download_urls)

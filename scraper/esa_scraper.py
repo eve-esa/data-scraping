@@ -1,7 +1,7 @@
 from typing import List, Type, Dict
 from bs4 import Tag, ResultSet
 
-from model.base_mapped_models import BaseMappedUrlSource
+from model.base_mapped_models import BaseMappedUrlSource, BaseMappedUrlConfig
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
 from scraper.base_scraper import BaseMappedScraper
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
@@ -14,6 +14,16 @@ class ESAScraper(BaseMappedPublisherScraper):
 
 
 class ESAUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
+    @property
+    def config_model_type(self) -> Type[BaseMappedUrlConfig]:
+        """
+        Return the configuration model type.
+
+        Returns:
+            Type[BaseMappedUrlConfig]: The configuration model type
+        """
+        return BaseMappedUrlConfig
+
     def _scrape_journal(self, source: BaseMappedUrlSource) -> ResultSet | List[Tag] | None:
         pass
 

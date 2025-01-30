@@ -30,7 +30,7 @@ class NCBIScraper(BasePaginationPublisherScraper):
             self._scrape_landing_page(source.landing_page_url, idx + 1)
             pdf_tags.extend(self._scrape_pagination(source.pagination_url, idx + 1))
 
-        return {"NCBI": [get_scraped_url(tag, self.base_url) for tag in pdf_tags]} if pdf_tags else None
+        return {"NCBI": [get_scraped_url(tag, self._config_model.base_url) for tag in pdf_tags]} if pdf_tags else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> None:
         """

@@ -212,28 +212,6 @@ def get_scraped_url(tag: Tag, base_url: str, with_querystring: bool | None = Fal
     return result if with_querystring else remove_query_string_from_url(result)
 
 
-def get_filename(url: str, file_extension: str) -> str:
-    """
-    Get the filename from the URL.
-
-    Args:
-        url (str): The URL of the file.
-        file_extension (str): The type of the file.
-
-    Returns:
-        str: The final name of the file.
-    """
-    parsed = urlparse(url)
-
-    path = parsed.path.lstrip("/")
-    # if the `path` contains the file extension, return the last part of the URL
-    if file_extension in path:
-        return path.split("/")[-1]
-
-    # otherwise, replace `/` with `_` and add the file extension
-    return path.replace("/", "_") + file_extension
-
-
 def get_unique(pdf_links: List[str]) -> List[str]:
     """
     Get the unique PDF links.

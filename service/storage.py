@@ -1,18 +1,10 @@
 import os
 from typing import Final
 import boto3
-import requests
-from botocore.exceptions import ClientError
-from pydantic import BaseModel
 
 from helper.logger import setup_logger
 from helper.singleton import singleton
-
-
-class PDFName(BaseModel):
-    journal: str
-    volume: str
-    issue: str
+from service.resource_manager import Resource
 
 
 @singleton
@@ -55,73 +47,14 @@ class S3Storage:
             location = {"LocationConstraint": region}
             self.client.create_bucket(Bucket=self.bucket_name, CreateBucketConfiguration=location)
 
-    def __can_upload(self, s3_key: str) -> bool:
-        # Check if the file already exists in S3
+    def upload_content(self, resource: Resource) -> bool:
+        self.logger.info(f"Uploading Source: {resource.name} to {resource.bucket_key}")
         try:
-            self.client.head_object(Bucket=self.bucket_name, Key=s3_key)
-            self.logger.warning(f"{s3_key} already exists in S3, skipping upload.")
-            return False  # Exit the function if the file exists
-        except ClientError as e:
-            if e.response["Error"]["Code"] == "404":
-                # The object does not exist, proceed to upload
-                return True
-            # Handle other exceptions, e.g. permissions
-            self.logger.error(f"Error checking if {s3_key} exists in S3: {e}")
-            return False
-
-    def upload(self, root_key: str, source_url: str, file_extension: str, referer_url: str | None = None) -> bool:
-        from helper.utils import get_filename, get_user_agent, get_interacting_proxy_config
-
-        referer_url = referer_url if referer_url is not None else "https://www.google.com"
-        s3_key = os.path.join(root_key, get_filename(source_url, file_extension))  # Construct S3 key
-
-        self.logger.info(f"Uploading Source: {source_url} to {s3_key}")
-        if not self.__can_upload(s3_key):
-            return False
-
-        try:
-            # Download content from the URL
-            proxy = get_interacting_proxy_config()
-            response = requests.get(
-                source_url,
-                headers={
-                    "User-Agent": get_user_agent(),
-                    "Accept": "application/pdf,*/*",
-                    "Accept-Language": "en-US,en;q=0.9",
-                    "Referer": referer_url,
-                },
-                proxies={
-                    "http": proxy,
-                    "https": proxy,
-                },
-                verify=False,  # Equivalent to -k flag in curl (ignore SSL certificate warnings)
-            )
-            response.raise_for_status()  # Check for request errors
-
             # Upload to S3
-            self.client.put_object(Bucket=self.bucket_name, Key=s3_key, Body=response.content)
-            self.logger.info(f"Successfully uploaded to S3: {s3_key}")
+            self.client.put_object(Bucket=self.bucket_name, Key=resource.bucket_key, Body=resource.content)
+            self.logger.info(f"Successfully uploaded to S3: {resource.bucket_key}")
 
             return True
         except Exception as e:
-            self.logger.error(f"Failed to upload source {source_url} to {s3_key}. Error: {e}")
-
-            return False
-
-    def upload_content(self, root_key: str, source_name: str, content: bytes) -> bool:
-        s3_key = os.path.join(root_key, source_name)  # Construct S3 key
-
-        self.logger.info(f"Uploading Source: {source_name} to {s3_key}")
-        if not self.__can_upload(s3_key):
-            return False
-
-        try:
-            # Upload to S3
-            self.client.put_object(Bucket=self.bucket_name, Key=s3_key, Body=content)
-            self.logger.info(f"Successfully uploaded to S3: {s3_key}")
-
-            return True
-        except Exception as e:
-            self.logger.error(f"Failed to upload content from {source_name} to {s3_key}. Error: {e}")
-
+            self.logger.error(f"Failed to upload content from {resource.name} to {resource.bucket_key}. Error: {e}")
             return False

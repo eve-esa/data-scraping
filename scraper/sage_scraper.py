@@ -28,7 +28,7 @@ class SageScraper(BasePaginationPublisherScraper):
         for idx, source in enumerate(self._config_model.sources):
             pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
 
-        return {"Sage": [get_scraped_url(tag, self.base_url) for tag in pdf_tags]} if pdf_tags else None
+        return {"Sage": [get_scraped_url(tag, self._config_model.base_url) for tag in pdf_tags]} if pdf_tags else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> List[Tag]:
         """
@@ -58,7 +58,7 @@ class SageScraper(BasePaginationPublisherScraper):
             scraper = self._scrape_url(url)
 
             # Find all article links in the pagination URL, using the appropriate class or tag (if lambda returns True, it will be included in the list)
-            articles_links = [get_scraped_url(tag, self.base_url) for tag in scraper.find_all(
+            articles_links = [get_scraped_url(tag, self._config_model.base_url) for tag in scraper.find_all(
                 "a", href=lambda href: href and "/doi/reader" in href, attrs={"data-id": "srp-article-button"},
             )]
 

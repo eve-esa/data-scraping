@@ -99,7 +99,7 @@ class MDPIJournalsScraper(BaseIterativePublisherScraper, BaseMappedScraper):
             # Get all PDF links using Selenium to scroll and handle cookie popup once
             # Now find all PDF links using the class_="UD_Listings_ArticlePDF"
             tags = scraper.find_all("a", class_="UD_Listings_ArticlePDF", href=True)
-            pdf_links = [get_scraped_url(tag, self.base_url) for tag in tags]
+            pdf_links = [get_scraped_url(tag, self._config_model.base_url) for tag in tags]
 
             self._logger.debug(f"PDF links found: {len(pdf_links)}")
             return pdf_links
@@ -138,7 +138,9 @@ class MDPIGoogleSearchScraper(BasePaginationPublisherScraper, BaseMappedScraper)
             self.__page_size = source.page_size
             pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
 
-        return {"MDPI Google Search": [get_scraped_url(tag, self.base_url) for tag in pdf_tags]} if pdf_tags else None
+        return {"MDPI Google Search": [
+            get_scraped_url(tag, self._config_model.base_url) for tag in pdf_tags
+        ]} if pdf_tags else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> ResultSet | List[Tag] | None:
         self._logger.info(f"Processing Landing Page {landing_page_url}")

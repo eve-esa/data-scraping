@@ -34,7 +34,7 @@ class ArxivScraper(BasePaginationPublisherScraper):
             self.__page_size = source.page_size
             pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
 
-        return {"Arxiv": [get_scraped_url(tag, self.base_url) for tag in pdf_tags]} if pdf_tags else None
+        return {"Arxiv": [get_scraped_url(tag, self._config_model.base_url) for tag in pdf_tags]} if pdf_tags else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> List[Tag]:
         """

@@ -1,11 +1,22 @@
-from typing import List
+from typing import List, Type
 from bs4 import Tag
 
 from helper.utils import get_scraped_url
+from model.base_url_publisher_models import BaseUrlPublisherConfig
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper, BaseUrlPublisherSource, SourceType
 
 
 class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
+    @property
+    def config_model_type(self) -> Type[BaseUrlPublisherConfig]:
+        """
+        Return the configuration model type.
+
+        Returns:
+            Type[BaseUrlPublisherConfig]: The configuration model type
+        """
+        return BaseUrlPublisherConfig
+
     def _scrape_journal(self, source: BaseUrlPublisherSource) -> List[Tag] | None:
         """
         Scrape all articles of a journal.
@@ -41,11 +52,9 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
                 tag
                 for x in issues_tag_list
                 if (
-                    tags := self._scrape_issue_or_collection(
-                        BaseUrlPublisherSource(
-                            url=get_scraped_url(x, self.base_url), type=str(SourceType.ISSUE_OR_COLLECTION)
-                        )
-                    )
+                    tags := self._scrape_issue_or_collection(BaseUrlPublisherSource(
+                        url=get_scraped_url(x, self._config_model.base_url), type=str(SourceType.ISSUE_OR_COLLECTION)
+                    ))
                 )
                 for tag in tags
             ]
@@ -83,9 +92,9 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
                 tag
                 for x in article_tag_list
                 if (
-                    tag := self._scrape_article(
-                        BaseUrlPublisherSource(url=get_scraped_url(x, self.base_url), type=str(SourceType.ARTICLE))
-                    )
+                    tag := self._scrape_article(BaseUrlPublisherSource(
+                        url=get_scraped_url(x, self._config_model.base_url), type=str(SourceType.ARTICLE)
+                    ))
                 )
             ]
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
