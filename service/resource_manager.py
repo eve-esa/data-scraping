@@ -1,7 +1,7 @@
 import hashlib
 import os
 from uuid import uuid4
-import cloudscraper
+import requests
 from pydantic import BaseModel
 
 from helper.logger import setup_logger
@@ -41,24 +41,28 @@ class ResourceManager:
         Returns:
             Resource | None: The resource if found, or None otherwise
         """
-        from helper.utils import get_user_agent
+        from helper.utils import get_user_agent, get_interacting_proxy_config
 
         self._logger.info(f"Retrieving file from {source_url}")
 
         bucket_key = os.path.join(root_key, f"{uuid4()}.{file_extension}")  # Construct S3 key
         result = Resource(publisher=publisher, bucket_key=bucket_key, name=source_url)
         try:
-            scraper = cloudscraper.create_scraper()
-
             # Download content from the URL
-            response = scraper.get(
+            proxy = get_interacting_proxy_config()
+            response = requests.get(
                 source_url,
                 headers={
                     "User-Agent": get_user_agent(),
                     "Accept": "application/pdf,*/*",
                     "Accept-Language": "en-US,en;q=0.9",
-                    "Referer": referer_url if referer_url is not None else "https://www.google.com",
-                }
+                    "Referer": referer_url,
+                },
+                proxies={
+                    "http": proxy,
+                    "https": proxy,
+                },
+                verify=False,  # Equivalent to -k flag in curl (ignore SSL certificate warnings)
             )
             response.raise_for_status()  # Check for request errors
 
