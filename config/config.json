@@ -669,7 +669,7 @@
     "SageScraper": {
         "bucket_key": "raw_data/sage",
         "base_url": "https://journals.sagepub.com",
-        "cookie_selector": "div.qc-cmp2-summary-buttons > button.css-1pdnrb0",
+        "cookie_selector": ".onetrust-close-btn-handler",
         "sources": [
             {
                 "landing_page_url": "https://journals.sagepub.com/action/doSearch?AllField=\"remote+sensing\"&startPage={page_number}&rel=&access=18&pageSize=100"

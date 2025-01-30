@@ -64,22 +64,24 @@ class BaseScraper(ABC):
     def setup_driver(self):
         from helper.utils import get_user_agent, get_static_proxy_config
 
-        self._driver = Driver(
-            browser="chrome",
-            uc=True,
-            locale_code="en",
-            headless=self._config_model.headless,
-            headless1=self._config_model.headless,
-            headless2=self._config_model.headless,
-            proxy=get_static_proxy_config(),
-            disable_cookies=False,
-            disable_gpu=True,
-            no_sandbox=True,
-            window_size="1920,1080",
-            window_position="0,0",
-            agent=get_user_agent(),
-            disable_ws=True,
-        )
+        # self._driver = Driver(
+        #     browser="chrome",
+        #     uc=True,
+        #     locale_code="en",
+        #     headless=self._config_model.headless,
+        #     headless1=self._config_model.headless,
+        #     headless2=self._config_model.headless,
+        #     proxy=get_static_proxy_config(),
+        #     disable_cookies=False,
+        #     disable_gpu=True,
+        #     no_sandbox=True,
+        #     window_size="1920,1080",
+        #     window_position="0,0",
+        #     agent=get_user_agent(),
+        #     disable_ws=True,
+        # )
+
+        self._driver = Driver(uc=True, locale_code="en", headless=self._config_model.headless, devtools=True)
 
     def shutdown_driver(self):
         self._driver.quit()
