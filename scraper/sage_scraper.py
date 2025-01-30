@@ -59,7 +59,7 @@ class SageScraper(BasePaginationPublisherScraper):
 
             # Find all article links in the pagination URL, using the appropriate class or tag (if lambda returns True, it will be included in the list)
             articles_links = [get_scraped_url(tag, self.base_url) for tag in scraper.find_all(
-                "a", href=lambda href: href and "/doi/reader" in href, data_id="srp-article-button",
+                "a", href=lambda href: href and "/doi/reader" in href, attrs={"data-id": "srp-article-button"},
             )]
 
             # Now, visit each article link and find the PDF link

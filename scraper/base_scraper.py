@@ -79,6 +79,7 @@ class BaseScraper(ABC):
             window_position="0,0",
             agent=get_user_agent(),
             disable_ws=True,
+            devtools=True,
         )
 
     def shutdown_driver(self):
