@@ -18,7 +18,8 @@ def main(args):
     if args.scrapers:
         scrapers = {name: scrapers[name] for name in args.scrapers}
 
-    run_scrapers(scrapers, scraper_config)
+    force_running = args.force
+    run_scrapers(scrapers, scraper_config, force=force_running)
 
 
 def init_db():
@@ -42,6 +43,13 @@ if __name__ == "__main__":
         default=[],
         nargs="+",
         help="Run the scrapers identified in the list of names provided.",
+    )
+
+    parser.add_argument(
+        "-f",
+        "--force",
+        default=False,
+        help="Force scraping of all resources, regardless of the last time they were scraped.",
     )
 
     args = parser.parse_args()

@@ -96,7 +96,9 @@ def discover_scrapers(base_package: str, log_file: str = "scraping.log") -> Dict
     return discovered_scrapers
 
 
-def run_scraper_process(scraper_obj: BaseScraper, config_model: BaseModel, log_queue: Queue, logger_name: str):
+def run_scraper_process(
+    scraper_obj: BaseScraper, config_model: BaseModel, log_queue: Queue, logger_name: str, force: bool = False
+):
     """
     Wrapper function to run a scraper with logging configuration.
 
@@ -105,13 +107,17 @@ def run_scraper_process(scraper_obj: BaseScraper, config_model: BaseModel, log_q
         config_model (BaseModel): The configuration model for the scraper.
         log_queue (Queue): The logging queue.
         logger_name (str): The name of the logger.
+        force (bool): Whether to force scraping of all resources.
     """
     setup_worker_logging(log_queue, logger_name)
-    scraper_obj(config_model)
+    scraper_obj(config_model, force=force)
 
 
 def run_scrapers(
-    discovered_scrapers: Dict[str, Type[BaseScraper]], config: Dict[str, Dict], log_file: str = "scraping.log"
+    discovered_scrapers: Dict[str, Type[BaseScraper]],
+    config: Dict[str, Dict],
+    log_file: str = "scraping.log",
+    force: bool = False,
 ):
     """
     Find all scraper classes in the specified package and run them in separate processes with configured logging.
@@ -120,6 +126,7 @@ def run_scrapers(
         discovered_scrapers (Dict[str, Type[BaseScraper]]): A dictionary of scraper names and their classes.
         config (Dict[str, Dict]): A dictionary of scraper names and their configurations.
         log_file (str): Path to the log file.
+        force (bool): Whether to force scraping of all resources.
     """
     # Create logging queue
     log_queue = Queue()
@@ -144,7 +151,7 @@ def run_scrapers(
                 config_model = scraper_obj.config_model_type(**config_scraper)
                 process = Process(
                     target=run_scraper_process,
-                    args=(scraper_obj, config_model, log_queue, __name__),
+                    args=(scraper_obj, config_model, log_queue, __name__, force),
                     name=name_scraper
                 )
                 process.start()

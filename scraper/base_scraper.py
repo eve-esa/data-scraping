@@ -30,10 +30,10 @@ class BaseScraper(ABC):
         self._s3_client = S3Storage()
         self._resource_manager = ResourceManager()
 
-    def __call__(self, config_model: BaseConfig):
+    def __call__(self, config_model: BaseConfig, force: bool = False):
         name_scraper = self.__class__.__name__
         path_file_results = os.path.join(OUTPUT_FOLDER, f"{name_scraper}.json")
-        if os.path.exists(path_file_results):
+        if os.path.exists(path_file_results) and not force:
             self._logger.warning(f"Scraper {name_scraper} already done")
             return
 
