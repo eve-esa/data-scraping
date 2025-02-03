@@ -1,3 +1,4 @@
+from datetime import datetime
 import hashlib
 import os
 from uuid import uuid4
@@ -16,6 +17,7 @@ class Resource(BaseModel):
     name: str
     sha256: str | None = None
     content: bytes | None = None
+    date: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
 @singleton
@@ -127,6 +129,8 @@ class ResourceManager:
             del resource_dict["content"]
         if "id" in resource_dict:
             del resource_dict["id"]
+        if "date" in resource_dict:
+            del resource_dict["date"]
         return self._database_manager.insert_record(self._db_table_name, resource_dict)
 
     @property
