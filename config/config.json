@@ -1264,6 +1264,17 @@
             }
         ]
     },
+    "EarthDataScienceScraper": {
+        "bucket_key": "raw_data/earth_data_science",
+        "base_url": "https://www.earthdatascience.org/",
+        "file_extension": ".html",
+        "sources": [
+            {
+                "url": "https://www.earthdatascience.org/tags/remote-sensing/",
+                "type": "issue_or_collection"
+            }
+        ]
+    },
     "DirectLinksScraper": {
         "bucket_key": "raw_data",
         "sources": [
@@ -1335,6 +1346,24 @@
                         "https://www.open.edu/openlearn/nature-environment/environmental-studies/managing-coastal-environments/altformat-printable",
                         "https://www.open.edu/openlearn/nature-environment/environment-understanding-atmospheric-and-ocean-flows/altformat-printable",
                         "https://www.open.edu/openlearn/nature-environment/environmental-studies/the-frozen-planet/altformat-printable"
+                    ]
+                }
+            },
+            {
+                "name": "NASA-NGO Sourcebook on remote sensing and biodiversity",
+                "config": {
+                    "bucket_key": "nasa_ngo",
+                    "urls": [
+                        "https://www.researchgate.net/profile/Lera-Miles-2/publication/286134810_Sourcebook_on_remote_sensing_and_biodiversity_indicators/links/58907b7f92851c9794c67769/Sourcebook-on-remote-sensing-and-biodiversity-indicators.pdf?_tp=eyJjb250ZXh0Ijp7ImZpcnN0UGFnZSI6InB1YmxpY2F0aW9uIiwicGFnZSI6InB1YmxpY2F0aW9uIn19"
+                    ]
+                }
+            },
+            {
+                "name": "C35 Climate MOOC",
+                "config": {
+                    "bucket_key": "c35_climate_mooc",
+                    "urls": [
+                        "https://drive.google.com/uc?id=1vLwMXtIAlOPPq6mU6t9K0poK5k4FXnlD"
                     ]
                 }
             }
