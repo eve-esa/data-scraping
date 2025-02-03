@@ -1,5 +1,5 @@
 import os
-from typing import Final
+from typing import Final, List
 import boto3
 import requests
 from botocore.exceptions import ClientError
@@ -125,3 +125,28 @@ class S3Storage:
             self.logger.error(f"Failed to upload content from {source_name} to {s3_key}. Error: {e}")
 
             return False
+    
+    def exists(self, key: str) -> bool:
+        """Check if an object exists in S3."""
+        try:
+            self.client.head_object(Bucket=self.bucket_name, Key=key)
+            return True
+        except ClientError as e:
+            if e.response['Error']['Code'] == '404':
+                return False
+            else:
+                self.logger.error(f"Error checking if object exists: {e}")
+                return False
+
+    def list_objects(self, prefix: str) -> List[str]:
+        """List all objects in the bucket with given prefix."""
+        try:
+            paginator = self.client.get_paginator('list_objects_v2')
+            objects = []
+            for page in paginator.paginate(Bucket=self.bucket_name, Prefix=prefix):
+                if 'Contents' in page:
+                    objects.extend([obj['Key'] for obj in page['Contents']])
+            return objects
+        except Exception as e:
+            self.logger.error(f"Error listing objects with prefix {prefix}: {e}")
+            return []
