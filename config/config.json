@@ -1285,7 +1285,7 @@
                 "config": {
                     "base_url": "https://www.eumetsat.int/",
                     "cookie_selector": "div.cc-compliance.cc-highlight a.cc-btn.cc-allow",
-                    "file_extension": ".html",
+                    "file_extension": "html",
                     "read_more_button": {
                         "selector": "button.btn-primary",
                         "text": "Show more"
@@ -1301,7 +1301,7 @@
             {
                 "name": "EUMETSAT Classroom",
                 "config": {
-                    "file_extension": ".html",
+                    "file_extension": "html",
                     "urls": [
                         "https://classroom.eumetsat.int/enrol/index.php?id=504",
                         "https://classroom.eumetsat.int/course/view.php?id=500",
