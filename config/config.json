@@ -1284,7 +1284,7 @@
     "EarthDataScienceScraper": {
         "bucket_key": "raw_data/earth_data_science",
         "base_url": "https://www.earthdatascience.org/",
-        "file_extension": ".html",
+        "file_extension": "html",
         "sources": [
             {
                 "url": "https://www.earthdatascience.org/tags/remote-sensing/",
