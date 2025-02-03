@@ -1278,6 +1278,37 @@
                         }
                     ]
                 }
+            },
+            {
+                "name": "EUMETSAT Case Studies",
+                "scraper": "EUMETSATCaseStudiesScraper",
+                "config": {
+                    "base_url": "https://www.eumetsat.int/",
+                    "cookie_selector": "div.cc-compliance.cc-highlight a.cc-btn.cc-allow",
+                    "file_extension": ".html",
+                    "read_more_button": {
+                        "selector": "button.btn-primary",
+                        "text": "Show more"
+                    },
+                    "sources": [
+                        {
+                            "url": "https://user.eumetsat.int/search-view?sort=title%20asc&facets=%7B%22contentTypes%22:%5B%22Resources%7CCase%20studies%22%5D%7D",
+                            "type": "issue_or_collection"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "EUMETSAT Classroom",
+                "config": {
+                    "file_extension": ".html",
+                    "urls": [
+                        "https://classroom.eumetsat.int/enrol/index.php?id=504",
+                        "https://classroom.eumetsat.int/course/view.php?id=500",
+                        "https://classroom.eumetsat.int/course/view.php?id=499",
+                        "https://classroom.eumetsat.int/course/view.php?id=498"
+                    ]
+                }
             }
         ]
     },
