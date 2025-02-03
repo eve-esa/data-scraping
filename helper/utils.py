@@ -20,6 +20,8 @@ import time
 
 from helper.logger import setup_logger, setup_worker_logging
 from scraper.base_scraper import BaseScraper, BaseMappedScraper
+from service.base_table_interface import BaseTableInterface
+from service.database_manager import DatabaseManager
 
 
 # Load the YAML file
@@ -175,6 +177,35 @@ def run_scrapers(
         listener.stop()
         # Small delay to ensure all logs are processed
         time.sleep(0.1)
+
+
+def init_db(base_package: str):
+    """
+    Initialize the database.
+
+    Args:
+        base_package (str): The base package to search for table interfaces.
+    """
+    package = importlib.import_module(base_package)
+
+    discovered_db_table_managers = {}
+    for _, module_name, _ in pkgutil.iter_modules(package.__path__):
+        module = importlib.import_module(f"{base_package}.{module_name}")
+
+        discovered_db_table_managers |= {
+            name: obj_type
+            for name, obj_type in inspect.getmembers(module)
+            if inspect.isclass(obj_type)
+               and issubclass(obj_type, BaseTableInterface)
+               and not inspect.isabstract(obj_type)
+        }
+
+    database_manager = DatabaseManager()
+
+    for db_table_manager_class in discovered_db_table_managers.values():
+        db_table_manager = db_table_manager_class()
+        table = db_table_manager.table_name
+        database_manager.create_table(table, db_table_manager.model_fields_definition)
 
 
 def remove_query_string_from_url(url: str | None = None) -> str | None:

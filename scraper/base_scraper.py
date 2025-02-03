@@ -1,5 +1,5 @@
+import json
 from abc import ABC, abstractmethod
-import os
 import random
 from typing import List, Type, Any, Dict
 from bs4 import BeautifulSoup
@@ -11,9 +11,9 @@ from seleniumbase import Driver
 from seleniumbase.fixtures import constants
 import time
 
-from helper.constants import OUTPUT_FOLDER
 from helper.logger import setup_logger
 from model.base_models import BaseConfig
+from service.output_manager import OutputManager, Output
 from service.resource_manager import ResourceManager, Resource
 from service.storage import S3Storage
 
@@ -29,11 +29,11 @@ class BaseScraper(ABC):
         self._logger = setup_logger(self.__class__.__name__)
         self._s3_client = S3Storage()
         self._resource_manager = ResourceManager()
+        self._output_manager = OutputManager()
 
     def __call__(self, config_model: BaseConfig, force: bool = False):
         name_scraper = self.__class__.__name__
-        path_file_results = os.path.join(OUTPUT_FOLDER, f"{name_scraper}.json")
-        if os.path.exists(path_file_results) and not force:
+        if not force and self._output_manager.get_by_publisher(name_scraper):
             self._logger.warning(f"Scraper {name_scraper} already done")
             return
 
@@ -51,8 +51,13 @@ class BaseScraper(ABC):
         all_done = self.upload_to_s3(links)
 
         if all_done:
-            from helper.utils import write_json_file, is_json_serializable
-            write_json_file(path_file_results, scraping_results if is_json_serializable(scraping_results) else links)
+            from helper.utils import is_json_serializable
+            self._output_manager.upsert(
+                Output(
+                    publisher=name_scraper,
+                    output=json.dumps(scraping_results if is_json_serializable(scraping_results) else links)
+                )
+            )
 
             self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")
             return
@@ -225,7 +230,7 @@ class BaseScraper(ABC):
         if not result:
             all_done = False
         else:
-            self._resource_manager.store(resource)
+            self._resource_manager.insert(resource)
 
         # Sleep after each successful download to avoid overwhelming the server
         time.sleep(random.uniform(2, 5))

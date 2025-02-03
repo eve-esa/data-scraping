@@ -1,13 +1,12 @@
 from datetime import datetime
 import hashlib
 import os
+from typing import List, Dict
 from uuid import uuid4
 import requests
 from pydantic import BaseModel
 
-from helper.logger import setup_logger
-from helper.singleton import singleton
-from service.database_manager import DatabaseManager
+from service.base_table_interface import BaseTableInterface
 
 
 class Resource(BaseModel):
@@ -20,13 +19,7 @@ class Resource(BaseModel):
     date: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-@singleton
-class ResourceManager:
-    def __init__(self):
-        self._logger = setup_logger(self.__class__.__name__)
-        self._database_manager = DatabaseManager()
-        self._db_table_name = "resources"
-
+class ResourceManager(BaseTableInterface):
     def get_by_url(
         self, publisher: str, root_key: str, source_url: str, file_extension: str, referer_url: str | None = None
     ) -> Resource:
@@ -74,7 +67,7 @@ class ResourceManager:
 
             # search for the resource in the database by using the sha256
             records = self._database_manager.search_records(
-                self._db_table_name, {"sha256": result.sha256, "publisher": publisher}, limit=1
+                self.table_name, {"sha256": result.sha256, "publisher": publisher}, limit=1
             )
             if records:
                 result = Resource(**records[0])
@@ -105,7 +98,7 @@ class ResourceManager:
                 result.sha256 = hashlib.sha256().hexdigest()
 
             records = self._database_manager.search_records(
-                self._db_table_name, {"sha256": result.sha256, "publisher": publisher}, limit=1
+                self.table_name, {"sha256": result.sha256, "publisher": publisher}, limit=1
             )
             if records:
                 return Resource(**records[0])
@@ -114,7 +107,7 @@ class ResourceManager:
         finally:
             return result
 
-    def store(self, resource: Resource) -> int:
+    def insert(self, resource: Resource) -> int:
         """
         Store the resource in the database
 
@@ -131,8 +124,16 @@ class ResourceManager:
             del resource_dict["id"]
         if "date" in resource_dict:
             del resource_dict["date"]
-        return self._database_manager.insert_record(self._db_table_name, resource_dict)
+        return self._database_manager.insert_record(self.table_name, resource_dict)
 
     @property
     def table_name(self) -> str:
-        return self._db_table_name
+        return "resources"
+
+    @property
+    def model_fields(self) -> List:
+        return [field for field in Resource.model_fields.keys() if field != "id"]
+
+    @property
+    def model_fields_definition(self) -> Dict:
+        return {field: "TEXT" for field in self.model_fields}
