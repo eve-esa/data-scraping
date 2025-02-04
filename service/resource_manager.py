@@ -1,7 +1,7 @@
 from datetime import datetime
 import hashlib
 import os
-from typing import List, Dict, Optional
+from typing import List, Dict
 from uuid import uuid4
 import requests
 from pydantic import BaseModel, Field

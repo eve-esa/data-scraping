@@ -45,8 +45,9 @@ class OutputManager(BaseTableInterface):
             del output_dict["date"]
 
         # check whether a record with the same publisher already exists: if so, update it with the output, otherwise insert a new record
-        existing_record = self._database_manager.search_records(self.table_name, {"publisher": output.publisher})[0]
-        if existing_record:
+        existing_records = self._database_manager.search_records(self.table_name, {"publisher": output.publisher}, limit = 1)
+        if existing_records:
+            existing_record = existing_records[0]
             self._database_manager.update_record(self.table_name, existing_record["id"], {"output": output.output})
             return existing_record["id"]
 
