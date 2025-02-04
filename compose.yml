@@ -12,6 +12,16 @@ services:
     depends_on:
       - minio
 
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: esa_eve
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
   minio:
     image: minio/minio
     ports:
@@ -38,3 +48,6 @@ services:
       AWS_BUCKET_NAME: ${AWS_BUCKET_NAME}
       AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
       AWS_SECRET_KEY: ${AWS_SECRET_KEY}
+
+volumes:
+  mysql_data:

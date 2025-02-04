@@ -1,16 +1,29 @@
 import os
-import sqlite3
 from typing import List, Dict, Any, Optional
+from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Text, Numeric, inspect
+from sqlalchemy.orm import sessionmaker, declarative_base
 
 from helper.base_enum import Enum
 from helper.singleton import singleton
 
 
+Base = declarative_base()
+
+
 class DatabaseFieldType(Enum):
     TEXT = "TEXT"
     INTEGER = "INTEGER"
-    REAL = "REAL"
-    BLOB = "BLOB"
+    VARCHAR = "VARCHAR"
+    FLOAT = "FLOAT"
+
+
+def type_mapping() -> Dict[DatabaseFieldType, Any]:
+    return {
+        DatabaseFieldType.TEXT: Text,
+        DatabaseFieldType.INTEGER: Integer,
+        DatabaseFieldType.VARCHAR: String(length=255),
+        DatabaseFieldType.FLOAT: Numeric
+    }
 
 
 @singleton
@@ -19,19 +32,16 @@ class DatabaseManager:
         """
         Initialize the database manager
         """
-        self._db_path = os.path.join("database", os.getenv("DB_NAME"))
+        self.db_user = os.getenv("DB_USER", "root")
+        self.db_password = os.getenv("DB_PASSWORD", "")
+        self.db_host = os.getenv("DB_HOST", "localhost")
+        self.db_port = os.getenv("DB_PORT", "3306")
+        self.db_name = os.getenv("DB_NAME", "mydatabase")
 
-        self._create_database_if_not_exists()
-        self.conn = sqlite3.connect(self._db_path)
+        db_url = f"mysql+pymysql://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
 
-    def _create_database_if_not_exists(self) -> None:
-        """
-        Create the database file if it does not exist. The database is created within the `database` folder
-        """
-        os.makedirs(os.path.dirname(self._db_path), exist_ok=True)
-
-        if not os.path.exists(self._db_path):
-            open(self._db_path, "w").close()
+        self.engine = create_engine(db_url)
+        self.metadata = MetaData()
 
     def create_table(self, table_name: str, columns: Dict[str, DatabaseFieldType]) -> None:
         """
@@ -39,19 +49,19 @@ class DatabaseManager:
 
         Args:
             table_name: Name of the table
-            columns: Dictionary with column names and types (e.g., {"name": "TEXT", "age": "INTEGER"})
+            columns: Dictionary with the column names and types
         """
-        cursor = self.conn.cursor()
+        # Convert SQLite types to MySQL types
+        table_columns = [
+            Column('id', Integer, primary_key=True, autoincrement=True)
+        ]
 
-        columns_def = ", ".join([f"{col} {dtype}" for col, dtype in columns.items()])
-        create_table_query = f"""
-        CREATE TABLE IF NOT EXISTS {table_name} (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            {columns_def}
-        )
-        """
-        cursor.execute(create_table_query)
-        self.conn.commit()
+        for col_name, col_type in columns.items():
+            sql_type = type_mapping().get(col_type, String(length=255))
+            table_columns.append(Column(col_name, sql_type))
+
+        Table(table_name, self.metadata, *table_columns)
+        self.metadata.create_all(self.engine)
 
     def get_table_info(self, table_name: str) -> List[Dict[str, str]]:
         """
@@ -61,33 +71,28 @@ class DatabaseManager:
             table_name: Name of the table
 
         Returns:
-            List of dictionaries containing the information of each column:
-            - name: name of the column
-            - type: tipe of the column
-            - notnull: whether the column can contain NULL values (0 or 1)
-            - default_value: default value of the column
-            - pk: whether the column is part of the primary key (0 or 1)
+            List of dictionaries, each containing information about a column
         """
-        cursor = self.conn.cursor()
-
-        query = f"PRAGMA table_info({table_name})"
-        cursor.execute(query)
-        columns_info = cursor.fetchall()
+        inspector = inspect(self.engine)
+        columns = inspector.get_columns(table_name)
 
         return [
             {
-                "name": col[1],
-                "type": col[2],
-                "notnull": col[3],
-                "default_value": col[4],
-                "pk": col[5]
+                "name": col["name"],
+                "type": str(col["type"]),
+                "notnull": not col["nullable"],
+                "default_value": col["default"],
+                "pk": col["primary_key"]
             }
-            for col in columns_info
+            for col in columns
         ]
 
     def get_column_names(self, table_name: str) -> List[str]:
         """
         Retrieve only the names of the columns of the table
+
+        Args:
+            table_name: Name of the table
 
         Returns:
             List of column names
@@ -100,20 +105,20 @@ class DatabaseManager:
 
         Args:
             table_name: Name of the table
-            record_id: ID of the record to retrieve
+            record_id: ID of the record
 
         Returns:
-            Dictionary with the record data
+            Dictionary with the record data, or None if the record was not found
         """
-        cursor = self.conn.cursor()
+        session = sessionmaker(bind=self.engine, expire_on_commit=True)()
 
-        query = f"SELECT * FROM {table_name} WHERE id = ?"
-        cursor.execute(query, (record_id,))
-        record = cursor.fetchone()
+        table = Table(table_name, self.metadata, autoload_with=self.engine)
+        result = session.query(table).filter_by(id=record_id).first()
 
-        if record:
-            columns = self.get_column_names(table_name)
-            return dict(zip(columns, record))
+        session.close()
+
+        if result:
+            return dict(result._mapping)
         return None
 
     def insert_record(self, table_name: str, data: Dict[str, Any]) -> int:
@@ -122,20 +127,19 @@ class DatabaseManager:
 
         Args:
             table_name: Name of the table
-            data: dictionary with the data to insert (e.g., {"name": "Mario", "age": 30})
+            data: Dictionary with the record data
 
         Returns:
-            ID of the new record
+            ID of the inserted record
         """
-        cursor = self.conn.cursor()
+        session = sessionmaker(bind=self.engine, expire_on_commit=True)()
 
-        columns = ", ".join(data.keys())
-        placeholders = ", ".join(["?" for _ in data])
-        query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
+        table = Table(table_name, self.metadata, autoload_with=self.engine)
+        result = session.execute(table.insert().values(**data))
+        session.commit()
+        session.close()
 
-        cursor.execute(query, list(data.values()))
-        self.conn.commit()
-        return cursor.lastrowid
+        return result.inserted_primary_key[0]
 
     def update_record(self, table_name: str, record_id: int, data: Dict[str, Any]) -> bool:
         """
@@ -143,21 +147,23 @@ class DatabaseManager:
 
         Args:
             table_name: Name of the table
-            record_id: ID of the record to update
-            data: Dictionary with the data to update
+            record_id: ID of the record
+            data: Dictionary with the updated data
 
         Returns:
             True if the update was successful
         """
-        cursor = self.conn.cursor()
+        session = sessionmaker(bind=self.engine, expire_on_commit=True)()
 
-        set_values = ", ".join([f"{key} = ?" for key in data.keys()])
-        query = f"UPDATE {table_name} SET {set_values} WHERE id = ?"
-
-        values = list(data.values()) + [record_id]
-        cursor.execute(query, values)
-        self.conn.commit()
-        return cursor.rowcount > 0
+        table = Table(table_name, self.metadata, autoload_with=self.engine)
+        result = session.execute(
+            table.update()
+            .where(table.c.id == record_id)
+            .values(**data)
+        )
+        session.commit()
+        session.close()
+        return result.rowcount > 0
 
     def delete_record(self, table_name: str, record_id: int) -> bool:
         """
@@ -165,17 +171,21 @@ class DatabaseManager:
 
         Args:
             table_name: Name of the table
-            record_id: ID of the record to delete
+            record_id: ID of the record
 
         Returns:
             True if the deletion was successful
         """
-        cursor = self.conn.cursor()
+        session = sessionmaker(bind=self.engine, expire_on_commit=True)()
 
-        query = f"DELETE FROM {table_name} WHERE id = ?"
-        cursor.execute(query, (record_id,))
-        self.conn.commit()
-        return cursor.rowcount > 0
+        table = Table(table_name, self.metadata, autoload_with=self.engine)
+        result = session.execute(
+            table.delete().where(table.c.id == record_id)
+        )
+        session.commit()
+        session.close()
+
+        return result.rowcount > 0
 
     def delete_record_by(self, table_name: str, conditions: Dict[str, Any], operator: str = "AND") -> bool:
         """
@@ -189,33 +199,24 @@ class DatabaseManager:
         Returns:
             True if the deletion was successful
         """
-        cursor = self.conn.cursor()
+        session = sessionmaker(bind=self.engine, expire_on_commit=True)()
 
-        operator = operator.upper()
-        if operator not in ("AND", "OR"):
-            raise ValueError("Operator must be 'AND' or 'OR'")
+        table = Table(table_name, self.metadata, autoload_with=self.engine)
+        query = session.query(table)
 
-        where_conditions = []
-        values = []
+        # Build filter conditions
+        if operator.upper() == "AND":
+            query = query.filter_by(**conditions)
+        else:  # OR
+            from sqlalchemy import or_
+            or_conditions = [getattr(table.c, k) == v for k, v in conditions.items()]
+            query = query.filter(or_(*or_conditions))
 
-        for field, value in conditions.items():
-            if value is None:
-                where_conditions.append(f"{field} IS NULL")
-            elif isinstance(value, str) and ("%" in value or "_" in value):
-                where_conditions.append(f"{field} LIKE ?")
-                values.append(value)
-            else:
-                where_conditions.append(f"{field} = ?")
-                values.append(value)
+        result = query.delete()
+        session.commit()
+        session.close()
 
-        query = f"DELETE FROM {table_name}"
-
-        if where_conditions:
-            query += f" WHERE {f' {operator} '.join(where_conditions)}"
-
-        cursor.execute(query, values)
-        self.conn.commit()
-        return cursor.rowcount > 0
+        return result > 0
 
     def get_all_records(self, table_name: str) -> List[Dict[str, Any]]:
         """
@@ -225,16 +226,15 @@ class DatabaseManager:
             table_name: Name of the table
 
         Returns:
-            List of dictionaries containing the records
+            List of dictionaries, each representing a record
         """
-        cursor = self.conn.cursor()
+        session = sessionmaker(bind=self.engine, expire_on_commit=True)()
 
-        query = f"SELECT * FROM {table_name}"
-        cursor.execute(query)
-        records = cursor.fetchall()
+        table = Table(table_name, self.metadata, autoload_with=self.engine)
+        result = session.query(table).all()
+        session.close()
 
-        columns = self.get_column_names(table_name)
-        return [dict(zip(columns, record)) for record in records]
+        return [dict(row._mapping) for row in result]
 
     def search_records(
         self,
@@ -249,53 +249,39 @@ class DatabaseManager:
         Search records that match certain conditions
 
         Args:
-            table_name: Name of the table to search
-            conditions: Dictionary with the search criteria (e.g., {"name": "Mario", "age": 30})
+            table_name: Name of the table
+            conditions: Dictionary with the search criteria
             operator: Logical operator between conditions ("AND" or "OR")
-            order_by: Field for sorting
-            desc: If True, sort in descending order
-            limit: Maximum number of results to return
+            order_by: Column to order by
+            desc: Whether to sort in descending order
+            limit: Maximum number of records to retrieve
 
         Returns:
-            List of dictionaries containing the records that match the criteria
+            List of dictionaries, each representing a record
         """
-        cursor = self.conn.cursor()
+        session = sessionmaker(bind=self.engine, expire_on_commit=True)()
 
-        operator = operator.upper()
-        if operator not in ("AND", "OR"):
-            raise ValueError("Operator must be 'AND' or 'OR'")
+        table = Table(table_name, self.metadata, autoload_with=self.engine)
+        query = session.query(table)
 
-        where_conditions = []
-        values = []
+        # Build filter conditions
+        if operator.upper() == "AND":
+            query = query.filter_by(**conditions)
+        else:  # OR
+            from sqlalchemy import or_
+            or_conditions = [getattr(table.c, k) == v for k, v in conditions.items()]
+            query = query.filter(or_(*or_conditions))
 
-        for field, value in conditions.items():
-            if value is None:
-                where_conditions.append(f"{field} IS NULL")
-            elif isinstance(value, str) and ("%" in value or "_" in value):
-                where_conditions.append(f"{field} LIKE ?")
-                values.append(value)
-            else:
-                where_conditions.append(f"{field} = ?")
-                values.append(value)
-
-        query = f"SELECT * FROM {table_name}"
-
-        if where_conditions:
-            query += f" WHERE {f' {operator} '.join(where_conditions)}"
-
-        columns = self.get_column_names(table_name)
+        # Apply ordering
         if order_by:
-            if order_by not in columns and order_by != "id":
-                raise ValueError(f"Field '{order_by}' is not a valid column")
-            query += f" ORDER BY {order_by} {'DESC' if desc else 'ASC'}"
+            column = getattr(table.c, order_by)
+            query = query.order_by(column.desc() if desc else column.asc())
 
+        # Apply limit
         if limit:
-            query += f" LIMIT {limit}"
+            query = query.limit(limit)
 
-        cursor.execute(query, values)
-        records = cursor.fetchall()
+        result = query.all()
+        session.close()
 
-        return [dict(zip(columns, record)) for record in records]
-
-    def __del__(self):
-        self.conn.close()
+        return [dict(row._mapping) for row in result]

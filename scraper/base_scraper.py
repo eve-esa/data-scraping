@@ -32,6 +32,8 @@ class BaseScraper(ABC):
         self._output_manager = OutputManager()
 
     def __call__(self, config_model: BaseConfig, force: bool = False):
+        from helper.utils import is_json_serializable
+
         name_scraper = self.__class__.__name__
         if not force and self._output_manager.get_by_scraper(name_scraper):
             self._logger.warning(f"Scraper {name_scraper} already done")
@@ -48,20 +50,16 @@ class BaseScraper(ABC):
             return
 
         links = self.post_process(scraping_results)
-        all_done = self.upload_to_s3(links)
+        self.upload_to_s3(links)
 
-        if all_done:
-            from helper.utils import is_json_serializable
-            output = Output(
-                scraper=name_scraper,
-                output=json.dumps(scraping_results if is_json_serializable(scraping_results) else links)
-            )
-            self._output_manager.upsert(output,{"scraper": output.scraper}, {"output": output.output})
+        output = Output(
+            scraper=name_scraper,
+            output=json.dumps(scraping_results if is_json_serializable(scraping_results) else links)
+        )
+        self._output_manager.upsert(output,{"scraper": output.scraper}, {"output": output.output})
 
-            self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")
-            return
-
-        self._logger.warning(f"Something went wrong with Scraper {self.__class__.__name__}: unsuccessfully completed.")
+        self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")
+        return
 
     def set_config_model(self, config_model: BaseConfig):
         self._config_model = config_model
@@ -186,19 +184,15 @@ class BaseScraper(ABC):
         """
         return BeautifulSoup(self._driver.get_page_source(), "html.parser")
 
-    def upload_to_s3(self, sources_links: Dict[str, List[str]] | List[str]) -> bool:
+    def upload_to_s3(self, sources_links: Dict[str, List[str]] | List[str]):
         """
         Upload the source files to S3.
 
         Args:
             sources_links (Dict[str, List[str]] | List[str]): The list of links of the various sources.
-
-        Returns:
-            bool: True if the upload was successful, False otherwise.
         """
         self._logger.debug("Uploading files to S3")
 
-        all_done = True
         for link in sources_links:
             current_resource = self._resource_manager.get_by_url(
                 self.__class__.__name__,
@@ -209,10 +203,7 @@ class BaseScraper(ABC):
             if not self._check_valid_resource(current_resource, link):
                 continue
 
-            if not self._upload_resource_to_s3_and_store_to_db(current_resource):
-                all_done = False
-
-        return all_done
+            self._upload_resource_to_s3_and_store_to_db(current_resource)
 
     def _check_valid_resource(self, resource: Resource, resource_name: str) -> bool:
         if resource.id:

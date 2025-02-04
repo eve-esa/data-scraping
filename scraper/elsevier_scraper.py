@@ -178,7 +178,6 @@ class ElsevierScraper(BaseScraper):
         """
         self._logger.debug("Uploading files to S3")
 
-        all_done = True
         for file in os.listdir(self._download_folder_path):
             if not file.endswith(self._config_model.file_extension):
                 continue
@@ -193,10 +192,7 @@ class ElsevierScraper(BaseScraper):
             if not self._check_valid_resource(current_resource, file):
                 continue
 
-            if not self._upload_resource_to_s3_and_store_to_db(current_resource):
-                all_done = False
+            self._upload_resource_to_s3_and_store_to_db(current_resource)
 
             # Sleep after each successful download to avoid overwhelming the server
             time.sleep(random.uniform(2, 5))
-
-        return all_done

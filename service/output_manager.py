@@ -1,3 +1,4 @@
+import json
 from typing import List, Dict
 
 from service.base_table_interface import BaseTableInterface, BaseModel
@@ -7,6 +8,10 @@ from service.database_manager import DatabaseFieldType
 class Output(BaseModel):
     scraper: str
     output: str
+
+    @property
+    def output_json(self) -> Dict:
+        return json.loads(self.output)
 
 
 class OutputManager(BaseTableInterface):
@@ -20,9 +25,9 @@ class OutputManager(BaseTableInterface):
         Returns:
             Output | None: The output if found, or None otherwise
         """
-        record = self._database_manager.search_records(self.table_name, {"scraper": scraper})
+        record = self._database_manager.search_records(self.table_name, {"scraper": scraper}, limit=1)
         if record:
-            return Output(**record)
+            return Output(**record[0])
         return None
 
     @property
@@ -31,7 +36,7 @@ class OutputManager(BaseTableInterface):
 
     @property
     def model_fields(self) -> List:
-        return [field for field in Output.model_fields.keys() if field != "id"]
+        return [field for field in Output.model_fields.keys() if field not in ["id", "_output_json"]]
 
     @property
     def model_fields_definition(self) -> Dict:

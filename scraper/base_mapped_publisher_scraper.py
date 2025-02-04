@@ -71,17 +71,13 @@ class BaseMappedPublisherScraper(BaseScraper):
             for source in self._config_model.sources
         }
 
-    def upload_to_s3(self, sources_links: Dict[str, List[str]]) -> bool:
+    def upload_to_s3(self, sources_links: Dict[str, List[str]]):
         """
         Upload the source files to S3.
 
         Args:
             sources_links (Dict[str, List[str]]): The list of links of the various sources.
-
-        Returns:
-            bool: True if the upload was successful, False otherwise.
         """
-        all_done = True
         for source in self._config_model.sources:
             adapter = ScrapeAdapter(source.config, self.mapping.get(source.scraper))
             result = adapter.upload_to_s3(
@@ -90,10 +86,5 @@ class BaseMappedPublisherScraper(BaseScraper):
                 self._file_extensions[source.name],
             )
 
-            if not result:
-                all_done = False
-
             # Sleep after each successful download to avoid overwhelming the server
             time.sleep(random.uniform(2, 5))
-
-        return all_done

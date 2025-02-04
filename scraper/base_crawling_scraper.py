@@ -43,10 +43,9 @@ class BaseCrawlingScraper(BaseScraper):
     def post_process(self, scrape_output: BaseCrawlingScraperOutput) -> List[str]:
         return list(scrape_output.values())
 
-    def upload_to_s3(self, sources_links: List[str]) -> bool:
+    def upload_to_s3(self, sources_links: List[str]):
         self._logger.debug("Uploading files to S3")
 
-        all_done = True
         for file in os.listdir(self.crawling_folder_path):
             if not file.endswith(self._config_model.file_extension):
                 continue
@@ -61,16 +60,13 @@ class BaseCrawlingScraper(BaseScraper):
             if not self._check_valid_resource(current_resource, file):
                 continue
 
-            if not self._upload_resource_to_s3_and_store_to_db(current_resource):
-                all_done = False
+            self._upload_resource_to_s3_and_store_to_db(current_resource)
 
             # Sleep after each successful download to avoid overwhelming the server
             time.sleep(random.uniform(2, 5))
 
         # remove the entire download folder
         shutil.rmtree(self.crawling_folder_path)
-
-        return all_done
 
     @property
     @abstractmethod

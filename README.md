@@ -4,8 +4,7 @@ Code for the main ETL pipeline to be utilized to collect, scrape and transform t
 ## Pre-requisites
 
 For the local usage, please create a `.env` file in the root of the project with the following content (ask to the
-project maintainer for the values of the `STATIC_PROXY_USER`, `STATIC_PROXY_PASSWORD`, `INTERACTING_PROXY_USER` and
-`INTERACTING_PROXY_PASSWORD` keys):
+project maintainer for the values of the keys):
 ```bash
 AWS_URL=http://minio:9100
 AWS_REGION=us-east-1
@@ -15,7 +14,11 @@ AWS_BUCKET_NAME=esa-eve
 
 MINIO_URL=http://minio:9100
 
+DB_HOST=mysql
+DB_PORT=3306
 DB_NAME=esa_eve
+DB_USER=root
+DB_PASSWORD=root
 
 STATIC_PROXY_HOST=brd.superproxy.io
 STATIC_PROXY_PORT=33335
