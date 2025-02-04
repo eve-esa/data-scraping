@@ -39,7 +39,7 @@ class ScrapeAdapter:
             self.__config_model.file_extension = file_extension
 
         if self.__scraper_type is not None:
-            scraper = self.__scraper_type().set_config_model(self.__config_model)
+            scraper = self.__scraper_type()
         else:
             scraper = DirectLinksScraper()
-        return scraper.upload_to_s3(scrape_output)
+        return scraper.set_config_model(self.__config_model).upload_to_s3(scrape_output)
