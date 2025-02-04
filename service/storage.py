@@ -4,7 +4,7 @@ import boto3
 
 from helper.logger import setup_logger
 from helper.singleton import singleton
-from service.resource_manager import Resource
+from model.sql_models import Resource
 
 
 @singleton

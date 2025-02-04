@@ -1,15 +1,9 @@
 from abc import ABC, abstractmethod
-from datetime import datetime
 from typing import List, Dict, Any
-from pydantic import BaseModel as PydanticBaseModel, Field
 
 from helper.logger import setup_logger
+from model.sql_models import BaseModel
 from service.database_manager import DatabaseManager
-
-
-class BaseModel(PydanticBaseModel):
-    id: int | None = None
-    last_access_at: str | None = Field(default=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
 
 class BaseTableInterface(ABC):

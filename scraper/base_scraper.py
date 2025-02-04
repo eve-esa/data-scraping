@@ -13,8 +13,9 @@ import time
 
 from helper.logger import setup_logger
 from model.base_models import BaseConfig
-from service.output_manager import OutputManager, Output
-from service.resource_manager import ResourceManager, Resource
+from model.sql_models import Resource, Output
+from service.output_manager import OutputManager
+from service.resource_manager import ResourceManager
 from service.storage import S3Storage
 
 

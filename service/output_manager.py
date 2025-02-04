@@ -1,17 +1,8 @@
-import json
 from typing import List, Dict
 
-from service.base_table_interface import BaseTableInterface, BaseModel
+from model.sql_models import Output
+from service.base_table_interface import BaseTableInterface
 from service.database_manager import DatabaseFieldType
-
-
-class Output(BaseModel):
-    scraper: str
-    output: str
-
-    @property
-    def output_json(self) -> Dict:
-        return json.loads(self.output)
 
 
 class OutputManager(BaseTableInterface):

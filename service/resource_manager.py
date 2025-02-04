@@ -4,16 +4,9 @@ from typing import List, Dict
 from uuid import uuid4
 import requests
 
-from service.base_table_interface import BaseTableInterface, BaseModel
+from model.sql_models import Resource
+from service.base_table_interface import BaseTableInterface
 from service.database_manager import DatabaseFieldType
-
-
-class Resource(BaseModel):
-    scraper: str
-    bucket_key: str
-    source: str
-    sha256: str | None = None
-    content: bytes | None = None
 
 
 class ResourceManager(BaseTableInterface):
