@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Type
 
 from helper.logger import setup_logger
-from model.sql_models import BaseModel
+from model.sql_models import BaseModel, DatabaseFieldType
 from service.database_manager import DatabaseManager
 
 
-class BaseTableInterface(ABC):
+class BaseRepository(ABC):
     def __init__(self):
         self._logger = setup_logger(self.__class__.__name__)
         self._database_manager = DatabaseManager()
@@ -66,16 +66,24 @@ class BaseTableInterface(ABC):
         return self._database_manager.insert_record(self.table_name, record_dict)
 
     @property
+    def model_fields(self) -> List:
+        return [field for field in self.model_type.model_fields.keys() if field not in ["id", "content"]]
+
+    @property
+    def model_fields_definition(self) -> Dict[str, DatabaseFieldType]:
+        return self.model_type.def_types()
+
+    @property
     @abstractmethod
     def table_name(self) -> str:
         pass
 
     @property
     @abstractmethod
-    def model_fields(self) -> List:
+    def model_type(self) -> Type[BaseModel]:
         pass
 
     @property
     @abstractmethod
-    def model_fields_definition(self) -> Dict:
+    def model_fields_excluded(self) -> List[str]:
         pass

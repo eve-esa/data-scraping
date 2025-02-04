@@ -8,6 +8,7 @@ from logging.handlers import QueueListener
 from multiprocessing import Queue, Process
 import zipfile
 from typing import Dict, List, Type, Tuple
+import requests
 import yaml
 from bs4 import Tag
 from pydantic import ValidationError, BaseModel
@@ -20,8 +21,6 @@ import time
 
 from helper.logger import setup_logger, setup_worker_logging
 from scraper.base_scraper import BaseScraper, BaseMappedScraper
-from service.base_table_interface import BaseTableInterface
-from service.database_manager import DatabaseManager
 
 
 # Load the YAML file
@@ -64,18 +63,18 @@ def is_json_serializable(data) -> bool:
         return False
 
 
-def discover_scrapers(base_package: str, log_file: str = "scraping.log") -> Dict[str, Type[BaseScraper]]:
+def discover_scrapers(log_file: str = "scraping.log") -> Dict[str, Type[BaseScraper]]:
     """
     Find all scraper classes in the specified package and run them in separate threads.
 
     Args:
-        base_package (str): The base package to search for scrapers.
         log_file (str): Path to the log file.
 
     Returns:
         Dict[str, BaseScraper]: A dictionary of scraper names and their classes (i.e., the type).
     """
     logger = setup_logger(__name__, log_file)
+    base_package = "scraper"
 
     package = importlib.import_module(base_package)
 
@@ -177,35 +176,6 @@ def run_scrapers(
         listener.stop()
         # Small delay to ensure all logs are processed
         time.sleep(0.1)
-
-
-def init_db(base_package: str):
-    """
-    Initialize the database.
-
-    Args:
-        base_package (str): The base package to search for table interfaces.
-    """
-    package = importlib.import_module(base_package)
-
-    discovered_db_table_managers = {}
-    for _, module_name, _ in pkgutil.iter_modules(package.__path__):
-        module = importlib.import_module(f"{base_package}.{module_name}")
-
-        discovered_db_table_managers |= {
-            name: obj_type
-            for name, obj_type in inspect.getmembers(module)
-            if inspect.isclass(obj_type)
-               and issubclass(obj_type, BaseTableInterface)
-               and not inspect.isabstract(obj_type)
-        }
-
-    database_manager = DatabaseManager()
-
-    for db_table_manager_class in discovered_db_table_managers.values():
-        db_table_manager = db_table_manager_class()
-        table = db_table_manager.table_name
-        database_manager.create_table(table, db_table_manager.model_fields_definition)
 
 
 def remove_query_string_from_url(url: str | None = None) -> str | None:
@@ -363,3 +333,38 @@ def parse_google_drive_link(google_drive_link: str) -> Tuple[str, str]:
     download_url = f"https://drive.google.com/uc?id={file_id}"
 
     return file_id, download_url
+
+
+def get_resource_from_remote(source_url: str, referer_url: str) -> bytes:
+    proxy = get_interacting_proxy_config()
+
+    try:
+        response = requests.get(
+            source_url,
+            headers={
+                "User-Agent": get_user_agent(),
+                "Accept": "application/pdf,*/*",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Referer": referer_url,
+            },
+            proxies={
+                "http": proxy,
+                "https": proxy,
+            },
+            verify=False,
+        )
+        c = response.content
+    except Exception:
+        response = requests.get(
+            source_url,
+            headers={
+                "User-Agent": get_user_agent(),
+                "Accept": "application/pdf,*/*",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Referer": referer_url,
+            },
+        )
+        c = response.content
+
+    response.raise_for_status()  # Check for request errors
+    return c

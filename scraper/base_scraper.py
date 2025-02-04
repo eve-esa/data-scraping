@@ -13,10 +13,11 @@ import time
 
 from helper.logger import setup_logger
 from model.base_models import BaseConfig
-from model.sql_models import Resource, Output
-from service.output_manager import OutputManager
-from service.resource_manager import ResourceManager
+from model.sql_models import UploadedResource, ScraperOutput
 from service.storage import S3Storage
+from repository.scraper_failure_repository import ScraperFailureRepository
+from repository.scraper_output_repository import ScraperOutputRepository
+from repository.uploaded_resource_repository import UploadedResourceRepository
 
 
 class BaseScraper(ABC):
@@ -29,14 +30,16 @@ class BaseScraper(ABC):
 
         self._logger = setup_logger(self.__class__.__name__)
         self._s3_client = S3Storage()
-        self._resource_manager = ResourceManager()
-        self._output_manager = OutputManager()
+
+        self._scraper_failure_repository = ScraperFailureRepository()
+        self._scraper_output_repository = ScraperOutputRepository()
+        self._uploaded_resource_repository = UploadedResourceRepository()
 
     def __call__(self, config_model: BaseConfig, force: bool = False):
         from helper.utils import is_json_serializable
 
         name_scraper = self.__class__.__name__
-        if not force and self._output_manager.get_by_scraper(name_scraper):
+        if not force and self._scraper_output_repository.get_by_scraper(name_scraper):
             self._logger.warning(f"Scraper {name_scraper} already done")
             return
 
@@ -53,11 +56,11 @@ class BaseScraper(ABC):
         links = self.post_process(scraping_results)
         self.upload_to_s3(links)
 
-        output = Output(
+        output = ScraperOutput(
             scraper=name_scraper,
             output=json.dumps(scraping_results if is_json_serializable(scraping_results) else links)
         )
-        self._output_manager.upsert(output,{"scraper": output.scraper}, {"output": output.output})
+        self._scraper_output_repository.upsert(output, {"scraper": output.scraper}, {"output": output.output})
 
         self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")
         return
@@ -195,7 +198,7 @@ class BaseScraper(ABC):
         self._logger.debug("Uploading files to S3")
 
         for link in sources_links:
-            current_resource = self._resource_manager.get_by_url(
+            current_resource = self._uploaded_resource_repository.get_by_url(
                 self.__class__.__name__,
                 self._config_model.bucket_key,
                 link,
@@ -206,7 +209,7 @@ class BaseScraper(ABC):
 
             self._upload_resource_to_s3_and_store_to_db(current_resource)
 
-    def _check_valid_resource(self, resource: Resource, resource_name: str) -> bool:
+    def _check_valid_resource(self, resource: UploadedResource, resource_name: str) -> bool:
         if resource.id:
             self._logger.warning(f"Resource {resource_name} already exists in the database, skipping upload.")
             return False
@@ -215,9 +218,9 @@ class BaseScraper(ABC):
             return False
         return True
 
-    def _upload_resource_to_s3_and_store_to_db(self, resource: Resource) -> bool:
+    def _upload_resource_to_s3_and_store_to_db(self, resource: UploadedResource) -> bool:
         result = self._s3_client.upload_content(resource)
-        self._resource_manager.insert(resource, ["content"])
+        self._uploaded_resource_repository.insert(resource, ["content"])
 
         # Sleep after each successful download to avoid overwhelming the server
         time.sleep(random.uniform(2, 5))

@@ -2,7 +2,8 @@ from argparse import ArgumentParser
 from dotenv import load_dotenv
 
 from helper.constants import CONFIG_PATH
-from helper.utils import read_json_file, discover_scrapers, run_scrapers, init_db
+from helper.database import init_db
+from helper.utils import read_json_file, discover_scrapers, run_scrapers
 
 
 def main(args):
@@ -11,7 +12,7 @@ def main(args):
         f.write("")
 
     scraper_config = read_json_file(CONFIG_PATH)
-    scrapers = discover_scrapers("scraper")
+    scrapers = discover_scrapers()
 
     if args.scrapers:
         scrapers = {name: scrapers[name] for name in args.scrapers}
@@ -22,7 +23,7 @@ def main(args):
 
 if __name__ == "__main__":
     load_dotenv()
-    init_db("service")
+    init_db()
 
     parser = ArgumentParser()
     parser.add_argument(

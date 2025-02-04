@@ -1,18 +1,16 @@
 import hashlib
 import os
-from typing import List, Dict
+from typing import List, Type
 from uuid import uuid4
-import requests
 
-from model.sql_models import Resource
-from service.base_table_interface import BaseTableInterface
-from service.database_manager import DatabaseFieldType
+from model.sql_models import UploadedResource
+from repository.base_repository import BaseRepository
 
 
-class ResourceManager(BaseTableInterface):
+class UploadedResourceRepository(BaseRepository):
     def get_by_url(
         self, scraper: str, root_key: str, source_url: str, file_extension: str, referer_url: str | None = None
-    ) -> Resource:
+    ) -> UploadedResource:
         """
         Retrieve a resource from the database by its URL
 
@@ -24,49 +22,33 @@ class ResourceManager(BaseTableInterface):
             referer_url (str): The URL of the referer
 
         Returns:
-            Resource | None: The resource if found, or None otherwise
+            UploadedResource | None: The resource if found, or None otherwise
         """
-        from helper.utils import get_user_agent, get_interacting_proxy_config
+        from helper.utils import get_resource_from_remote
 
         self._logger.info(f"Retrieving file from {source_url}")
 
         bucket_key = os.path.join(root_key, f"{uuid4()}.{file_extension}")  # Construct S3 key
-        result = Resource(scraper=scraper, bucket_key=bucket_key, source=source_url)
+        result = UploadedResource(scraper=scraper, bucket_key=bucket_key, source=source_url)
         try:
-            # Download content from the URL
-            proxy = get_interacting_proxy_config()
-            response = requests.get(
-                source_url,
-                headers={
-                    "User-Agent": get_user_agent(),
-                    "Accept": "application/pdf,*/*",
-                    "Accept-Language": "en-US,en;q=0.9",
-                    "Referer": referer_url,
-                },
-                proxies={
-                    "http": proxy,
-                    "https": proxy,
-                },
-                verify=False,  # Equivalent to -k flag in curl (ignore SSL certificate warnings)
-            )
-            response.raise_for_status()  # Check for request errors
+            content = get_resource_from_remote(source_url, referer_url)
 
             # calculate the sha256 of the content
-            result.content = response.content
-            result.sha256 = hashlib.sha256(response.content).hexdigest()
+            result.content = content
+            result.sha256 = hashlib.sha256(content).hexdigest()
 
             # search for the resource in the database by using the sha256
             records = self._database_manager.search_records(
                 self.table_name, {"sha256": result.sha256, "scraper": scraper}, limit=1
             )
             if records:
-                result = Resource(**records[0])
+                result = UploadedResource(**records[0])
         except Exception as e:
             self._logger.error(f"Failed to retrieve the resource {source_url}. Error: {e}")
         finally:
             return result
 
-    def get_by_content(self, scraper: str, root_key: str, source_path: str) -> Resource:
+    def get_by_content(self, scraper: str, root_key: str, source_path: str) -> UploadedResource:
         """
         Retrieve a resource from the database by its content
 
@@ -76,12 +58,12 @@ class ResourceManager(BaseTableInterface):
             source_path (str): The name of the resource
 
         Returns:
-            Resource | None: The resource if found, or None otherwise
+            UploadedResource | None: The resource if found, or None otherwise
         """
         file_extension = os.path.basename(source_path).split(".")[-1]
         bucket_key = os.path.join(root_key, f"{uuid4()}.{file_extension}")  # Construct S3 key
 
-        result = Resource(bucket_key=bucket_key, source=source_path, scraper=scraper)
+        result = UploadedResource(bucket_key=bucket_key, source=source_path, scraper=scraper)
         try:
             with open(os.path.join(source_path), "rb") as f:
                 result.content = f.read()
@@ -91,7 +73,7 @@ class ResourceManager(BaseTableInterface):
                 self.table_name, {"sha256": result.sha256, "scraper": scraper}, limit=1
             )
             if records:
-                return Resource(**records[0])
+                return UploadedResource(**records[0])
         except Exception as e:
             self._logger.error(f"Failed to retrieve the resource {source_path}. Error: {e}")
         finally:
@@ -99,12 +81,12 @@ class ResourceManager(BaseTableInterface):
 
     @property
     def table_name(self) -> str:
-        return "resources"
+        return "uploaded_resources"
 
     @property
-    def model_fields(self) -> List:
-        return [field for field in Resource.model_fields.keys() if field not in ["id", "content"]]
+    def model_type(self) -> Type[UploadedResource]:
+        return UploadedResource
 
     @property
-    def model_fields_definition(self) -> Dict:
-        return {field: DatabaseFieldType.TEXT for field in self.model_fields}
+    def model_fields_excluded(self) -> List[str]:
+        return ["id", "content"]

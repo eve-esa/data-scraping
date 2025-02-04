@@ -1,29 +1,14 @@
 import os
 from typing import List, Dict, Any, Optional
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Text, Numeric, inspect
+from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, inspect
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-from helper.base_enum import Enum
 from helper.singleton import singleton
+from helper.database import type_mapping
+from model.sql_models import DatabaseFieldType
 
 
 Base = declarative_base()
-
-
-class DatabaseFieldType(Enum):
-    TEXT = "TEXT"
-    INTEGER = "INTEGER"
-    VARCHAR = "VARCHAR"
-    FLOAT = "FLOAT"
-
-
-def type_mapping() -> Dict[DatabaseFieldType, Any]:
-    return {
-        DatabaseFieldType.TEXT: Text,
-        DatabaseFieldType.INTEGER: Integer,
-        DatabaseFieldType.VARCHAR: String(length=255),
-        DatabaseFieldType.FLOAT: Numeric
-    }
 
 
 @singleton
@@ -51,7 +36,6 @@ class DatabaseManager:
             table_name: Name of the table
             columns: Dictionary with the column names and types
         """
-        # Convert SQLite types to MySQL types
         table_columns = [
             Column('id', Integer, primary_key=True, autoincrement=True)
         ]

@@ -4,7 +4,7 @@ import boto3
 
 from helper.logger import setup_logger
 from helper.singleton import singleton
-from model.sql_models import Resource
+from model.sql_models import UploadedResource
 
 
 @singleton
@@ -47,7 +47,7 @@ class S3Storage:
             location = {"LocationConstraint": region}
             self.client.create_bucket(Bucket=self.bucket_name, CreateBucketConfiguration=location)
 
-    def upload_content(self, resource: Resource) -> bool:
+    def upload_content(self, resource: UploadedResource) -> bool:
         self.logger.info(f"Uploading Source: {resource.source} to {resource.bucket_key}")
         try:
             # Upload to S3

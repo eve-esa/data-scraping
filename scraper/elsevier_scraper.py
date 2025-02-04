@@ -186,7 +186,7 @@ class ElsevierScraper(BaseScraper):
             if not os.path.isfile(file_path):
                 continue
 
-            current_resource = self._resource_manager.get_by_content(
+            current_resource = self._uploaded_resource_repository.get_by_content(
                 self.__class__.__name__, self._config_model.bucket_key, file_path
             )
             if not self._check_valid_resource(current_resource, file):
