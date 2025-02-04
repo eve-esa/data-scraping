@@ -2,7 +2,16 @@ import os
 import sqlite3
 from typing import List, Dict, Any, Optional
 
+from helper.base_enum import Enum
 from helper.singleton import singleton
+
+
+class DatabaseFieldType(Enum):
+    TEXT = "TEXT"
+    INTEGER = "INTEGER"
+    REAL = "REAL"
+    BLOB = "BLOB"
+
 
 @singleton
 class DatabaseManager:
@@ -24,7 +33,7 @@ class DatabaseManager:
         if not os.path.exists(self._db_path):
             open(self._db_path, "w").close()
 
-    def create_table(self, table_name: str, columns: Dict[str, str]) -> None:
+    def create_table(self, table_name: str, columns: Dict[str, DatabaseFieldType]) -> None:
         """
         Create a new table in the database
 

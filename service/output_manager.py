@@ -3,6 +3,7 @@ from typing import List, Dict
 from pydantic import BaseModel
 
 from service.base_table_interface import BaseTableInterface
+from service.database_manager import DatabaseFieldType
 
 
 class Output(BaseModel):
@@ -62,4 +63,4 @@ class OutputManager(BaseTableInterface):
 
     @property
     def model_fields_definition(self) -> Dict:
-        return {field: "TEXT" for field in self.model_fields}
+        return {field: DatabaseFieldType.TEXT for field in self.model_fields}
