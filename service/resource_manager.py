@@ -1,10 +1,10 @@
 from datetime import datetime
 import hashlib
 import os
-from typing import List, Dict
+from typing import List, Dict, Optional
 from uuid import uuid4
 import requests
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from service.base_table_interface import BaseTableInterface
 
@@ -16,7 +16,7 @@ class Resource(BaseModel):
     name: str
     sha256: str | None = None
     content: bytes | None = None
-    date: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    date: datetime | None = Field(default_factory=lambda: datetime.now())
 
 
 class ResourceManager(BaseTableInterface):

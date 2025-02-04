@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List, Dict
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from service.base_table_interface import BaseTableInterface
 
@@ -9,7 +9,7 @@ class Output(BaseModel):
     id: int | None = None
     publisher: str
     output: str
-    date: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    date: datetime | None = Field(default_factory=lambda: datetime.now())
 
 
 class OutputManager(BaseTableInterface):
@@ -45,7 +45,7 @@ class OutputManager(BaseTableInterface):
             del output_dict["date"]
 
         # check whether a record with the same publisher already exists: if so, update it with the output, otherwise insert a new record
-        existing_record = self._database_manager.get_record_by_fields(self.table_name, {"publisher": output.publisher})
+        existing_record = self._database_manager.search_records(self.table_name, {"publisher": output.publisher})[0]
         if existing_record:
             self._database_manager.update_record(self.table_name, existing_record["id"], {"output": output.output})
             return existing_record["id"]
