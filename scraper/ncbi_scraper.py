@@ -56,10 +56,13 @@ class NCBIScraper(BasePaginationPublisherScraper):
             scraper = self._scrape_url(url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
-            pdf_tag_list = scraper.find_all("a", href=lambda href: href and "/articles/" in href and ".pdf" in href, class_="view")
+            if not (pdf_tag_list := scraper.find_all(
+                    "a", href=lambda href: href and "/articles/" in href and ".pdf" in href, class_="view"
+            )):
+                self._save_failure(url)
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
-            self._logger.error(f"Failed to process URL {url}. Error: {e}")
+            self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None

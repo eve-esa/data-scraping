@@ -26,19 +26,20 @@ class MITScraper(BaseUrlPublisherScraper):
         try:
             scraper = self._scrape_url(source.url)
 
-            pdf_tag_list = [
+            if not (pdf_tag_list := [
                 pdf_tag for tag in scraper.find_all(
                     "a", href=lambda href: href and "/courses/" in href and "/resources/earthsurface_" in href
                 )
                 if (pdf_tag := self._scrape_url(get_scraped_url(tag, self._config_model.base_url)).find(
                     "a", href=lambda href: href and ".pdf" in href, class_="download-file"
                 ))
-            ]
+            ]):
+                self._save_failure(source.url)
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
-            self._logger.error(f"Failed to process Issue / Collection {source.url}. Error: {e}")
+            self._log_and_save_failure(source.url, f"Failed to process Issue / Collection {source.url}. Error: {e}")
             return None
 
     def _scrape_article(self, source: BaseUrlPublisherSource) -> Tag | None:

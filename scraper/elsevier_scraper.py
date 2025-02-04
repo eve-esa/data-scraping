@@ -67,7 +67,7 @@ class ElsevierScraper(BaseScraper):
             # get the first link (i.e., the newest issue) in the page with the tag "a", class "js-issue-item-link"
             first_issue_tag = scraper.find("a", class_="js-issue-item-link")
             if first_issue_tag is None:
-                self._logger.error("No issue found")
+                self._log_and_save_failure(source.url, "No issue found")
                 return None
 
             issue_url = get_scraped_url(first_issue_tag, self._config_model.base_url)
@@ -84,9 +84,12 @@ class ElsevierScraper(BaseScraper):
                 issue_url = result.next_issue_url
 
             self._logger.info(f"Journal {source.name} scraped")
+
+            if not journal_links:
+                self._save_failure(source.url)
             return journal_links
         except Exception as e:
-            self._logger.error(f"Error scraping journal: {e}")
+            self._log_and_save_failure(source.url, f"Error scraping journal: {e}")
             return None
 
     def __scrape_issue(self, source: ElsevierSource) -> ElsevierScrapeIssueOutput:
@@ -124,7 +127,7 @@ class ElsevierScraper(BaseScraper):
             )
             # if no PDF tag exists, try with the next issue since no PDF can be downloaded from the current one
             if not pdf_tags:
-                self._logger.error(f"No downloadable PDF found at the URL: {source.url}")
+                self._log_and_save_failure(source.url, f"No downloadable PDF found at the URL: {source.url}")
                 return ElsevierScrapeIssueOutput(was_scraped=False, next_issue_url=next_issue_link)
 
             # wait for the page to load and get the element with tag "button", child of "form.js-download-full-issue-form"
@@ -145,7 +148,7 @@ class ElsevierScraper(BaseScraper):
 
             return ElsevierScrapeIssueOutput(was_scraped=True, next_issue_url=next_issue_link)
         except Exception as e:
-            self._logger.error(f"Error scraping journal: {e}")
+            self._log_and_save_failure(source.url, f"Error scraping journal: {e}")
             return ElsevierScrapeIssueOutput(was_scraped=False, next_issue_url=None)
 
     def __wait_end_download(self, timeout: int | None = 60):
@@ -166,16 +169,7 @@ class ElsevierScraper(BaseScraper):
 
             time.sleep(0.1)
 
-    def upload_to_s3(self, sources_links: List[str]) -> bool:
-        """
-        Upload the source files to S3.
-
-        Args:
-            sources_links (List[str]): The list of links of the various sources.
-
-        Returns:
-            bool: True if the upload was successful, False otherwise.
-        """
+    def upload_to_s3(self, sources_links: List[str]):
         self._logger.debug("Uploading files to S3")
 
         for file in os.listdir(self._download_folder_path):

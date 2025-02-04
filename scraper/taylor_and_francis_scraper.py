@@ -48,7 +48,7 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
             issues_tag_list = self._get_parsed_page_source().find_all("a", href=True, class_="issue-link")
 
             # For each tag of issues previously collected, scrape the issue as a collection of articles
-            pdf_tag_list = [
+            if not (pdf_tag_list := [
                 tag
                 for x in issues_tag_list
                 if (
@@ -57,12 +57,13 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
                     ))
                 )
                 for tag in tags
-            ]
-            self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
+            ]):
+                self._save_failure(source.url)
 
+            self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
-            self._logger.error(f"Failed to process Journal {source.url}. Error: {e}")
+            self._log_and_save_failure(source.url, f"Failed to process Journal {source.url}. Error: {e}")
             return None
 
     def _scrape_issue_or_collection(self, source: BaseUrlPublisherSource) -> List[Tag] | None:
@@ -88,7 +89,7 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
             )
 
             # For each tag of articles previously collected, scrape the article
-            pdf_tag_list = [
+            if not (pdf_tag_list := [
                 tag
                 for x in article_tag_list
                 if (
@@ -96,12 +97,13 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
                         url=get_scraped_url(x, self._config_model.base_url), type=str(SourceType.ARTICLE)
                     ))
                 )
-            ]
-            self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
+            ]):
+                self._save_failure(source.url)
 
+            self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
-            self._logger.error(f"Failed to process Issue / Collection {source.url}. Error: {e}")
+            self._log_and_save_failure(source.url, f"Failed to process Issue / Collection {source.url}. Error: {e}")
             return None
 
     def _scrape_article(self, source: BaseUrlPublisherSource) -> Tag | None:
@@ -120,7 +122,10 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
             scraper = self._scrape_url(source.url)
 
             # Find the PDF link using appropriate class or tag (if lambda returns True, it will be included in the list)
-            return scraper.find("a", href=lambda href: href and "/doi/" in href and "/pdf/" in href, class_="show-pdf")
+            if not (tag := scraper.find("a", href=lambda href: href and "/doi/" in href and "/pdf/" in href, class_="show-pdf")):
+                self._save_failure(source.url)
+
+            return tag
         except Exception as e:
-            self._logger.error(f"Failed to process Article {source.url}. Error: {e}")
+            self._log_and_save_failure(source.url, f"Failed to process Article {source.url}. Error: {e}")
             return None

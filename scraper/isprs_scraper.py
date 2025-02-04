@@ -26,9 +26,11 @@ class ISPRSScraper(BaseScraper):
                 proceedings_links = [get_scraped_url(tag, self._config_model.base_url) for tag in scraper.find_all(
                     "a", href=lambda href: href and "www.isprs.org" in href and "proceedings" in href
                 )]
-                pdf_tags.extend(self.__scrape_proceedings(proceedings_links))
+                if not (tags := self.__scrape_proceedings(proceedings_links)):
+                    self._save_failure(source.url)
+                pdf_tags.extend(tags)
             except Exception as e:
-                self._logger(f"An error occurred while scraping the URL: {source.url}. Error: {e}")
+                self._log_and_save_failure(source.url, f"An error occurred while scraping the URL: {source.url}. Error: {e}")
 
         return pdf_tags if pdf_tags else None
 
@@ -45,10 +47,13 @@ class ISPRSScraper(BaseScraper):
                     article_link = article_tag.get("href")
                     self._logger.info(f"Scraping archive's article: {article_link}")
 
-                    if pdf_link := self.__scrape_archive_article(article_link):
-                        archive_result.append(pdf_link)
+                    if not (pdf_link := self.__scrape_archive_article(article_link)):
+                        self._save_failure(link)
+                        continue
+
+                    archive_result.append(pdf_link)
             except Exception as e:
-                self._logger.error(f"An error occurred while scraping the archive {link}: {e}")
+                self._log_and_save_failure(link, f"An error occurred while scraping the archive {link}: {e}")
 
             self._logger.info(f"Scraped {len(archive_result)} articles from {link}")
             result.extend(archive_result)
@@ -64,9 +69,11 @@ class ISPRSScraper(BaseScraper):
                 class_=lambda class_: class_ and "pdf-icon" in class_
             )):
                 return pdf_tag.get("href")
+
+            self._save_failure(article_link)
             return None
         except Exception as e:
-            self._logger.error(f"An error occurred while scraping the article {article_link}: {e}")
+            self._log_and_save_failure(article_link, f"An error occurred while scraping the article {article_link}: {e}")
             return None
 
     def __scrape_proceedings(self, proceedings_links: List[str]) -> List[str]:
@@ -81,7 +88,7 @@ class ISPRSScraper(BaseScraper):
                     for tag in self._scrape_url(link).find_all("a", href=lambda href: href and ".pdf" in href)
                 ])
             except Exception as e:
-                self._logger.error(f"An error occurred while scraping the proceedings {link}: {e}")
+                self._log_and_save_failure(link, f"An error occurred while scraping the proceedings {link}: {e}")
 
         self._logger.info(f"Scraped {len(result)} articles from {len(proceedings_links)} proceedings")
         return result

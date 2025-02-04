@@ -33,7 +33,7 @@ class EOAScraper(BaseScraper):
                     for tag in tags
                 ])
             except Exception as e:
-                self._logger.error(f"An error occurred while scraping the URL: {source.url}. Error: {e}")
+                self._log_and_save_failure(source.url, f"An error occurred while scraping the URL: {source.url}. Error: {e}")
 
         return pdf_links if pdf_links else None
 

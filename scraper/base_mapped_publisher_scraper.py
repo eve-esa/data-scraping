@@ -72,15 +72,8 @@ class BaseMappedPublisherScraper(BaseScraper):
         }
 
     def upload_to_s3(self, sources_links: Dict[str, List[str]]):
-        """
-        Upload the source files to S3.
-
-        Args:
-            sources_links (Dict[str, List[str]]): The list of links of the various sources.
-        """
         for source in self._config_model.sources:
-            adapter = ScrapeAdapter(source.config, self.mapping.get(source.scraper))
-            result = adapter.upload_to_s3(
+            ScrapeAdapter(source.config, self.mapping.get(source.scraper)).upload_to_s3(
                 sources_links[source.name],
                 self._bucket_keys[source.name],
                 self._file_extensions[source.name],

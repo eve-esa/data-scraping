@@ -46,18 +46,21 @@ class BaseCrawlingScraper(BaseScraper):
     def upload_to_s3(self, sources_links: List[str]):
         self._logger.debug("Uploading files to S3")
 
-        for file in os.listdir(self.crawling_folder_path):
-            if not file.endswith(self._config_model.file_extension):
-                continue
+        file_paths = [
+            os.path.join(self.crawling_folder_path, file)
+            for file in os.listdir(self.crawling_folder_path)
+            if file.endswith(self._config_model.file_extension)
+            and os.path.isfile(os.path.join(self.crawling_folder_path, file))
+        ]
+        if not file_paths:
+            for source_link in sources_links:
+                self._save_failure(source_link, f"No files found in the crawling folder: {source_link}")
 
-            file_path = os.path.join(self.crawling_folder_path, file)
-            if not os.path.isfile(file_path):
-                continue
-
+        for file_path in file_paths:
             current_resource = self._uploaded_resource_repository.get_by_content(
                 self.__class__.__name__, self._config_model.bucket_key, file_path
             )
-            if not self._check_valid_resource(current_resource, file):
+            if not self._check_valid_resource(current_resource, file_path.replace(self.crawling_folder_path, "")):
                 continue
 
             self._upload_resource_to_s3_and_store_to_db(current_resource)

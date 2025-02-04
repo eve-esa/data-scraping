@@ -63,14 +63,15 @@ class NASAEarthDataWikiScraper(BaseUrlPublisherScraper, BaseMappedScraper):
                     return await expandAll();
                 """)
 
-            html_tag_list = self._get_parsed_page_source().find_all(
+            if not (html_tag_list := self._get_parsed_page_source().find_all(
                 "a", href=lambda href: href and ("/display/" in href or "/pages/" in href) and "#" not in href
-            )
-            self._logger.debug(f"HTML links found: {len(html_tag_list)}")
+            )):
+                self._save_failure(source.url)
 
+            self._logger.debug(f"HTML links found: {len(html_tag_list)}")
             return html_tag_list
         except Exception as e:
-            self._logger.error(f"Failed to process Issue / Collection {source.url}. Error: {e}")
+            self._log_and_save_failure(source.url, f"Failed to process Issue / Collection {source.url}. Error: {e}")
             return None
 
     def _scrape_article(self, source: BaseMappedUrlSource) -> Tag | None:
@@ -106,12 +107,13 @@ class NASANTRSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
             scraper = self._scrape_url(url)
 
             # Now, visit each article link and find the PDF link
-            pdf_tag_list = scraper.find_all("a", href=lambda href: href and ".pdf" in href)
+            if not (pdf_tag_list := scraper.find_all("a", href=lambda href: href and ".pdf" in href)):
+                self._save_failure(url)
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
-            self._logger.error(f"Failed to process URL {url}. Error: {e}")
+            self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None
 
 
@@ -138,12 +140,13 @@ class NASAEOSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
         try:
             scraper = self._scrape_url(url)
 
-            pdf_tag_list = scraper.find_all("a", href=lambda href: href and ".pdf" in href)
+            if not (pdf_tag_list := scraper.find_all("a", href=lambda href: href and ".pdf" in href)):
+                self._save_failure(url)
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
-            self._logger.error(f"Failed to process URL {url}. Error: {e}")
+            self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None
 
 
@@ -175,12 +178,13 @@ class NASAEarthDataScraper(BasePaginationPublisherScraper, BaseMappedScraper):
         try:
             scraper = self._scrape_url(url)
 
-            html_tag_list = scraper.find_all("a", href=lambda href: href and self.__href in href, hreflang="en")
+            if not (html_tag_list := scraper.find_all("a", href=lambda href: href and self.__href in href, hreflang="en")):
+                self._save_failure(url)
 
             self._logger.debug(f"HTML links found: {len(html_tag_list)}")
             return html_tag_list
         except Exception as e:
-            self._logger.error(f"Failed to process URL {url}. Error: {e}")
+            self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None
 
 
@@ -213,9 +217,12 @@ class NASAEarthDataPDFScraper(NASAEarthDataScraper):
                 ))
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
+
+            if not pdf_tag_list:
+                self._save_failure(url)
             return pdf_tag_list
         except Exception as e:
-            self._logger.error(f"Failed to process URL {url}. Error: {e}")
+            self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None
 
 

@@ -62,13 +62,13 @@ class ScraperOutput(BaseModel):
 class ScraperFailure(BaseModel):
     scraper: str
     source: str
-    error: str | None = None
+    message: str | None = None
 
     @classmethod
     def def_types(cls):
         return {
             "scraper": DatabaseFieldType.VARCHAR,
             "source": DatabaseFieldType.TEXT,
-            "error": DatabaseFieldType.TEXT,
+            "message": DatabaseFieldType.TEXT,
             "last_access_at": DatabaseFieldType.VARCHAR
         }

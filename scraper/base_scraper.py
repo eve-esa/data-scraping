@@ -13,7 +13,7 @@ import time
 
 from helper.logger import setup_logger
 from model.base_models import BaseConfig
-from model.sql_models import UploadedResource, ScraperOutput
+from model.sql_models import UploadedResource, ScraperOutput, ScraperFailure
 from service.storage import S3Storage
 from repository.scraper_failure_repository import ScraperFailureRepository
 from repository.scraper_output_repository import ScraperOutputRepository
@@ -187,6 +187,16 @@ class BaseScraper(ABC):
             BeautifulSoup: The parsed page source.
         """
         return BeautifulSoup(self._driver.get_page_source(), "html.parser")
+
+    def _save_failure(self, source: str, message: str | None = None):
+        message = message or "No source link found."
+        self._scraper_failure_repository.insert(
+            ScraperFailure(scraper=self.__class__.__name__, source=source, message=message)
+        )
+
+    def _log_and_save_failure(self, url: str, message: str):
+        self._logger.error(message)
+        self._save_failure(url, message)
 
     def upload_to_s3(self, sources_links: Dict[str, List[str]] | List[str]):
         """

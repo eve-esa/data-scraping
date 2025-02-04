@@ -62,7 +62,7 @@ class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
                 break
         try:
             # For each tag of articles previously collected, scrape the article
-            pdf_tag_list = [
+            if not (pdf_tag_list := [
                 tag
                 for tag in (
                     self._scrape_article(BaseMappedUrlSource(
@@ -71,12 +71,13 @@ class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
                     for tag in article_tag_list
                 )
                 if tag
-            ]
-            self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
+            ]):
+                self._save_failure(source.url)
 
+            self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
-            self._logger.error(f"Failed to process Journal {source.url}. Error: {e}")
+            self._log_and_save_failure(source.url, f"Failed to process Journal {source.url}. Error: {e}")
             return None
 
     def _scrape_issue_or_collection(self, source: BaseMappedUrlSource) -> ResultSet | None:
@@ -95,12 +96,13 @@ class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
             scraper = self._scrape_url(source.url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
-            pdf_tag_list = scraper.find_all("a", href=lambda href: href and "/pdf/" in href)
-            self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
+            if not (pdf_tag_list := scraper.find_all("a", href=lambda href: href and "/pdf/" in href)):
+                self._save_failure(source.url)
 
+            self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
-            self._logger.error(f"Failed to process Issue / Collection {source.url}. Error: {e}")
+            self._log_and_save_failure(source.url, f"Failed to process Issue / Collection {source.url}. Error: {e}")
             return None
 
     def _scrape_article(self, source: BaseMappedUrlSource) -> Tag | None:
@@ -119,9 +121,12 @@ class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
             scraper = self._scrape_url(source.url)
 
             # Find the PDF link using appropriate class or tag (if lambda returns True, it will be included in the list)
-            return scraper.find("a", href=lambda href: href and "/pdf/" in href)
+            if not (tag := scraper.find("a", href=lambda href: href and "/pdf/" in href)):
+                self._save_failure(source.url)
+
+            return tag
         except Exception as e:
-            self._logger.error(f"Failed to process Article {source.url}. Error: {e}")
+            self._log_and_save_failure(source.url, f"Failed to process Article {source.url}. Error: {e}")
             return None
 
 
@@ -200,17 +205,18 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedScra
                 for tag in open_access_article_tag_list
             ]
 
-            pdf_tag_list = [
+            if not (pdf_tag_list := [
                 pdf_tag
                 for scraper in scrapers
                 if (pdf_tag := scraper.find(
                     "a",
                     href=lambda href: href and ".pdf" in href,
                     class_=lambda class_: class_ and "c-pdf-download__link" in class_))
-            ]
+            ]):
+                self._save_failure(url)
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
-            self._logger.error(f"Failed to process URL {url}. Error: {e}")
+            self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None

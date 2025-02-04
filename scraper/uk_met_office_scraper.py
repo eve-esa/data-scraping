@@ -39,9 +39,12 @@ class UKMetOfficeScraper(BaseUrlPublisherScraper):
                 pdf_tag_list.extend(scraper.find_all("a", href=True, class_="card-link-value"))
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
+
+            if not pdf_tag_list:
+                self._save_failure(source.url)
             return pdf_tag_list
         except Exception as e:
-            self._logger.error(f"Failed to process Issue / Collection {source.url}. Error: {e}")
+            self._log_and_save_failure(source.url, f"Failed to process Issue / Collection {source.url}. Error: {e}")
             return None
 
     def _scrape_article(self, source: BaseUrlPublisherSource) -> Tag | None:

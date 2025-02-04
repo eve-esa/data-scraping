@@ -74,9 +74,12 @@ class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedScraper, IEE
             scraper = self._scrape_url(landing_page_url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
-            return scraper.find_all("a", href=lambda href: href and "/tocresult" in href and "punumber=" in href)
+            if not (tags := scraper.find_all("a", href=lambda href: href and "/tocresult" in href and "punumber=" in href)):
+                self._save_failure(landing_page_url)
+
+            return tags
         except Exception as e:
-            self._logger.error(f"Failed to process URL {landing_page_url}. Error: {e}")
+            self._log_and_save_failure(landing_page_url, f"Failed to process URL {landing_page_url}. Error: {e}")
             return []
 
     def _scrape_page(self, url: str) -> ResultSet | None:
@@ -93,16 +96,17 @@ class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedScraper, IEE
             scraper = self._scrape_url(url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
-            pdf_tag_list = scraper.find_all(
+            if not (pdf_tag_list := scraper.find_all(
                 "a",
                 href=lambda href: href and "/stamp/stamp.jsp" in href,
                 class_=lambda class_: class_ and "u-flex-display-flex" in class_
-            )
+            )):
+                self._save_failure(url)
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
-            self._logger.error(f"Failed to process URL {url}. Error: {e}")
+            self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None
 
 
@@ -160,14 +164,15 @@ class IEEESearchScraper(BasePaginationPublisherScraper, BaseMappedScraper, IEEEM
             scraper = self._scrape_url(url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
-            pdf_tag_list = scraper.find_all(
+            if not (pdf_tag_list := scraper.find_all(
                 "a",
                 href=lambda href: href and "/stamp/stamp.jsp" in href,
                 class_=lambda class_: class_ and "u-flex-display-flex" in class_
-            )
+            )):
+                self._save_failure(url)
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
-            self._logger.error(f"Failed to process URL {url}. Error: {e}")
+            self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None

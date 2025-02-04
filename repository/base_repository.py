@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import List, Dict, Any, Type
 
 from helper.logger import setup_logger
@@ -60,6 +61,8 @@ class BaseRepository(ABC):
         existing_records = self._database_manager.search_records(self.table_name, search_by, limit=1)
         if existing_records:
             existing_record = existing_records[0]
+            update_dict["last_access_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
             self._database_manager.update_record(self.table_name, existing_record["id"], update_dict)
             return existing_record["id"]
 

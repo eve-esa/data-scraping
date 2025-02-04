@@ -44,16 +44,17 @@ class EOSScraper(BaseUrlPublisherScraper):
             scraper = self._scrape_url(source.url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
-            pdf_tag_list = scraper.find_all(
+            if not (pdf_tag_list := scraper.find_all(
                 "a",
                 href=lambda href: href and "/wp-content/uploads/" in href and ".pdf" in href,
                 class_=lambda class_: class_ and "wp-element-button" in class_,
-            )
-            self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
+            )):
+                self._save_failure(source.url)
 
+            self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
-            self._logger.error(f"Failed to process Issue {source.url}. Error: {e}")
+            self._log_and_save_failure(source.url, f"Failed to process Issue {source.url}. Error: {e}")
             return None
 
     def _scrape_article(self, source: BaseUrlPublisherSource) -> Tag | None:

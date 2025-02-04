@@ -90,16 +90,17 @@ class CopernicusScraper(BaseIterativeWithConstraintPublisherScraper):
             # True, it will be included in the list)
             tags = scraper.find_all("a", class_="article-title", href=lambda href: href and "/articles/" in href)
 
-            pdf_links = [
+            if not (pdf_links := [
                 pdf_link
                 for pdf_link in map(lambda tag: self._scrape_article(get_scraped_url(tag, journal.url), journal.url), tags)
                 if pdf_link
-            ]
+            ]):
+                self._save_failure(issue_url)
 
             self._logger.debug(f"PDF links found: {len(pdf_links)}")
             return pdf_links
         except Exception as e:
-            self._logger.error(f"Failed to process Issue {issue_num} in Volume {volume_num}. Error: {e}")
+            self._log_and_save_failure(issue_url, f"Failed to process Issue {issue_num} in Volume {volume_num}. Error: {e}")
             return None
 
     def _scrape_article(self, article_url: str, base_url: str) -> str | None:
@@ -119,11 +120,11 @@ class CopernicusScraper(BaseIterativeWithConstraintPublisherScraper):
             scraper = self._scrape_url(article_url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
-            pdf_tag = scraper.find("a", href=lambda href: href and ".pdf" in href)
-            if pdf_tag:
+            if pdf_tag := scraper.find("a", href=lambda href: href and ".pdf" in href):
                 return get_scraped_url(pdf_tag, base_url)
 
+            self._save_failure(article_url)
             return None
         except Exception as e:
-            self._logger.error(f"Failed to process Article {article_url}. Error: {e}")
+            self._log_and_save_failure(article_url, f"Failed to process Article {article_url}. Error: {e}")
             return None

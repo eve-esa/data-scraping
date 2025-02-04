@@ -82,14 +82,15 @@ class WileyScraper(BasePaginationPublisherScraper):
             ]
 
             # Now, visit each article link and find the PDF link
-            pdf_tag_list = [
+            if not (pdf_tag_list := [
                 tag for article_link in articles_links if (tag := self.__scrape_article(article_link))
-            ]
+            ]):
+                self._save_failure(url)
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
-            self._logger.error(f"Failed to process URL {url}. Error: {e}")
+            self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None
 
     def __scrape_article(self, url: str) -> Tag | None:
@@ -117,13 +118,15 @@ class WileyScraper(BasePaginationPublisherScraper):
                 return None
 
             # now, scrape the ePDF page to get the final PDF link, and return this latter tag
-            direct_pdf_tag = self._scrape_url(
-                get_scraped_url(epdf_tag, self.__base_url)
-            ).find("a", href=lambda href: href and "/doi/pdfdirect/" in href)
-            if not direct_pdf_tag:
+            if not (
+                    direct_pdf_tag := self._scrape_url(get_scraped_url(epdf_tag, self.__base_url)).find(
+                        "a", href=lambda href: href and "/doi/pdfdirect/" in href
+                    )
+            ):
+                self._save_failure(url)
                 return None
 
             return Tag(name="a", attrs={"href": remove_query_string_from_url(direct_pdf_tag.get("href"))})
         except Exception as e:
-            self._logger.error(f"Failed to process URL {url}. Error: {e}")
+            self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None

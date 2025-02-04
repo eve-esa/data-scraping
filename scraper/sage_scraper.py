@@ -63,7 +63,7 @@ class SageScraper(BasePaginationPublisherScraper):
             )]
 
             # Now, visit each article link and find the PDF link
-            pdf_tag_list = [
+            if not (pdf_tag_list := [
                 Tag(name="a", attrs={"href": remove_query_string_from_url(tag.get("href", ""))})
                 for article_link in articles_links
                 if (tag := self._scrape_url(article_link).find(
@@ -72,10 +72,11 @@ class SageScraper(BasePaginationPublisherScraper):
                     href=lambda href: href and "/doi/pdf/" in href,
                     class_=lambda class_: class_ and "download" in class_,
                 ))
-            ]
+            ]):
+                self._save_failure(url)
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
-            self._logger.error(f"Failed to process URL {url}. Error: {e}")
+            self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None

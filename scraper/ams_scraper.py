@@ -108,7 +108,7 @@ class AMSScraper(BaseIterativePublisherScraper):
         try:
             scraper = self._scrape_url(issue_url)
             if any(keyword in scraper.text.lower() for keyword in ["not found", "maintenance"]):
-                self._logger.warning(f"Issue {issue_num} in Volume {volume_num} not found or under maintenance.")
+                self._log_and_save_failure(issue_url, f"Issue {issue_num} in Volume {volume_num} not found or under maintenance.")
                 return None
 
             # find all the article links in the issue by keeping only the links to the accessible articles
@@ -124,12 +124,13 @@ class AMSScraper(BaseIterativePublisherScraper):
                     "../../preceding-sibling::div/div[contains(@class, 'ico-access-open') or contains(@class, 'ico-access-free')]"
                 ))
             ]
-            pdf_links = [pdf_link for link in article_links if (pdf_link := self._scrape_article(link))]
+            if not (pdf_links := [pdf_link for link in article_links if (pdf_link := self._scrape_article(link))]):
+                self._save_failure(issue_url)
 
             self._logger.debug(f"PDF links found: {len(pdf_links)}")
             return pdf_links
         except Exception as e:
-            self._logger.error(f"Failed to process Issue {issue_num} in Volume {volume_num}. Error: {e}")
+            self._log_and_save_failure(issue_url, f"Failed to process Issue {issue_num} in Volume {volume_num}. Error: {e}")
             return None
 
     def _scrape_article(self, article_url: str) -> str | None:
@@ -146,12 +147,11 @@ class AMSScraper(BaseIterativePublisherScraper):
 
         try:
             scraper = self._scrape_url(article_url)
-
-            pdf_tag = scraper.find("a", href=True, class_="pdf-download")
-            if pdf_tag:
+            if pdf_tag := scraper.find("a", href=True, class_="pdf-download"):
                 return get_scraped_url(pdf_tag, self._config_model.base_url)
 
+            self._save_failure(article_url)
             return None
         except Exception as e:
-            self._logger.error(f"Failed to process Article {article_url}. Error: {e}")
+            self._log_and_save_failure(article_url, f"Failed to process Article {article_url}. Error: {e}")
             return None

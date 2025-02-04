@@ -85,17 +85,18 @@ class OxfordAcademicScraper(BaseIterativePublisherScraper):
             # True, it will be included in the list)
             tags = scraper.find_all("a", class_="at-articleLink", href=lambda href: href and "/article/" in href)
 
-            pdf_links = [
+            if not (pdf_links := [
                 pdf_link
                 for pdf_link in
                 map(lambda tag: self._scrape_article(get_scraped_url(tag, self._config_model.base_url)), tags)
                 if pdf_link
-            ]
+            ]):
+                self._save_failure(issue_url)
 
             self._logger.debug(f"PDF links found: {len(pdf_links)}")
             return pdf_links
         except Exception as e:
-            self._logger.error(f"Failed to process Issue {issue_num} in Volume {volume_num}. Error: {e}")
+            self._log_and_save_failure(issue_url, f"Failed to process Issue {issue_num} in Volume {volume_num}. Error: {e}")
             return None
 
     def _scrape_article(self, article_url: str) -> str | None:
@@ -118,7 +119,8 @@ class OxfordAcademicScraper(BaseIterativePublisherScraper):
             if pdf_tag:
                 return get_scraped_url(pdf_tag, self._config_model.base_url)
 
+            self._save_failure(article_url)
             return None
         except Exception as e:
-            self._logger.error(f"Failed to process Article {article_url}. Error: {e}")
+            self._log_and_save_failure(article_url, f"Failed to process Article {article_url}. Error: {e}")
             return None

@@ -99,14 +99,13 @@ class MDPIJournalsScraper(BaseIterativePublisherScraper, BaseMappedScraper):
             # Get all PDF links using Selenium to scroll and handle cookie popup once
             # Now find all PDF links using the class_="UD_Listings_ArticlePDF"
             tags = scraper.find_all("a", class_="UD_Listings_ArticlePDF", href=True)
-            pdf_links = [get_scraped_url(tag, self._config_model.base_url) for tag in tags]
+            if not (pdf_links := [get_scraped_url(tag, self._config_model.base_url) for tag in tags]):
+                self._save_failure(issue_url)
 
             self._logger.debug(f"PDF links found: {len(pdf_links)}")
             return pdf_links
         except Exception as e:
-            self._logger.error(
-                f"Failed to process Issue {issue_num} in Volume {volume_num}. Error: {e}"
-            )
+            self._log_and_save_failure(issue_url, f"Failed to process Issue {issue_num} in Volume {volume_num}. Error: {e}")
             return None
 
     def _scrape_article(self, *args, **kwargs) -> str | None:
@@ -169,10 +168,11 @@ class MDPIGoogleSearchScraper(BasePaginationPublisherScraper, BaseMappedScraper)
             )
 
             self._config_model.cookie_selector = self.__cookie_selector
-            pdf_tag_list = [tag for mdpi_tag in mdpi_tags for tag in get_mdpi_pdf_tags(mdpi_tag)]
+            if not (pdf_tag_list := [tag for mdpi_tag in mdpi_tags for tag in get_mdpi_pdf_tags(mdpi_tag)]):
+                self._save_failure(url)
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
-            self._logger.error(f"Failed to process URL {url}. Error: {e}")
+            self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None
