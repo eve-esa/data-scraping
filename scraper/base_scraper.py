@@ -33,7 +33,7 @@ class BaseScraper(ABC):
 
     def __call__(self, config_model: BaseConfig, force: bool = False):
         name_scraper = self.__class__.__name__
-        if not force and self._output_manager.get_by_publisher(name_scraper):
+        if not force and self._output_manager.get_by_scraper(name_scraper):
             self._logger.warning(f"Scraper {name_scraper} already done")
             return
 
@@ -52,12 +52,11 @@ class BaseScraper(ABC):
 
         if all_done:
             from helper.utils import is_json_serializable
-            self._output_manager.upsert(
-                Output(
-                    publisher=name_scraper,
-                    output=json.dumps(scraping_results if is_json_serializable(scraping_results) else links)
-                )
+            output = Output(
+                scraper=name_scraper,
+                output=json.dumps(scraping_results if is_json_serializable(scraping_results) else links)
             )
+            self._output_manager.upsert(output,{"scraper": output.scraper}, {"output": output.output})
 
             self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")
             return
@@ -202,7 +201,7 @@ class BaseScraper(ABC):
         all_done = True
         for link in sources_links:
             current_resource = self._resource_manager.get_by_url(
-                self.__class__.__name__.replace("Scraper", ""),
+                self.__class__.__name__,
                 self._config_model.bucket_key,
                 link,
                 self._config_model.file_extension
@@ -226,16 +225,12 @@ class BaseScraper(ABC):
 
     def _upload_resource_to_s3_and_store_to_db(self, resource: Resource) -> bool:
         result = self._s3_client.upload_content(resource)
-        all_done = True
-        if not result:
-            all_done = False
-        else:
-            self._resource_manager.insert(resource)
+        self._resource_manager.insert(resource, ["content"])
 
         # Sleep after each successful download to avoid overwhelming the server
         time.sleep(random.uniform(2, 5))
 
-        return all_done
+        return result
 
     @abstractmethod
     def scrape(self) -> Any | None:

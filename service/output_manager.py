@@ -1,57 +1,29 @@
-from datetime import datetime
 from typing import List, Dict
-from pydantic import BaseModel
 
-from service.base_table_interface import BaseTableInterface
+from service.base_table_interface import BaseTableInterface, BaseModel
 from service.database_manager import DatabaseFieldType
 
 
 class Output(BaseModel):
-    id: int | None = None
-    publisher: str
+    scraper: str
     output: str
-    date: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
 class OutputManager(BaseTableInterface):
-    def get_by_publisher(self, publisher: str) -> Output | None:
+    def get_by_scraper(self, scraper: str) -> Output | None:
         """
-        Retrieve an output from the database by its publisher
+        Retrieve an output from the database by its scraper
 
         Args:
-            publisher (str): The publisher of the output
+            scraper (str): The scraper of the output
 
         Returns:
             Output | None: The output if found, or None otherwise
         """
-        record = self._database_manager.search_records(self.table_name, {"publisher": publisher})
+        record = self._database_manager.search_records(self.table_name, {"scraper": scraper})
         if record:
             return Output(**record)
         return None
-
-    def upsert(self, output: Output) -> int:
-        """
-        Store the resource in the database
-
-        Args:
-            output (Output): The output to store
-
-        Returns:
-            ID of the appended record
-        """
-        output_dict = output.model_dump()
-        if "id" in output_dict:
-            del output_dict["id"]
-        if "date" in output_dict:
-            del output_dict["date"]
-
-        # check whether a record with the same publisher already exists: if so, update it with the output, otherwise insert a new record
-        existing_record = self._database_manager.get_record_by_fields(self.table_name, {"publisher": output.publisher})
-        if existing_record:
-            self._database_manager.update_record(self.table_name, existing_record["id"], {"output": output.output})
-            return existing_record["id"]
-
-        return self._database_manager.insert_record(self.table_name, output_dict)
 
     @property
     def table_name(self) -> str:

@@ -188,7 +188,7 @@ class ElsevierScraper(BaseScraper):
                 continue
 
             current_resource = self._resource_manager.get_by_content(
-                self.__class__.__name__.replace("Scraper", ""), self._config_model.bucket_key, file_path
+                self.__class__.__name__, self._config_model.bucket_key, file_path
             )
             if not self._check_valid_resource(current_resource, file):
                 continue

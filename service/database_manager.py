@@ -177,6 +177,46 @@ class DatabaseManager:
         self.conn.commit()
         return cursor.rowcount > 0
 
+    def delete_record_by(self, table_name: str, conditions: Dict[str, Any], operator: str = "AND") -> bool:
+        """
+        Delete a record from the database, based on certain conditions
+
+        Args:
+            table_name: Name of the table
+            conditions: Dictionary with the search criteria
+            operator: Logical operator between conditions ("AND" or "OR")
+
+        Returns:
+            True if the deletion was successful
+        """
+        cursor = self.conn.cursor()
+
+        operator = operator.upper()
+        if operator not in ("AND", "OR"):
+            raise ValueError("Operator must be 'AND' or 'OR'")
+
+        where_conditions = []
+        values = []
+
+        for field, value in conditions.items():
+            if value is None:
+                where_conditions.append(f"{field} IS NULL")
+            elif isinstance(value, str) and ("%" in value or "_" in value):
+                where_conditions.append(f"{field} LIKE ?")
+                values.append(value)
+            else:
+                where_conditions.append(f"{field} = ?")
+                values.append(value)
+
+        query = f"DELETE FROM {table_name}"
+
+        if where_conditions:
+            query += f" WHERE {f' {operator} '.join(where_conditions)}"
+
+        cursor.execute(query, values)
+        self.conn.commit()
+        return cursor.rowcount > 0
+
     def get_all_records(self, table_name: str) -> List[Dict[str, Any]]:
         """
         Retrieve all records from the database

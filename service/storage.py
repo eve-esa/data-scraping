@@ -48,7 +48,7 @@ class S3Storage:
             self.client.create_bucket(Bucket=self.bucket_name, CreateBucketConfiguration=location)
 
     def upload_content(self, resource: Resource) -> bool:
-        self.logger.info(f"Uploading Source: {resource.name} to {resource.bucket_key}")
+        self.logger.info(f"Uploading Source: {resource.source} to {resource.bucket_key}")
         try:
             # Upload to S3
             self.client.put_object(Bucket=self.bucket_name, Key=resource.bucket_key, Body=resource.content)
@@ -56,5 +56,5 @@ class S3Storage:
 
             return True
         except Exception as e:
-            self.logger.error(f"Failed to upload content from {resource.name} to {resource.bucket_key}. Error: {e}")
+            self.logger.error(f"Failed to upload content from {resource.source} to {resource.bucket_key}. Error: {e}")
             return False
