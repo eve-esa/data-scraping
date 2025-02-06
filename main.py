@@ -9,22 +9,22 @@ from service.analytics_manager import AnalyticsManager
 
 def main(args):
     # first of all, remove the scraping.log file
-    with open("scraping.log", "w") as f:
-        f.write("")
+    if not args.analytics_only: 
+        with open("scraping.log", "w") as f:
+            f.write("")
 
-    scraper_config = read_json_file(CONFIG_PATH)
-    scrapers = discover_scrapers()
+        scraper_config = read_json_file(CONFIG_PATH)
+        scrapers = discover_scrapers()
 
-    if args.scrapers:
-        scrapers = {name: scrapers[name] for name in args.scrapers}
+        if args.scrapers:
+            scrapers = {name: scrapers[name] for name in args.scrapers}
 
-    force_running = args.force
-    run_scrapers(scrapers, scraper_config, force=force_running)
+        force_running = args.force
+        run_scrapers(scrapers, scraper_config, force=force_running)
 
-    if args.analytics_only:
-        analytics = AnalyticsManager()
-        scraper_perf = analytics.get_scraper_success_failure_rates()
-        print(scraper_perf)
+    analytics = AnalyticsManager()
+    scraper_perf = analytics.get_scraper_success_failure_rates()
+    print(scraper_perf)
 
 
 if __name__ == "__main__":
@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--analytics-only",
-        default=False,
+        action="store_true",
         help="Only show analytics without running scrapers",
     )
     args = parser.parse_args()
