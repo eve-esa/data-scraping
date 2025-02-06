@@ -4,6 +4,7 @@ from selenium.common import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 
+from helper.utils import get_parsed_page_source
 from model.base_url_publisher_models import BaseUrlPublisherSource, BaseUrlPublisherConfig
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
 
@@ -26,16 +27,23 @@ class UKMetOfficeScraper(BaseUrlPublisherScraper):
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
         try:
-            self._scrape_url(source.url)
+            _, driver = self._scrape_url(source.url)
 
             pdf_tag_list = []
 
-            page_buttons = self._driver.find_elements(value="a.role-button.page-link", by=By.CSS_SELECTOR)
+            page_buttons = driver.find_elements(value="a.role-button.page-link", by=By.CSS_SELECTOR)
             for page_button in page_buttons:
                 page_button.click()
-                self.__wait_for_loader_hidden()
+                try:
+                    loader = driver.find_element(By.ID, "loading-overflow")
 
-                scraper = self._get_parsed_page_source()
+                    WebDriverWait(driver, 10).until(
+                        lambda x: "display: none" in loader.get_attribute("style")
+                    )
+                except TimeoutException:
+                    pass
+
+                scraper = get_parsed_page_source(driver)
                 pdf_tag_list.extend(scraper.find_all("a", href=True, class_="card-link-value"))
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
@@ -49,24 +57,3 @@ class UKMetOfficeScraper(BaseUrlPublisherScraper):
 
     def _scrape_article(self, source: BaseUrlPublisherSource) -> Tag | None:
         pass
-
-    def __wait_for_loader_hidden(self, timeout: int | None = 10) -> bool:
-        """
-        Using self._driver, wait until the parent of the parent of div.loader-admin has style display: none
-
-        Args:
-            timeout (int | None): The maximum time to wait for the loader to be hidden
-
-        Returns:
-            bool: True if the loader is hidden, False otherwise
-        """
-
-        try:
-            loader = self._driver.find_element(By.ID, "loading-overflow")
-
-            WebDriverWait(self._driver, timeout).until(
-                lambda x: "display: none" in loader.get_attribute("style")
-            )
-            return True
-        except TimeoutException:
-            return False

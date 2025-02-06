@@ -2,6 +2,7 @@ from abc import ABC
 from typing import List, Type, Dict
 from bs4 import Tag, ResultSet
 from selenium.webdriver.support.wait import WebDriverWait
+from seleniumbase import Driver
 
 from helper.utils import get_scraped_url
 from model.base_mapped_models import BaseMappedPaginationConfig
@@ -12,8 +13,8 @@ from scraper.base_scraper import BaseMappedScraper, BaseScraper
 
 
 class IEEEMixin(BaseScraper, ABC):
-    def _wait_for_page_load(self, timeout: int | None = 20):
-        WebDriverWait(self._driver, timeout).until(
+    def _wait_for_page_load(self, driver: Driver, timeout: int | None = 20):
+        WebDriverWait(driver, timeout).until(
             lambda d: d.execute_script("return document.readyState") == "complete"
                       and not d.execute_script("return document.querySelector('i.fa-spinner')")
         )
@@ -71,7 +72,8 @@ class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedScraper, IEE
         self._logger.info(f"Processing Landing Page {landing_page_url}")
 
         try:
-            scraper = self._scrape_url(landing_page_url)
+            scraper, driver = self._scrape_url(landing_page_url)
+            driver.quit()
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             if not (tags := scraper.find_all("a", href=lambda href: href and "/tocresult" in href and "punumber=" in href)):
@@ -93,7 +95,8 @@ class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedScraper, IEE
             ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
         """
         try:
-            scraper = self._scrape_url(url)
+            scraper, driver = self._scrape_url(url)
+            driver.quit()
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             if not (pdf_tag_list := scraper.find_all(
@@ -161,7 +164,8 @@ class IEEESearchScraper(BasePaginationPublisherScraper, BaseMappedScraper, IEEEM
             ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
         """
         try:
-            scraper = self._scrape_url(url)
+            scraper, driver = self._scrape_url(url)
+            driver.quit()
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             if not (pdf_tag_list := scraper.find_all(

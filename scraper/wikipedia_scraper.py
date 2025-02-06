@@ -24,9 +24,11 @@ class WikipediaScraper(BaseUrlPublisherScraper):
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
         try:
-            self._scrape_url(source.url)
+            _, driver = self._scrape_url(source.url)
 
-            html_tag_list = self._driver.find_elements(value="div.mw-category-generated a", by=By.CSS_SELECTOR)
+            html_tag_list = driver.find_elements(value="div.mw-category-generated a", by=By.CSS_SELECTOR)
+            driver.quit()
+
             if not (result := [
                 Tag(name="a", attrs={"href": tag.get_attribute("href")})
                 for tag in html_tag_list

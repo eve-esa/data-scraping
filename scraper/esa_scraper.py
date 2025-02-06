@@ -1,6 +1,7 @@
 from typing import List, Type, Dict
 from bs4 import Tag, ResultSet
 from selenium.webdriver.support.wait import WebDriverWait
+from seleniumbase import Driver
 
 from model.base_mapped_models import BaseMappedUrlSource, BaseMappedUrlConfig
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
@@ -32,7 +33,8 @@ class ESAUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
         try:
-            scraper = self._scrape_url(source.url)
+            scraper, driver = self._scrape_url(source.url)
+            driver.quit()
 
             href_fnc = lambda href: href and source.href in href and "##" not in href
 
@@ -53,8 +55,8 @@ class ESAUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
     def _scrape_article(self, source: BaseMappedUrlSource) -> Tag | None:
         pass
 
-    def _wait_for_page_load(self, timeout: int | None = 20):
-        WebDriverWait(self._driver, timeout).until(
+    def _wait_for_page_load(self, driver: Driver, timeout: int | None = 20):
+        WebDriverWait(driver, timeout).until(
             lambda d: d.execute_script("return document.readyState") == "complete"
                       and not d.execute_script("return document.querySelector('div.v-progress-linear.v-progress-linear--visible')")
         )

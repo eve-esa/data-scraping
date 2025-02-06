@@ -1,7 +1,7 @@
 from typing import List, Type
 from bs4 import Tag, ResultSet
 
-from helper.utils import get_scraped_url
+from helper.utils import get_scraped_url, get_parsed_page_source
 from model.base_url_publisher_models import BaseUrlPublisherSource, SourceType, BaseUrlPublisherConfig
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
 
@@ -30,10 +30,10 @@ class EOGEScraper(BaseUrlPublisherScraper):
         self._logger.info(f"Processing Journal {source.url}")
 
         try:
-            self._scrape_url(source.url)
+            _, driver = self._scrape_url(source.url)
 
             # Click all the volume links to load all the issues
-            self._driver.execute_script("""
+            driver.execute_script("""
                 async function clickButtons() {
                     const buttons = document.querySelectorAll('a[data-toggle="collapse"]');
                     for (const button of buttons) {
@@ -45,9 +45,10 @@ class EOGEScraper(BaseUrlPublisherScraper):
             """)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
-            issues_tag_list = self._get_parsed_page_source().find_all(
+            issues_tag_list = get_parsed_page_source(driver).find_all(
                 "a", href=lambda href: href and "issue_" in href and ".html" in href
             )
+            driver.quit()
 
             # For each tag of issues previously collected, scrape the issue as a collection of articles
             if not (pdf_tag_list := [
@@ -81,7 +82,8 @@ class EOGEScraper(BaseUrlPublisherScraper):
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
         try:
-            scraper = self._scrape_url(source.url)
+            scraper, driver = self._scrape_url(source.url)
+            driver.quit()
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             if not (pdf_tag_list := scraper.find_all(

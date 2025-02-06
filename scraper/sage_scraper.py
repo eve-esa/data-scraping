@@ -55,7 +55,8 @@ class SageScraper(BasePaginationPublisherScraper):
             List[Tag] | None: A list of Tag objects containing the tags to the PDF links. If something went wrong, return None.
         """
         try:
-            scraper = self._scrape_url(url)
+            scraper, driver = self._scrape_url(url)
+            driver.quit()
 
             # Find all article links in the pagination URL, using the appropriate class or tag (if lambda returns True, it will be included in the list)
             articles_links = [get_scraped_url(tag, self._config_model.base_url) for tag in scraper.find_all(
@@ -63,16 +64,20 @@ class SageScraper(BasePaginationPublisherScraper):
             )]
 
             # Now, visit each article link and find the PDF link
-            if not (pdf_tag_list := [
-                Tag(name="a", attrs={"href": remove_query_string_from_url(tag.get("href", ""))})
-                for article_link in articles_links
-                if (tag := self._scrape_url(article_link).find(
-                    "a",
-                    id="favourite-download",
-                    href=lambda href: href and "/doi/pdf/" in href,
-                    class_=lambda class_: class_ and "download" in class_,
-                ))
-            ]):
+            pdf_tag_list = []
+            for article_link in articles_links:
+                scraper_inner, driver_inner = self._scrape_url(article_link)
+                driver_inner.quit()
+
+                if (tag := scraper_inner.find(
+                        "a",
+                        id="favourite-download",
+                        href=lambda href: href and "/doi/pdf/" in href,
+                        class_=lambda class_: class_ and "download" in class_,
+                )):
+                    pdf_tag_list.append(tag)
+
+            if not pdf_tag_list:
                 self._save_failure(url)
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")

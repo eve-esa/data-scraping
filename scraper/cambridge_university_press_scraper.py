@@ -49,7 +49,8 @@ class CambridgeUniversityPressScraper(BasePaginationPublisherScraper):
         self._logger.info(f"Processing Landing Page {landing_page_url}")
 
         try:
-            scraper = self._scrape_url(landing_page_url)
+            scraper, driver = self._scrape_url(landing_page_url)
+            driver.quit()
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             return scraper.find_all("a", href=lambda href: href and "/core/" in href and "/issue/" in href, class_="row")
@@ -68,7 +69,8 @@ class CambridgeUniversityPressScraper(BasePaginationPublisherScraper):
             ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
         """
         try:
-            scraper = self._scrape_url(url)
+            scraper, driver = self._scrape_url(url)
+            driver.quit()
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             if not (pdf_tag_list := scraper.find_all("a", href=lambda href: href and ".pdf" in href)):

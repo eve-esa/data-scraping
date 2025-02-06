@@ -2,7 +2,7 @@ import os
 from typing import List, Type, Dict
 from bs4 import Tag, ResultSet
 
-from helper.utils import get_scraped_url
+from helper.utils import get_scraped_url, get_parsed_page_source
 from model.base_mapped_models import BaseMappedUrlSource, BaseMappedPaginationConfig, BaseMappedCrawlingConfig
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from model.base_url_publisher_models import BaseUrlPublisherConfig
@@ -44,11 +44,11 @@ class NASAEarthDataWikiScraper(BaseUrlPublisherScraper, BaseMappedScraper):
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
         try:
-            self._scrape_url(source.url)
+            _, driver = self._scrape_url(source.url)
 
             all_expanded = False
             while not all_expanded:
-                all_expanded = self._driver.execute_script("""
+                all_expanded = driver.execute_script("""
                     let expandAll = async () => {
                         let toggles = document.querySelectorAll("a.aui-iconfont-chevron-right");
                         if (toggles.length == 0) {
@@ -63,7 +63,7 @@ class NASAEarthDataWikiScraper(BaseUrlPublisherScraper, BaseMappedScraper):
                     return await expandAll();
                 """)
 
-            if not (html_tag_list := self._get_parsed_page_source().find_all(
+            if not (html_tag_list := get_parsed_page_source(driver).find_all(
                 "a", href=lambda href: href and ("/display/" in href or "/pages/" in href) and "#" not in href
             )):
                 self._save_failure(source.url)
@@ -104,7 +104,8 @@ class NASANTRSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
 
     def _scrape_page(self, url: str) -> ResultSet | List[Tag] | None:
         try:
-            scraper = self._scrape_url(url)
+            scraper, driver = self._scrape_url(url)
+            driver.quit()
 
             # Now, visit each article link and find the PDF link
             if not (pdf_tag_list := scraper.find_all("a", href=lambda href: href and ".pdf" in href)):
@@ -138,7 +139,8 @@ class NASAEOSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
 
     def _scrape_page(self, url: str) -> ResultSet | List[Tag] | None:
         try:
-            scraper = self._scrape_url(url)
+            scraper, driver = self._scrape_url(url)
+            driver.quit()
 
             if not (pdf_tag_list := scraper.find_all("a", href=lambda href: href and ".pdf" in href)):
                 self._save_failure(url)
@@ -176,7 +178,8 @@ class NASAEarthDataScraper(BasePaginationPublisherScraper, BaseMappedScraper):
 
     def _scrape_page(self, url: str) -> ResultSet | List[Tag] | None:
         try:
-            scraper = self._scrape_url(url)
+            scraper, driver = self._scrape_url(url)
+            driver.quit()
 
             if not (html_tag_list := scraper.find_all("a", href=lambda href: href and self.__href in href, hreflang="en")):
                 self._save_failure(url)
@@ -201,7 +204,8 @@ class NASAEarthDataPDFScraper(NASAEarthDataScraper):
 
     def _scrape_page(self, url: str) -> ResultSet | List[Tag] | None:
         try:
-            scraper = self._scrape_url(url)
+            scraper, driver = self._scrape_url(url)
+            driver.quit()
 
             html_links = [
                 get_scraped_url(tag, self._config_model.base_url)
@@ -211,8 +215,10 @@ class NASAEarthDataPDFScraper(NASAEarthDataScraper):
             pdf_tag_list = []
             for html_link in html_links:
                 self._logger.info(f"Processing URL {html_link}")
+                scraper_inner, driver_inner = self._scrape_url(html_link)
+                driver_inner.quit()
 
-                pdf_tag_list.extend(self._scrape_url(html_link).find_all(
+                pdf_tag_list.extend(scraper_inner.find_all(
                     "a", href=lambda href: href and ".pdf" in href, hreflang="en"
                 ))
 

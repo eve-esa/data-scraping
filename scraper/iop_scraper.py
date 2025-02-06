@@ -41,7 +41,8 @@ class IOPScraper(BaseUrlPublisherScraper):
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
         try:
-            scraper = self._scrape_url(source.url)
+            scraper, driver = self._scrape_url(source.url)
+            driver.quit()
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             if not (pdf_tag_list := scraper.find_all(

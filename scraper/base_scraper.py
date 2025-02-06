@@ -1,7 +1,7 @@
 import json
 from abc import ABC, abstractmethod
 import random
-from typing import List, Type, Any, Dict
+from typing import List, Type, Any, Dict, Tuple
 from bs4 import BeautifulSoup
 from selenium.common import TimeoutException
 from selenium.webdriver.support.wait import WebDriverWait
@@ -22,8 +22,6 @@ from repository.uploaded_resource_repository import UploadedResourceRepository
 
 class BaseScraper(ABC):
     def __init__(self) -> None:
-        self._driver: Driver = None
-
         self._config_model = None
         self._logging_db_scraper = self.__class__.__name__
         self._download_folder_path = constants.Files.DOWNLOADS_FOLDER
@@ -47,10 +45,7 @@ class BaseScraper(ABC):
         self.set_config_model(config_model)
         self._scraper_failure_repository.delete_by_scraper(name_scraper)
 
-        self.setup_driver()
         scraping_results = self.scrape()
-        self.shutdown_driver()
-
         if scraping_results is None:
             return
 
@@ -74,10 +69,21 @@ class BaseScraper(ABC):
         self._logging_db_scraper = scraper
         return self
 
-    def setup_driver(self):
-        from helper.utils import get_user_agent, get_static_proxy_config
+    def _scrape_url(self, url: str, cookie_wait: int = 3, pause_time: int = 2) -> Tuple[BeautifulSoup, Driver]:
+        """
+        Scrape the URL using Selenium and BeautifulSoup.
 
-        self._driver = Driver(
+        Args:
+            url (str): url contains volume and issue number. Eg: https://www.mdpi.com/2072-4292/1/3
+            cookie_wait (int): time to wait for the cookie popup to appear
+            pause_time (int): time to pause between scrolls
+
+        Returns:
+            BeautifulSoup: the fully rendered HTML of the URL.
+        """
+        from helper.utils import get_user_agent, get_static_proxy_config, get_parsed_page_source
+
+        driver = Driver(
             browser="chrome",
             uc=True,
             locale_code="en",
@@ -95,37 +101,21 @@ class BaseScraper(ABC):
             devtools=True,
         )
 
-    def shutdown_driver(self):
-        self._driver.quit()
-
-    def _scrape_url(self, url: str, cookie_wait: int = 3, pause_time: int = 2) -> BeautifulSoup:
-        """
-        Scrape the URL using Selenium and BeautifulSoup.
-
-        Args:
-            url (str): url contains volume and issue number. Eg: https://www.mdpi.com/2072-4292/1/3
-            cookie_wait (int): time to wait for the cookie popup to appear
-            pause_time (int): time to pause between scrolls
-
-        Returns:
-            BeautifulSoup: the fully rendered HTML of the URL.
-        """
-
-        self._driver.get(url.replace('"', '\\\"'))
-        self._wait_for_page_load()
+        driver.get(url.replace('"', '\\\"'))
+        self._wait_for_page_load(driver)
 
         # Handle cookie popup only once, for the first request
         if self._config_model.cookie_selector:
             try:
-                cookie_button = WebDriverWait(self._driver, cookie_wait).until(
+                cookie_button = WebDriverWait(driver, cookie_wait).until(
                     EC.element_to_be_clickable((By.CSS_SELECTOR, self._config_model.cookie_selector))
                 )
-                self._driver.execute_script("arguments[0].click();", cookie_button)
+                driver.execute_script("arguments[0].click();", cookie_button)
             except TimeoutException as e:
                 self._logger.warning(f"Cookie popup not found. Error: {e}")
 
         # Scroll through the page to load all articles
-        last_height = self._driver.execute_script("return document.body.scrollHeight")
+        last_height = driver.execute_script("return document.body.scrollHeight")
 
         scrollable_js = """
             function getScrollableElement() {
@@ -142,7 +132,7 @@ class BaseScraper(ABC):
 
         while True:
             # Scroll down to the bottom
-            self._driver.execute_script(f"""
+            driver.execute_script(f"""
                 {scrollable_js}
                 if (scrollable) {{
                     scrollable.scrollTop = scrollable.scrollHeight;
@@ -152,7 +142,7 @@ class BaseScraper(ABC):
             """)
 
             if self._config_model.read_more_button:
-                self._driver.execute_script(f"""
+                driver.execute_script(f"""
                     const button = Array.from(document.querySelectorAll('{self._config_model.read_more_button.selector}')).find(btn => 
                       btn.textContent.trim().toUpperCase() === "{self._config_model.read_more_button.text}".toUpperCase()
                     );
@@ -164,7 +154,7 @@ class BaseScraper(ABC):
             time.sleep(pause_time)
 
             # Calculate new scroll height and compare with the last height
-            new_height = self._driver.execute_script(f"""
+            new_height = driver.execute_script(f"""
                 {scrollable_js}
                 return scrollable ? scrollable.scrollHeight : document.body.scrollHeight;
             """)
@@ -176,21 +166,12 @@ class BaseScraper(ABC):
         time.sleep(random.uniform(0.5, 3.5))
 
         # Get the fully rendered HTML
-        return self._get_parsed_page_source()
+        return get_parsed_page_source(driver), driver
 
-    def _wait_for_page_load(self, timeout: int | None = 20):
-        WebDriverWait(self._driver, timeout).until(
+    def _wait_for_page_load(self, driver: Driver, timeout: int | None = 20):
+        WebDriverWait(driver, timeout).until(
             lambda d: d.execute_script("return document.readyState") == "complete"
         )
-
-    def _get_parsed_page_source(self) -> BeautifulSoup:
-        """
-        Get the page source parsed by BeautifulSoup.
-
-        Returns:
-            BeautifulSoup: The parsed page source.
-        """
-        return BeautifulSoup(self._driver.get_page_source(), "html.parser")
 
     def _save_failure(self, source: str, message: str | None = None):
         message = message or "No source link found."
@@ -200,7 +181,7 @@ class BaseScraper(ABC):
 
     def _log_and_save_failure(self, url: str, message: str):
         self._logger.error(f"{message} (url {url})")
-        self._save_failure(url, message)
+        self._save_failure(url, message=message)
 
     def upload_to_s3(self, sources_links: Dict[str, List[str]] | List[str]):
         """
