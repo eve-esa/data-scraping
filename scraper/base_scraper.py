@@ -14,6 +14,7 @@ import time
 from helper.logger import setup_logger
 from model.base_models import BaseConfig
 from model.sql_models import UploadedResource, ScraperOutput, ScraperFailure
+from service.analytics_manager import AnalyticsManager
 from service.storage import S3Storage
 from repository.scraper_failure_repository import ScraperFailureRepository
 from repository.scraper_output_repository import ScraperOutputRepository
@@ -32,6 +33,8 @@ class BaseScraper(ABC):
         self._scraper_failure_repository = ScraperFailureRepository()
         self._scraper_output_repository = ScraperOutputRepository()
         self._uploaded_resource_repository = UploadedResourceRepository()
+
+        self._analytics_manager = AnalyticsManager()
 
     def __call__(self, config_model: BaseConfig, force: bool = False):
         from helper.utils import is_json_serializable
@@ -57,6 +60,8 @@ class BaseScraper(ABC):
             output=json.dumps(scraping_results if is_json_serializable(scraping_results) else links)
         )
         self._scraper_output_repository.upsert(output, {"scraper": output.scraper}, {"output": output.output})
+
+        self._analytics_manager.build_and_store_analytics(name_scraper)
 
         self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")
         return

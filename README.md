@@ -60,7 +60,7 @@ make run
 The command `make up` will start the docker container and `make run` will execute the ETL pipeline.
 It is possible to specify the name(s) of the scraper(s) to be executed by adding the `--scrapers` parameter to the `make run` command. E.g.:
 ```bash
-make run --scrapers IOPScraper
+make run args="--scrapers IOPScraper"
 ```
 or
 ```bash
@@ -96,3 +96,23 @@ keys:
    - `base_url`: the key returning the base URL of the website to be scraped (optional)
    - `cookie_selector`: the key containing the CSS selector of the cookie banner to be clicked, if any, or an empty string if the website does not have a cookie banner (optional)
    - `file_extension`: the key returning the expected extension of the files to be downloaded / uploaded to the storage (optional, default ".pdf")
+
+## Analytics: HowTo
+At the end of each Scraper, the ETL pipeline will store some statistics in the `scraper_analytics` table of the database.
+The statistics are stored in a JSON-formatted string, per scraper. The JSON-formatted string contains the following keys:
+- `scraped`, i.e., the analysed URLs
+- `content_retrieved`: i.e., those resources successfully collected during the scraping but which contents were not
+finally retrieved from the remote URLs
+- `uploaded`: i.e., those resources successfully collected during the scraping and which contents were finally retrieved
+from the remote URLs, with the result of the upload to the remote storage
+
+The latest statistics can be retrieved by running the following command:
+```bash
+make run args="--analytics-only"
+```
+
+The command will print the statistics of the last execution of the ETL pipeline. If you want to restrict the retrieval
+of the statistics to specific scraper(s), you can add the `--scrapers` parameter to the command. E.g.:
+```bash
+make run args="--analytics-only --scrapers IOPScraper"
+```

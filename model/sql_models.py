@@ -86,11 +86,17 @@ class ScraperFailure(BaseModel):
 class ScraperAnalytics(BaseModel):
     scraper: str
     result: str
+    created_at: str | None = Field(default=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+
+    @property
+    def result_json(self) -> Dict:
+        return json.loads(self.result)
 
     @classmethod
     def def_types(cls) -> Dict[str, DatabaseFieldDefinition]:
         return {
             "scraper": DatabaseFieldDefinition(type=DatabaseFieldType.VARCHAR, nullable=False),
             "result": DatabaseFieldDefinition(type=DatabaseFieldType.TEXT, nullable=False),
+            "created_at": DatabaseFieldDefinition(type=DatabaseFieldType.VARCHAR),
             "last_access_at": DatabaseFieldDefinition(type=DatabaseFieldType.VARCHAR),
         }

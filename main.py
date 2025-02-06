@@ -28,8 +28,8 @@ def main(args):
         force_running = args.force
         run_scrapers(scrapers, scraper_config, force=force_running)
 
-    analytics = AnalyticsManager()
-    all_stats = analytics.get_all_analytics(list(scrapers.keys()))
+    analytics_manager = AnalyticsManager()
+    all_stats = {scraper: analytics_manager.find_latest_analytics(scraper) for scraper in scrapers.keys()}
     print(all_stats)
 
 

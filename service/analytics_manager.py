@@ -1,10 +1,9 @@
-from typing import Dict, List
+from typing import List
 
 from helper.logger import setup_logger
 from helper.singleton import singleton
-from helper.utils import extract_lists, build_analytics
 from model.analytics_models import AnalyticsModel, AnalyticsModelItem
-from model.sql_models import ScraperOutput, ScraperFailure, UploadedResource
+from model.sql_models import ScraperOutput, ScraperFailure, UploadedResource, ScraperAnalytics
 from repository.scraper_analytics_repository import ScraperAnalyticsRepository
 from repository.scraper_failure_repository import ScraperFailureRepository
 from repository.scraper_output_repository import ScraperOutputRepository
@@ -32,6 +31,8 @@ class AnalyticsManager:
         Returns:
             AnalyticsModel: The analytics model
         """
+        from helper.utils import extract_lists, build_analytics
+
         scrape_success: ScraperOutput | None = self._scraper_output_repository.get_one_by({"scraper": scraper})
         if not scrape_success:
             raise ValueError(f"Scraper {scraper} not found in the database.")
@@ -51,6 +52,8 @@ class AnalyticsManager:
         Returns:
             AnalyticsModel: The analytics model
         """
+        from helper.utils import extract_lists, build_analytics
+
         scrape_success: ScraperOutput | None = self._scraper_output_repository.get_one_by({"scraper": scraper})
         if not scrape_success:
             raise ValueError(f"Scraper {scraper} not found in the database.")
@@ -81,6 +84,8 @@ class AnalyticsManager:
         Returns:
             AnalyticsModel: The analytics model
         """
+        from helper.utils import build_analytics
+
         successes: List[UploadedResource] = self._uploaded_resource_repository.get_by({"scraper": scraper, "success": True})
         failures: List[UploadedResource] = self._uploaded_resource_repository.get_by({"scraper": scraper, "success": False})
 
@@ -88,36 +93,29 @@ class AnalyticsManager:
             [success.source for success in successes],
             [failure.source for failure in failures],
         )
-    
-    def get_all_analytics(self, scrapers: List[str]) -> Dict[str, AnalyticsModel]:
+
+    def build_and_store_analytics(self, scraper: str) -> int:
         """
-        Collect all analytics in one dictionary
-        
+        Store the analytics in the database.
+
         Args:
-            scrapers (List[str]): A list of scrapers to analyze.
-        
+            scraper (str): The scraper to analyze.
+
         Returns:
-            Dict[str, AnalyticsModel]: the analytics model
+            int: the ID of the inserted record
         """
-        result = {}
+        try:
+            analytics = AnalyticsModel(
+                scraped=self._get_scraped_analytics(scraper),
+                content_retrieved=self._get_content_retrieved_analytics(scraper),
+                uploaded=self._get_uploaded_analytics(scraper),
+            )
 
-        for scraper in scrapers:
-            try:
-                analytics = AnalyticsModel(
-                    scraped=self._get_scraped_analytics(scraper),
-                    content_retrieved=self._get_content_retrieved_analytics(scraper),
-                    uploaded=self._get_uploaded_analytics(scraper),
-                )
+            return self._scraper_analytics_repository.save_analytics(scraper, analytics)
+        except ValueError as e:
+            self._logger.error(f"Failed to get analytics for scraper {scraper}. Error: {e}")
 
-                result[scraper] = analytics
-
-                self._scraper_analytics_repository.insert(analytics)
-            except ValueError as e:
-                self._logger.error(f"Failed to get analytics for scraper {scraper}. Error: {e}")
-
-        return result
-
-    def find_past_analytics(self, scraper: str) -> List[AnalyticsModel]:
+    def find_latest_analytics(self, scraper: str) -> AnalyticsModel | None:
         """
         Find the past analytics for a scraper, if any, in the database.
 
@@ -125,6 +123,17 @@ class AnalyticsManager:
             scraper (str): The scraper to analyze.
 
         Returns:
-            List[AnalyticsModel]: the analytics model for the scraper
+            AnalyticsModel: The analytics model if found, None otherwise.
         """
-        return self._scraper_analytics_repository.get_by({"scraper": scraper})
+        analytics_db: List[ScraperAnalytics] = self._scraper_analytics_repository.get_by(
+            {"scraper": scraper},
+            order_by="created_at",
+            desc=True,
+            limit=1,
+        )
+
+        if not analytics_db:
+            self._logger.warning(f"No analytics found for scraper {scraper}.")
+            return None
+
+        return AnalyticsModel(**analytics_db[0].result_json)
