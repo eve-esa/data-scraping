@@ -5,6 +5,7 @@ from helper.constants import CONFIG_PATH
 from helper.database import init_db
 from helper.utils import read_json_file, discover_scrapers, run_scrapers
 
+from service.analytics_manager import AnalyticsManager
 
 def main(args):
     # first of all, remove the scraping.log file
@@ -19,6 +20,11 @@ def main(args):
 
     force_running = args.force
     run_scrapers(scrapers, scraper_config, force=force_running)
+
+    if args.analytics_only:
+        analytics = AnalyticsManager()
+        scraper_perf = analytics.get_scraper_success_failure_rates()
+        print(scraper_perf)
 
 
 if __name__ == "__main__":
@@ -41,6 +47,11 @@ if __name__ == "__main__":
         help="Force scraping of all resources, regardless of the last time they were scraped.",
     )
 
+    parser.add_argument(
+        "--analytics-only",
+        default=False,
+        help="Only show analytics without running scrapers",
+    )
     args = parser.parse_args()
 
     main(args)
