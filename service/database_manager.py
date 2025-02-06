@@ -1,11 +1,12 @@
 import os
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, inspect
 from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy import or_
 
 from helper.singleton import singleton
 from helper.database import type_mapping
-from model.sql_models import DatabaseFieldType
+from model.sql_models import DatabaseFieldDefinition
 
 
 Base = declarative_base()
@@ -28,21 +29,23 @@ class DatabaseManager:
         self.engine = create_engine(db_url)
         self.metadata = MetaData()
 
-    def create_table(self, table_name: str, columns: Dict[str, DatabaseFieldType]) -> None:
+    def create_table(self, table_name: str, columns: Dict[str, DatabaseFieldDefinition]) -> None:
         """
         Create a new table in the database
 
         Args:
             table_name: Name of the table
-            columns: Dictionary with the column names and types
+            columns: Dictionary with the column definitions
         """
         table_columns = [
             Column('id', Integer, primary_key=True, autoincrement=True)
         ]
 
-        for col_name, col_type in columns.items():
-            sql_type = type_mapping().get(col_type, String(length=255))
-            table_columns.append(Column(col_name, sql_type))
+        for col_name, col_def in columns.items():
+            sql_type = type_mapping().get(col_def.type, String(length=255))
+            table_columns.append(
+                Column(name=col_name, type_=sql_type, default=col_def.default, nullable=col_def.nullable)
+            )
 
         Table(table_name, self.metadata, *table_columns)
         self.metadata.create_all(self.engine)
@@ -171,9 +174,9 @@ class DatabaseManager:
 
         return result.rowcount > 0
 
-    def delete_record_by(self, table_name: str, conditions: Dict[str, Any], operator: str = "AND") -> bool:
+    def delete_records_by(self, table_name: str, conditions: Dict[str, Any], operator: str = "AND") -> bool:
         """
-        Delete a record from the database, based on certain conditions
+        Delete records from the database, based on certain conditions
 
         Args:
             table_name: Name of the table
@@ -192,11 +195,29 @@ class DatabaseManager:
         if operator.upper() == "AND":
             query = query.filter_by(**conditions)
         else:  # OR
-            from sqlalchemy import or_
             or_conditions = [getattr(table.c, k) == v for k, v in conditions.items()]
             query = query.filter(or_(*or_conditions))
 
         result = query.delete()
+        session.commit()
+        session.close()
+
+        return result > 0
+
+    def delete_all_records(self, table_name: str) -> bool:
+        """
+        Delete all records from the database
+
+        Args:
+            table_name: Name of the table
+
+        Returns:
+            True if the deletion was successful
+        """
+        session = sessionmaker(bind=self.engine, expire_on_commit=True)()
+
+        table = Table(table_name, self.metadata, autoload_with=self.engine)
+        result = session.query(table).delete()
         session.commit()
         session.close()
 
@@ -225,9 +246,9 @@ class DatabaseManager:
         table_name: str,
         conditions: Dict[str, Any],
         operator: str = "AND",
-        order_by: Optional[str] = None,
+        order_by: str | None = None,
         desc: bool = False,
-        limit: Optional[int] = None
+        limit: int | None = None
     ) -> List[Dict[str, Any]]:
         """
         Search records that match certain conditions

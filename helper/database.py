@@ -1,5 +1,5 @@
 from typing import Dict, Any
-from sqlalchemy import Integer, String, Text, Numeric
+from sqlalchemy import Integer, String, Text, Numeric, Boolean
 import importlib
 import inspect
 import pkgutil
@@ -42,5 +42,6 @@ def type_mapping() -> Dict[DatabaseFieldType, Any]:
         DatabaseFieldType.TEXT: Text,
         DatabaseFieldType.INTEGER: Integer,
         DatabaseFieldType.VARCHAR: String(length=255),
-        DatabaseFieldType.FLOAT: Numeric
+        DatabaseFieldType.FLOAT: Numeric,
+        DatabaseFieldType.BOOLEAN: Boolean,
     }

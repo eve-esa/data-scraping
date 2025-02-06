@@ -68,6 +68,113 @@ class BaseRepository(ABC):
 
         return self._database_manager.insert_record(self.table_name, record_dict)
 
+    def get(self, record_id: int) -> BaseModel:
+        """
+        Get the record from the database
+
+        Args:
+            record_id (int): The ID of the record
+
+        Returns:
+            BaseModel: The record
+        """
+        record = self._database_manager.get_record(self.table_name, record_id)
+        return self.model_type(**record)
+
+    def get_all(self) -> List[BaseModel]:
+        """
+        Get all records from the database
+
+        Returns:
+            List[BaseModel]: The records
+        """
+        records = self._database_manager.get_all_records(self.table_name)
+        return [self.model_type(**record) for record in records]
+
+    def get_by(
+        self,
+        conditions: Dict[str, Any],
+        operator: str = "AND",
+        order_by: str | None = None,
+        desc: bool = False,
+        limit: int | None = None
+    ) -> List[BaseModel]:
+        """
+        Get records from the database by their condition criteria and order them by a field if specified with the option
+        to sort them in descending order and limit the number of records to retrieve from the database if specified
+
+        Args:
+            conditions (Dict[str, Any]): The condition criteria
+            operator (str): The operator to use for the condition
+            order_by (str): The field to order by
+            desc (bool): Whether to sort in descending order
+            limit (int): Maximum number of records to retrieve
+
+        Returns:
+            List[BaseModel]: The records that match the condition criteria and ordered by the specified field
+        """
+        records = self._database_manager.search_records(self.table_name, conditions, operator, order_by, desc, limit)
+        return [self.model_type(**record) for record in records]
+
+    def get_one_by(
+        self,
+        conditions: Dict[str, Any],
+        operator: str = "AND",
+        order_by: str | None = None,
+        desc: bool = False,
+    ) -> BaseModel | None:
+        """
+        Get the first record from the database by its condition criteria and order them by a field if specified with the
+        option to sort them in descending order
+
+        Args:
+            conditions (Dict[str, Any]): The condition criteria
+            operator (str): The operator to use for the condition
+            order_by (str): The field to order by
+            desc (bool): Whether to sort in descending order
+
+        Returns:
+            BaseModel | None: The first record that matches the condition criteria and ordered by the specified field or None
+        """
+        records = self._database_manager.search_records(self.table_name, conditions, operator, order_by, desc, limit=1)
+        if not records:
+            return None
+        return self.model_type(**records[0])
+
+    def delete(self, record_id: int) -> bool:
+        """
+        Delete a record from the database by its ID
+
+        Args:
+            record_id (int): The ID of the record
+
+        Returns:
+            bool: True if the deletion was successful
+        """
+        return self._database_manager.delete_record(self.table_name, record_id)
+
+    def delete_all(self) -> bool:
+        """
+        Delete all records from the database
+
+        Returns:
+            bool: True if the deletion was successful
+        """
+        return self._database_manager.delete_all_records(self.table_name)
+
+    def delete_by(self, condition: Dict[str, Any], operator: str = "AND") -> bool:
+        """
+        Delete a record from the database by its condition criteria
+
+        Args:
+            condition (Dict[str, Any]): The condition criteria
+            operator (str): The operator to use for the condition
+
+        Returns:
+            bool: True if the deletion was successful
+        """
+        return self._database_manager.delete_records_by(self.table_name, condition, operator)
+
     @property
     def model_fields(self) -> List:
         return [field for field in self.model_type.model_fields.keys() if field not in ["id", "content"]]

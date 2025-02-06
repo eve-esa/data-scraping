@@ -38,11 +38,9 @@ class UploadedResourceRepository(BaseRepository):
             result.sha256 = hashlib.sha256(content).hexdigest()
 
             # search for the resource in the database by using the sha256
-            records = self._database_manager.search_records(
-                self.table_name, {"sha256": result.sha256, "scraper": scraper}, limit=1
-            )
-            if records:
-                result = UploadedResource(**records[0])
+            record = self.get_one_by({"sha256": result.sha256, "scraper": scraper})
+            if record:
+                result = record
         except Exception as e:
             self._logger.error(f"Failed to retrieve the resource {source_url}. Error: {e}")
         finally:
@@ -69,11 +67,9 @@ class UploadedResourceRepository(BaseRepository):
                 result.content = f.read()
                 result.sha256 = hashlib.sha256().hexdigest()
 
-            records = self._database_manager.search_records(
-                self.table_name, {"sha256": result.sha256, "scraper": scraper}, limit=1
-            )
-            if records:
-                return UploadedResource(**records[0])
+            record = self.get_one_by({"sha256": result.sha256, "scraper": scraper})
+            if record:
+                return record
         except Exception as e:
             self._logger.error(f"Failed to retrieve the resource {source_path}. Error: {e}")
         finally:

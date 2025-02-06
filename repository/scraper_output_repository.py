@@ -15,10 +15,7 @@ class ScraperOutputRepository(BaseRepository):
         Returns:
             ScraperOutput | None: The output if found, or None otherwise
         """
-        record = self._database_manager.search_records(self.table_name, {"scraper": scraper}, limit=1)
-        if record:
-            return ScraperOutput(**record[0])
-        return None
+        return self.get_one_by({"scraper": scraper})
 
     @property
     def table_name(self) -> str:

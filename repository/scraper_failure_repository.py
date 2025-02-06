@@ -5,6 +5,18 @@ from repository.base_repository import BaseRepository
 
 
 class ScraperFailureRepository(BaseRepository):
+    def delete_by_scraper(self, scraper: str) -> bool:
+        """
+        Delete a failure from the database by its scraper
+
+        Args:
+            scraper (str): The scraper of the failure
+
+        Returns:
+            bool: True if the failure was deleted, False otherwise
+        """
+        return self.delete_by({"scraper": scraper})
+
     @property
     def table_name(self) -> str:
         return "scraper_failures"

@@ -45,6 +45,7 @@ class BaseScraper(ABC):
 
         self._logger.info(f"Running scraper {self.__class__.__name__}")
         self.set_config_model(config_model)
+        self._scraper_failure_repository.delete_by_scraper(name_scraper)
 
         self.setup_driver()
         scraping_results = self.scrape()
@@ -195,7 +196,7 @@ class BaseScraper(ABC):
         )
 
     def _log_and_save_failure(self, url: str, message: str):
-        self._logger.error(message)
+        self._logger.error(f"{message} (url {url})")
         self._save_failure(url, message)
 
     def upload_to_s3(self, sources_links: Dict[str, List[str]] | List[str]):
@@ -230,6 +231,7 @@ class BaseScraper(ABC):
 
     def _upload_resource_to_s3_and_store_to_db(self, resource: UploadedResource) -> bool:
         result = self._s3_client.upload_content(resource)
+        resource.success = result
         self._uploaded_resource_repository.insert(resource, ["content"])
 
         # Sleep after each successful download to avoid overwhelming the server
