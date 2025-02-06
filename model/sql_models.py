@@ -81,3 +81,16 @@ class ScraperFailure(BaseModel):
             "message": DatabaseFieldDefinition(type=DatabaseFieldType.TEXT),
             "last_access_at": DatabaseFieldDefinition(type=DatabaseFieldType.VARCHAR),
         }
+
+
+class ScraperAnalytics(BaseModel):
+    scraper: str
+    result: str
+
+    @classmethod
+    def def_types(cls) -> Dict[str, DatabaseFieldDefinition]:
+        return {
+            "scraper": DatabaseFieldDefinition(type=DatabaseFieldType.VARCHAR, nullable=False),
+            "result": DatabaseFieldDefinition(type=DatabaseFieldType.TEXT, nullable=False),
+            "last_access_at": DatabaseFieldDefinition(type=DatabaseFieldType.VARCHAR),
+        }
