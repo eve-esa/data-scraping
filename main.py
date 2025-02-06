@@ -1,3 +1,4 @@
+import json
 from argparse import ArgumentParser
 from dotenv import load_dotenv
 
@@ -10,6 +11,9 @@ from service.analytics_manager import AnalyticsManager
 
 def main(args):
     scrapers = discover_scrapers()
+    if args.scrapers:
+        scrapers = {name: scrapers[name] for name in args.scrapers if name in scrapers}
+
     analytics_only = args.analytics_only
     if analytics_only is None:
         analytics_only = True
@@ -22,15 +26,15 @@ def main(args):
             f.write("")
 
         scraper_config = read_json_file(CONFIG_PATH)
-        if args.scrapers:
-            scrapers = {name: scrapers[name] for name in args.scrapers if name in scrapers}
-
         force_running = args.force
         run_scrapers(scrapers, scraper_config, force=force_running)
 
     analytics_manager = AnalyticsManager()
-    all_stats = {scraper: analytics_manager.find_latest_analytics(scraper) for scraper in scrapers.keys()}
-    print(all_stats)
+    print(json.dumps(
+        analytics_manager.find_multiple_latest_analytics(list(scrapers.keys()), as_dict=True),
+        sort_keys=True,
+        indent=4
+    ))
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 
 from helper.logger import setup_logger
 from helper.singleton import singleton
@@ -137,3 +137,24 @@ class AnalyticsManager:
             return None
 
         return AnalyticsModel(**analytics_db[0].result_json)
+
+    def find_multiple_latest_analytics(
+        self, scrapers: List[str], as_dict: bool = False
+    ) -> Dict[str, Dict | AnalyticsModel]:
+        """
+        Find the past analytics for multiple scrapers, if any, in the database.
+
+        Args:
+            scrapers (List[str]): The scrapers to analyze.
+            as_dict (bool): Whether to return the analytics as a dictionary.
+
+        Returns:
+            Dict[str, Dict | AnalyticsModel]: The analytics model if found, None otherwise.
+        """
+        all_stats = {}
+        for scraper in scrapers:
+            analytics = self.find_latest_analytics(scraper)
+            if analytics:
+                all_stats[scraper] = analytics.model_dump() if as_dict else analytics
+
+        return all_stats

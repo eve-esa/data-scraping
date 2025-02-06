@@ -11,7 +11,7 @@ class AnalyticsModelItemPercentage(BaseModel):
 class AnalyticsModelItem(BaseModel):
     success: List[str]= Field(default_factory=list)
     failure: List[str] = Field(default_factory=list)
-    percentages: List[AnalyticsModelItemPercentage] = Field(default_factory=list)
+    percentages: AnalyticsModelItemPercentage = Field(default_factory=AnalyticsModelItemPercentage)
 
 
 class AnalyticsModel(BaseModel):
