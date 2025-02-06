@@ -23,8 +23,10 @@ def main(args):
         run_scrapers(scrapers, scraper_config, force=force_running)
 
     analytics = AnalyticsManager()
-    scraper_perf = analytics.get_scraper_success_failure_rates()
-    print(scraper_perf)
+    all_stats = analytics.get_all_analytics()
+    print(all_stats)
+    # scraper_stats = analytics.get_all_analytics("JAXAScraper")
+    # print(scraper_stats)
 
 
 if __name__ == "__main__":
@@ -52,6 +54,7 @@ if __name__ == "__main__":
         action="store_true",
         help="Only show analytics without running scrapers",
     )
+
     args = parser.parse_args()
 
     main(args)
