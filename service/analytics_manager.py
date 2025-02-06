@@ -1,113 +1,130 @@
-from typing import Dict
-from helper.singleton import singleton
-from sqlalchemy import text
-import json
+from typing import Dict, List
 
-from service.database_manager import DatabaseManager
+from helper.logger import setup_logger
+from helper.singleton import singleton
+from helper.utils import extract_lists, build_analytics
+from model.analytics_models import AnalyticsModel, AnalyticsModelItem
+from model.sql_models import ScraperOutput, ScraperFailure, UploadedResource
+from repository.scraper_analytics_repository import ScraperAnalyticsRepository
+from repository.scraper_failure_repository import ScraperFailureRepository
+from repository.scraper_output_repository import ScraperOutputRepository
+from repository.uploaded_resource_repository import UploadedResourceRepository
+
 
 @singleton
 class AnalyticsManager:
     def __init__(self):
-        self.db = DatabaseManager()
-        
-    def get_success_failure_rates(self, scraper_name: str = None) -> Dict[str, Dict[str, float]]:
-        """Calculate scraper success and failure rates for all scrapers or a specific one
-        
-        Args:
-            scraper_name (str, optional): Specific scraper to analyze. Defaults to None (all scrapers).
-        
-        Returns:
-            Dict[str, Dict[str, float]]: A dictionary of scraper names and their sucesss and failure rate.
+        self._logger = setup_logger(self.__class__.__name__)
+
+        self._scraper_failure_repository = ScraperFailureRepository()
+        self._scraper_output_repository = ScraperOutputRepository()
+        self._uploaded_resource_repository = UploadedResourceRepository()
+
+        self._scraper_analytics_repository = ScraperAnalyticsRepository()
+
+    def _get_scraped_analytics(self, scraper: str) -> AnalyticsModelItem:
         """
-        with self.db.engine.connect() as connection:
-            # Build query conditions based on scraper_name
-            scraper_condition = ""
-            if scraper_name:
-                scraper_condition = " WHERE scraper = :scraper_name"
-            
-            # Get outputs and failures
-            outputs = connection.execute(
-                text(f"SELECT scraper, output FROM scraper_outputs{scraper_condition}"),
-                {"scraper_name": scraper_name} if scraper_name else {}
-            ).fetchall()
-            
-            failures = connection.execute(
-                text(f"SELECT * FROM scraper_failures{scraper_condition}"),
-                {"scraper_name": scraper_name} if scraper_name else {}
-            ).fetchall()
-            
-            # Process scraper outputs to count total items per scraper
-            scraper_totals = {}
-            for output in outputs:
-                scraper = output[0]
-                try:
-                    data = json.loads(output[1])
-                    # Count all items recursively in the output
-                    total_items = self._count_items_recursive(data)
-                    scraper_totals[scraper] = scraper_totals.get(scraper, 0) + total_items
-                except json.JSONDecodeError:
-                    continue
-            
-            # Count failures per scraper
-            failure_counts = {}
-            for failure in failures:
-                scraper = failure[1]
-                if scraper:
-                    failure_counts[scraper] = failure_counts.get(scraper, 0) + 1
-            
-            return self._calculate_rates(scraper_totals, failure_counts)
+        Get the scraped analytics. This includes the succeeded as well as failed resources collected during scraping.
+
+        Args:
+            scraper (str): The scraper to analyze.
+
+        Returns:
+            AnalyticsModel: The analytics model
+        """
+        scrape_success: ScraperOutput | None = self._scraper_output_repository.get_one_by({"scraper": scraper})
+        if not scrape_success:
+            raise ValueError(f"Scraper {scraper} not found in the database.")
+
+        scrape_failures: List[ScraperFailure] = self._scraper_failure_repository.get_by({"scraper": scraper})
+
+        return build_analytics(extract_lists(scrape_success.output_json), [failure.source for failure in scrape_failures])
+
+    def _get_content_retrieved_analytics(self, scraper: str) -> AnalyticsModelItem:
+        """
+        Get the content retrieved analytics. This includes those resources successfully collected during the scraping
+        but which contents were not finally retrieved from the remote URLs.
+
+        Args:
+            scraper (str): The scraper to analyze.
+
+        Returns:
+            AnalyticsModel: The analytics model
+        """
+        scrape_success: ScraperOutput | None = self._scraper_output_repository.get_one_by({"scraper": scraper})
+        if not scrape_success:
+            raise ValueError(f"Scraper {scraper} not found in the database.")
+
+        scrape_success_as_list = extract_lists(scrape_success.output_json)
+
+        contents_retrieved: List[UploadedResource] = self._uploaded_resource_repository.get_by({"scraper": scraper})
+
+        successes = []
+        failures = []
+        for resource in scrape_success_as_list:
+            for content_retrieved in contents_retrieved:
+                if resource == content_retrieved.source or content_retrieved.success:
+                    successes.append(resource)
+                else:
+                    failures.append(resource)
+
+        return build_analytics(successes, failures)
+
+    def _get_uploaded_analytics(self, scraper: str) -> AnalyticsModelItem:
+        """
+        Get the uploaded analytics. This includes those resources successfully collected during the scraping
+        and which contents were finally retrieved from the remote URLs.
+
+        Args:
+            scraper (str): The scraper to analyze.
+
+        Returns:
+            AnalyticsModel: The analytics model
+        """
+        successes: List[UploadedResource] = self._uploaded_resource_repository.get_by({"scraper": scraper, "success": True})
+        failures: List[UploadedResource] = self._uploaded_resource_repository.get_by({"scraper": scraper, "success": False})
+
+        return build_analytics(
+            [success.source for success in successes],
+            [failure.source for failure in failures],
+        )
     
-    def _count_items_recursive(self, data) -> int:
-        """Recursively count items in nested data structures
-        Args:
-            data: The data to process. Can be a list, dictionary, or other types.
-        
-        Returns:
-            int: The total count of items in the data structure.
+    def get_all_analytics(self, scrapers: List[str]) -> Dict[str, AnalyticsModel]:
         """
-        if isinstance(data, list):
-            return sum(self._count_items_recursive(item) for item in data)
-        elif isinstance(data, dict):
-            return sum(self._count_items_recursive(value) for value in data.values())
-        else:
-            return 1
-    
-    def _calculate_rates(self, totals: Dict[str, int], failures: Dict[str, int]) -> Dict[str, Dict[str, float]]:
-        """Calculate success and failure rates from totals and failures
-        Args:
-            totals (Dict[str, int]): A dictionary where the key is the scraper name, and the value is the total count of items.
-            failures (Dict[str, int]): A dictionary where the key is the scraper name, and the value is the count of failures.
-        
-        Returns:
-            Dict[str, Dict[str, float]]: A dictionary where the key is the scraper name, and the value is another dictionary
-            with the success and failure rates for that scraper. The rates are rounded to two decimal places.
-        """
-        rates = {}
-        for scraper in set(totals.keys()) | set(failures.keys()):
-            total = totals.get(scraper, 0)
-            failure_count = failures.get(scraper, 0)
-            
-            if total > 0:
-                failure_percentage = (failure_count / total) * 100
-                success_percentage = 100.0 - failure_percentage
-                rates[scraper] = {
-                    "success": round(success_percentage, 2),
-                    "failure": round(failure_percentage, 2)
-                }
-            elif failure_count > 0:
-                rates[scraper] = {"success": 0.0, "failure": 100.0}
-        
-        return rates
-    
-    def get_all_analytics(self, scraper_name: str = None) -> Dict[str, Dict]:
-        """Collect all analytics in one dictionary
+        Collect all analytics in one dictionary
         
         Args:
-            scraper_name (str, optional): Specific scraper to analyze. Defaults to None (all scrapers).
+            scrapers (List[str]): A list of scrapers to analyze.
         
         Returns:
-            Dict[str, Dict]: A dictionary containing all analytics.
+            Dict[str, AnalyticsModel]: the analytics model
         """
-        return {
-            "success_failure_rates": self.get_success_failure_rates(scraper_name)
-        }
+        result = {}
+
+        for scraper in scrapers:
+            try:
+                analytics = AnalyticsModel(
+                    scraped=self._get_scraped_analytics(scraper),
+                    content_retrieved=self._get_content_retrieved_analytics(scraper),
+                    uploaded=self._get_uploaded_analytics(scraper),
+                )
+
+                result[scraper] = analytics
+
+                self._scraper_analytics_repository.insert(analytics)
+            except ValueError as e:
+                self._logger.error(f"Failed to get analytics for scraper {scraper}. Error: {e}")
+
+        return result
+
+    def find_past_analytics(self, scraper: str) -> List[AnalyticsModel]:
+        """
+        Find the past analytics for a scraper, if any, in the database.
+
+        Args:
+            scraper (str): The scraper to analyze.
+
+        Returns:
+            List[AnalyticsModel]: the analytics model for the scraper
+        """
+        return self._scraper_analytics_repository.get_by({"scraper": scraper})

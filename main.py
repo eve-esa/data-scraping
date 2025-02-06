@@ -7,26 +7,30 @@ from helper.utils import read_json_file, discover_scrapers, run_scrapers
 
 from service.analytics_manager import AnalyticsManager
 
+
 def main(args):
-    # first of all, remove the scraping.log file
-    if not args.analytics_only: 
+    scrapers = discover_scrapers()
+    analytics_only = args.analytics_only
+    if analytics_only is None:
+        analytics_only = True
+    elif isinstance(analytics_only, str):
+        analytics_only = analytics_only.lower() == "true" or analytics_only.lower() == "1"
+
+    if not analytics_only:
+        # first of all, remove the scraping.log file
         with open("scraping.log", "w") as f:
             f.write("")
 
         scraper_config = read_json_file(CONFIG_PATH)
-        scrapers = discover_scrapers()
-
         if args.scrapers:
-            scrapers = {name: scrapers[name] for name in args.scrapers}
+            scrapers = {name: scrapers[name] for name in args.scrapers if name in scrapers}
 
         force_running = args.force
         run_scrapers(scrapers, scraper_config, force=force_running)
 
     analytics = AnalyticsManager()
-    all_stats = analytics.get_all_analytics()
+    all_stats = analytics.get_all_analytics(list(scrapers.keys()))
     print(all_stats)
-    # scraper_stats = analytics.get_all_analytics("JAXAScraper")
-    # print(scraper_stats)
 
 
 if __name__ == "__main__":
@@ -50,8 +54,10 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "-a",
         "--analytics-only",
-        action="store_true",
+        default=False,
+        nargs="?",
         help="Only show analytics without running scrapers",
     )
 

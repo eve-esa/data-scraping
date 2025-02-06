@@ -37,13 +37,13 @@ class BaseScraper(ABC):
         from helper.utils import is_json_serializable
 
         name_scraper = self.__class__.__name__
-        if not force and self._scraper_output_repository.get_by_scraper(name_scraper):
+        if not force and self._scraper_output_repository.get_one_by({"scraper": name_scraper}):
             self._logger.warning(f"Scraper {name_scraper} already done")
             return
 
         self._logger.info(f"Running scraper {self.__class__.__name__}")
         self.set_config_model(config_model)
-        self._scraper_failure_repository.delete_by_scraper(name_scraper)
+        self._scraper_failure_repository.delete_by({"scraper": name_scraper})
 
         scraping_results = self.scrape()
         if scraping_results is None:

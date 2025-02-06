@@ -4,7 +4,6 @@ import json
 import os
 import pkgutil
 import queue
-import socket
 from logging.handlers import QueueListener
 from multiprocessing import Queue, Process
 import zipfile
@@ -15,7 +14,6 @@ from bs4 import Tag, BeautifulSoup
 from pydantic import ValidationError, BaseModel
 from urllib.parse import urlparse, parse_qs
 from fake_useragent import UserAgent
-from requests import RequestException
 from seleniumbase import Driver
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.by import By
@@ -23,6 +21,7 @@ from selenium.common import NoSuchElementException
 import time
 
 from helper.logger import setup_logger, setup_worker_logging
+from model.analytics_models import AnalyticsModelItem, AnalyticsModelItemPercentage
 from scraper.base_scraper import BaseScraper, BaseMappedScraper
 
 
@@ -381,3 +380,67 @@ def get_parsed_page_source(driver: Driver) -> BeautifulSoup:
         BeautifulSoup: The parsed page source.
     """
     return BeautifulSoup(driver.get_page_source(), "html.parser")
+
+
+def extract_lists(input_data: List | Dict) -> List[str]:
+    """
+    Extracts all lists from an input that can be either a list or a nested dictionary.
+
+    Args:
+        input_data (list or dict): Input to process
+
+    Returns:
+        list: All lists found in the input
+    """
+    # If input is already a list, return it immediately
+    if isinstance(input_data, list):
+        return input_data
+
+    # If input is not a dictionary, return empty list
+    if not isinstance(input_data, dict):
+        return []
+
+    # List to collect all found lists
+    extracted_lists = []
+
+    # Iterate through all dictionary values
+    for value in input_data.values():
+        # If value is a list, add it
+        if isinstance(value, list):
+            extracted_lists.extend(value)
+        # If value is a dictionary, call function recursively
+        elif isinstance(value, dict):
+            extracted_lists.extend(extract_lists(value))
+        # If value is a list of dictionaries, process each dictionary
+        elif isinstance(value, list) and all(isinstance(item, dict) for item in value):
+            for item in value:
+                extracted_lists.extend(extract_lists(item))
+
+    return get_unique(extracted_lists)
+
+
+def build_analytics(successes: List[str], failures: List[str]) -> AnalyticsModelItem:
+    """
+    Build an analytics model item from the successes and failures.
+
+    Args:
+        successes (List[str]): A list of successful scrapes.
+        failures (List[str]): A list of failed scrapes.
+
+    Returns:
+        AnalyticsModelItem: The analytics model item.
+    """
+    successes = get_unique(successes)
+    failures = get_unique(failures)
+    total = len(successes) + len(failures)
+
+    percentages = AnalyticsModelItemPercentage(
+        success=len(successes) / total if total > 0 else 0,
+        failure=len(failures) / total if total > 0 else 0,
+    )
+
+    return AnalyticsModelItem(
+            success=successes,
+            failure=failures,
+            percentages=percentages
+        )
