@@ -1,5 +1,6 @@
 from typing import List, Type, Dict
 from bs4 import Tag, ResultSet
+from selenium.webdriver.support.wait import WebDriverWait
 
 from model.base_mapped_models import BaseMappedUrlSource, BaseMappedUrlConfig
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
@@ -51,3 +52,9 @@ class ESAUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
 
     def _scrape_article(self, source: BaseMappedUrlSource) -> Tag | None:
         pass
+
+    def _wait_for_page_load(self, timeout: int | None = 20):
+        WebDriverWait(self._driver, timeout).until(
+            lambda d: d.execute_script("return document.readyState") == "complete"
+                      and not d.execute_script("return document.querySelector('div.v-progress-linear.v-progress-linear--visible')")
+        )

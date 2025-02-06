@@ -5,8 +5,11 @@ from scraper.base_scraper import BaseScraper
 
 
 class ScrapeAdapter:
-    def __init__(self, config_model: BaseMappedSourceConfig, scraper: Type[BaseScraper] | None = None):
+    def __init__(
+        self, config_model: BaseMappedSourceConfig, logging_scraper: str, scraper: Type[BaseScraper] | None = None
+    ):
         self.__scraper_type = scraper
+        self.__logging_scraper = logging_scraper
         self.__config_model = config_model
 
     def scrape(self) -> Any:
@@ -14,20 +17,17 @@ class ScrapeAdapter:
             return self.__config_model.urls
 
         scraper = self.__scraper_type()
-        scraper._config_model = self.__config_model
+        scraper.set_config_model(self.__config_model).set_logging_db_scraper(self.__logging_scraper)
 
-        scraper.setup_driver()
-        results = scraper.set_config_model(self.__config_model).scrape()
-        scraper.shutdown_driver()
-
-        return results
+        return scraper.scrape()
 
     def post_process(self, scrape_output: Any) -> Any:
         if self.__scraper_type is None:
             return scrape_output
 
         scraper = self.__scraper_type()
-        return scraper.set_config_model(self.__config_model).post_process(scrape_output)
+        scraper.set_config_model(self.__config_model).set_logging_db_scraper(self.__logging_scraper)
+        return scraper.post_process(scrape_output)
 
     def upload_to_s3(
         self, scrape_output: List[str] | Dict[str, List[str]], bucket_key: str, file_extension: str
@@ -42,4 +42,5 @@ class ScrapeAdapter:
             scraper = self.__scraper_type()
         else:
             scraper = DirectLinksScraper()
-        return scraper.set_config_model(self.__config_model).upload_to_s3(scrape_output)
+        scraper.set_config_model(self.__config_model).set_logging_db_scraper(self.__logging_scraper)
+        return scraper.upload_to_s3(scrape_output)

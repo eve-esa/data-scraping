@@ -13,9 +13,8 @@ class ISPRSScraper(BaseScraper):
     def scrape(self) -> List[str] | None:
         pdf_tags = []
         for source in self._config_model.sources:
+            self._logger.info(f"Scraping URL: {source.url}")
             try:
-                self._logger.info(f"Scraping URL: {source.url}")
-
                 scraper = self._scrape_url(source.url)
 
                 archive_links = [tag.get("href") for tag in scraper.find_all(

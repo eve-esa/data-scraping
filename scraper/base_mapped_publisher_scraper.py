@@ -47,7 +47,7 @@ class BaseMappedPublisherScraper(BaseScraper):
         for source in self._config_model.sources:
             self._logger.info(f"Processing source {source.name}")
 
-            results = ScrapeAdapter(source.config, self.mapping.get(source.scraper)).scrape()
+            results = ScrapeAdapter(source.config, self.__class__.__name__, self.mapping.get(source.scraper)).scrape()
             if results is not None:
                 links[source.name] = results
                 self._bucket_keys[source.name] = f"{self._config_model.bucket_key}/{source.config.bucket_key or ''}".rstrip("/")
@@ -67,13 +67,18 @@ class BaseMappedPublisherScraper(BaseScraper):
             Dict[str, List[str]]: The results of the scraping
         """
         return {
-            source.name: ScrapeAdapter(source.config, self.mapping.get(source.scraper)).post_process(scrape_output[source.name])
-            for source in self._config_model.sources
+            source.name: ScrapeAdapter(
+                source.config, self.__class__.__name__, self.mapping.get(source.scraper)
+            ).post_process(scrape_output[source.name])
+            for source in self._config_model.sources if source.name in scrape_output
         }
 
     def upload_to_s3(self, sources_links: Dict[str, List[str]]):
         for source in self._config_model.sources:
-            ScrapeAdapter(source.config, self.mapping.get(source.scraper)).upload_to_s3(
+            if source.name not in sources_links:
+                continue
+
+            ScrapeAdapter(source.config, self.__class__.__name__, self.mapping.get(source.scraper)).upload_to_s3(
                 sources_links[source.name],
                 self._bucket_keys[source.name],
                 self._file_extensions[source.name],

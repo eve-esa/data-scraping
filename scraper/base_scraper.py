@@ -24,8 +24,8 @@ class BaseScraper(ABC):
     def __init__(self) -> None:
         self._driver: Driver = None
 
-        self._cookie_handled = False
         self._config_model = None
+        self._logging_db_scraper = self.__class__.__name__
         self._download_folder_path = constants.Files.DOWNLOADS_FOLDER
 
         self._logger = setup_logger(self.__class__.__name__)
@@ -70,6 +70,10 @@ class BaseScraper(ABC):
         self._config_model = config_model
         return self
 
+    def set_logging_db_scraper(self, scraper: str):
+        self._logging_db_scraper = scraper
+        return self
+
     def setup_driver(self):
         from helper.utils import get_user_agent, get_static_proxy_config
 
@@ -111,13 +115,12 @@ class BaseScraper(ABC):
         self._wait_for_page_load()
 
         # Handle cookie popup only once, for the first request
-        if not self._cookie_handled and self._config_model.cookie_selector:
+        if self._config_model.cookie_selector:
             try:
                 cookie_button = WebDriverWait(self._driver, cookie_wait).until(
                     EC.element_to_be_clickable((By.CSS_SELECTOR, self._config_model.cookie_selector))
                 )
                 self._driver.execute_script("arguments[0].click();", cookie_button)
-                self._cookie_handled = True
             except TimeoutException as e:
                 self._logger.warning(f"Cookie popup not found. Error: {e}")
 
@@ -192,7 +195,7 @@ class BaseScraper(ABC):
     def _save_failure(self, source: str, message: str | None = None):
         message = message or "No source link found."
         self._scraper_failure_repository.insert(
-            ScraperFailure(scraper=self.__class__.__name__, source=source, message=message)
+            ScraperFailure(scraper=self._logging_db_scraper, source=source, message=message)
         )
 
     def _log_and_save_failure(self, url: str, message: str):
