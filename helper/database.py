@@ -1,5 +1,6 @@
 from typing import Dict, Any
 from sqlalchemy import Integer, String, Text, Numeric, Boolean
+from sqlalchemy.dialects.mysql import LONGTEXT, MEDIUMTEXT
 import importlib
 import inspect
 import pkgutil
@@ -40,6 +41,8 @@ def init_db():
 def type_mapping() -> Dict[DatabaseFieldType, Any]:
     return {
         DatabaseFieldType.TEXT: Text,
+        DatabaseFieldType.MEDIUMTEXT = MEDIUMTEXT,
+        DatabaseFieldType.LONGTEXT = LONGTEXT,
         DatabaseFieldType.INTEGER: Integer,
         DatabaseFieldType.VARCHAR: String(length=255),
         DatabaseFieldType.FLOAT: Numeric,
