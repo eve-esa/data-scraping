@@ -20,21 +20,22 @@ def main(args):
     elif isinstance(analytics_only, str):
         analytics_only = analytics_only.lower() == "true" or analytics_only.lower() == "1"
 
-    if not analytics_only:
-        # first of all, remove the scraping.log file
-        with open("scraping.log", "w") as f:
-            f.write("")
+    if analytics_only:
+        analytics_manager = AnalyticsManager()
+        print(json.dumps(
+            analytics_manager.find_multiple_latest_analytics(list(scrapers.keys()), as_dict=True),
+            sort_keys=True,
+            indent=4
+        ))
 
-        scraper_config = read_json_file(CONFIG_PATH)
-        force_running = args.force
-        run_scrapers(scrapers, scraper_config, force=force_running)
+        return
 
-    analytics_manager = AnalyticsManager()
-    print(json.dumps(
-        analytics_manager.find_multiple_latest_analytics(list(scrapers.keys()), as_dict=True),
-        sort_keys=True,
-        indent=4
-    ))
+    # first of all, remove the scraping.log file
+    with open("scraping.log", "w") as f:
+        f.write("")
+    scraper_config = read_json_file(CONFIG_PATH)
+    force_running = args.force
+    run_scrapers(scrapers, scraper_config, force=force_running)
 
 
 if __name__ == "__main__":

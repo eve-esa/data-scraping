@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List, Dict, Any, Type
 
 from helper.logger import setup_logger
-from model.sql_models import BaseModel, DatabaseFieldType
+from model.sql_models import BaseModel, DatabaseFieldDefinition
 from service.database_manager import DatabaseManager
 
 
@@ -180,7 +180,7 @@ class BaseRepository(ABC):
         return [field for field in self.model_type.model_fields.keys() if field not in ["id", "content"]]
 
     @property
-    def model_fields_definition(self) -> Dict[str, DatabaseFieldType]:
+    def model_fields_definition(self) -> Dict[str, DatabaseFieldDefinition]:
         return self.model_type.def_types()
 
     @property

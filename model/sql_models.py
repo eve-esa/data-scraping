@@ -1,26 +1,23 @@
 import json
 from abc import ABC, abstractmethod
 from typing import Dict, Any
-from pydantic import BaseModel as PydanticBaseModel, Field
+from pydantic import BaseModel as PydanticBaseModel, Field, field_validator
 from datetime import datetime
-
-from helper.base_enum import Enum
-
-
-class DatabaseFieldType(Enum):
-    TEXT = "TEXT"
-    MEDIUMTEXT = "MEDIUMTEXT"
-    LONGTEXT = "LONGTEXT"
-    INTEGER = "INTEGER"
-    VARCHAR = "VARCHAR"
-    FLOAT = "FLOAT"
-    BOOLEAN = "BOOLEAN"
+from sqlalchemy import String, Text, Boolean
+from sqlalchemy.dialects.mysql import LONGTEXT
 
 
 class DatabaseFieldDefinition(PydanticBaseModel):
-    type: DatabaseFieldType
+    type: Any
     nullable: bool = True
     default: Any = None
+
+    # check that the `type` is not None
+    @field_validator("type")
+    def valid_type(cls, v):
+        if not hasattr(v, "__visit_name__"):
+            raise ValueError(f"\"type\" must be a valid SQLAlchemy type. Got {v}")
+        return v
 
 
 class BaseModel(PydanticBaseModel, ABC):
@@ -44,12 +41,12 @@ class UploadedResource(BaseModel):
     @classmethod
     def def_types(cls) -> Dict[str, DatabaseFieldDefinition]:
         return {
-            "scraper": DatabaseFieldDefinition(type=DatabaseFieldType.VARCHAR, nullable=False),
-            "bucket_key": DatabaseFieldDefinition(type=DatabaseFieldType.TEXT, nullable=False),
-            "source": DatabaseFieldDefinition(type=DatabaseFieldType.TEXT, nullable=False),
-            "sha256": DatabaseFieldDefinition(type=DatabaseFieldType.VARCHAR),
-            "success": DatabaseFieldDefinition(type=DatabaseFieldType.BOOLEAN, nullable=False, default=False),
-            "last_access_at": DatabaseFieldDefinition(type=DatabaseFieldType.VARCHAR),
+            "scraper": DatabaseFieldDefinition(type=String(length=255), nullable=False),
+            "bucket_key": DatabaseFieldDefinition(type=Text, nullable=False),
+            "source": DatabaseFieldDefinition(type=Text, nullable=False),
+            "sha256": DatabaseFieldDefinition(type=String(length=255)),
+            "success": DatabaseFieldDefinition(type=Boolean, nullable=False, default=False),
+            "last_access_at": DatabaseFieldDefinition(type=String(length=255)),
         }
 
 
@@ -64,9 +61,9 @@ class ScraperOutput(BaseModel):
     @classmethod
     def def_types(cls) -> Dict[str, DatabaseFieldDefinition]:
         return {
-            "scraper": DatabaseFieldDefinition(type=DatabaseFieldType.VARCHAR, nullable=False),
-            "output": DatabaseFieldDefinition(type=DatabaseFieldType.LONGTEXT, nullable=False),
-            "last_access_at": DatabaseFieldDefinition(type=DatabaseFieldType.VARCHAR),
+            "scraper": DatabaseFieldDefinition(type=String(length=255), nullable=False),
+            "output": DatabaseFieldDefinition(type=LONGTEXT, nullable=False),
+            "last_access_at": DatabaseFieldDefinition(type=String(length=255)),
         }
 
 
@@ -78,10 +75,10 @@ class ScraperFailure(BaseModel):
     @classmethod
     def def_types(cls) -> Dict[str, DatabaseFieldDefinition]:
         return {
-            "scraper": DatabaseFieldDefinition(type=DatabaseFieldType.VARCHAR, nullable=False),
-            "source": DatabaseFieldDefinition(type=DatabaseFieldType.TEXT, nullable=False),
-            "message": DatabaseFieldDefinition(type=DatabaseFieldType.TEXT),
-            "last_access_at": DatabaseFieldDefinition(type=DatabaseFieldType.VARCHAR),
+            "scraper": DatabaseFieldDefinition(type=String(length=255), nullable=False),
+            "source": DatabaseFieldDefinition(type=Text, nullable=False),
+            "message": DatabaseFieldDefinition(type=Text),
+            "last_access_at": DatabaseFieldDefinition(type=String(length=255)),
         }
 
 
@@ -97,8 +94,8 @@ class ScraperAnalytics(BaseModel):
     @classmethod
     def def_types(cls) -> Dict[str, DatabaseFieldDefinition]:
         return {
-            "scraper": DatabaseFieldDefinition(type=DatabaseFieldType.VARCHAR, nullable=False),
-            "result": DatabaseFieldDefinition(type=DatabaseFieldType.LONGTEXT, nullable=False),
-            "created_at": DatabaseFieldDefinition(type=DatabaseFieldType.VARCHAR),
-            "last_access_at": DatabaseFieldDefinition(type=DatabaseFieldType.VARCHAR),
+            "scraper": DatabaseFieldDefinition(type=String(length=255), nullable=False),
+            "result": DatabaseFieldDefinition(type=LONGTEXT, nullable=False),
+            "created_at": DatabaseFieldDefinition(type=String(length=255)),
+            "last_access_at": DatabaseFieldDefinition(type=String(length=255)),
         }

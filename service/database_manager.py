@@ -5,7 +5,6 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import or_
 
 from helper.singleton import singleton
-from helper.database import type_mapping
 from model.sql_models import DatabaseFieldDefinition
 
 
@@ -42,9 +41,8 @@ class DatabaseManager:
         ]
 
         for col_name, col_def in columns.items():
-            sql_type = type_mapping().get(col_def.type, String(length=255))
             table_columns.append(
-                Column(name=col_name, type_=sql_type, default=col_def.default, nullable=col_def.nullable)
+                Column(name=col_name, type_=col_def.type, default=col_def.default, nullable=col_def.nullable)
             )
 
         Table(table_name, self.metadata, *table_columns)

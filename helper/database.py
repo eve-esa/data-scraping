@@ -1,11 +1,6 @@
-from typing import Dict, Any
-from sqlalchemy import Integer, String, Text, Numeric, Boolean
-from sqlalchemy.dialects.mysql import LONGTEXT, MEDIUMTEXT
 import importlib
 import inspect
 import pkgutil
-
-from model.sql_models import DatabaseFieldType
 
 
 def init_db():
@@ -36,15 +31,3 @@ def init_db():
         db_table_manager = db_table_manager_class()
         table = db_table_manager.table_name
         database_manager.create_table(table, db_table_manager.model_fields_definition)
-
-
-def type_mapping() -> Dict[DatabaseFieldType, Any]:
-    return {
-        DatabaseFieldType.TEXT: Text,
-        DatabaseFieldType.MEDIUMTEXT = MEDIUMTEXT,
-        DatabaseFieldType.LONGTEXT = LONGTEXT,
-        DatabaseFieldType.INTEGER: Integer,
-        DatabaseFieldType.VARCHAR: String(length=255),
-        DatabaseFieldType.FLOAT: Numeric,
-        DatabaseFieldType.BOOLEAN: Boolean,
-    }
