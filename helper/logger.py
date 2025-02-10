@@ -1,11 +1,12 @@
 import logging
+import os
 import sys
 from multiprocessing import Queue
 from logging.handlers import QueueHandler
 import colorlog
 
 
-def setup_logger(name: str, log_file: str = "scraping.log") -> logging.Logger:
+def setup_logger(name: str, log_file: str = "logs/scraping.log") -> logging.Logger:
     """
     Configure the main process logger with both file and colored console output.
 
@@ -41,6 +42,9 @@ def setup_logger(name: str, log_file: str = "scraping.log") -> logging.Logger:
         "%(asctime)s [%(name)s] %(levelname)s: %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S"
     )
+
+    os.makedirs(os.path.dirname(log_file), exist_ok=True)
+
     file_handler = logging.FileHandler(log_file)
     file_handler.setFormatter(file_formatter)
     logger.addHandler(file_handler)

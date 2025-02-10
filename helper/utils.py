@@ -65,7 +65,7 @@ def is_json_serializable(data) -> bool:
         return False
 
 
-def discover_scrapers(log_file: str = "scraping.log") -> Dict[str, Type[BaseScraper]]:
+def discover_scrapers(log_file: str = "logs/scraping.log") -> Dict[str, Type[BaseScraper]]:
     """
     Find all scraper classes in the specified package and run them in separate threads.
 
@@ -119,7 +119,7 @@ def run_scraper_process(
 def run_scrapers(
     discovered_scrapers: Dict[str, Type[BaseScraper]],
     config: Dict[str, Dict],
-    log_file: str = "scraping.log",
+    log_file: str = "logs/scraping.log",
     force: bool = False,
 ):
     """

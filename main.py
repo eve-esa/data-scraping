@@ -31,7 +31,7 @@ def main(args):
         return
 
     # first of all, remove the scraping.log file
-    with open("scraping.log", "w") as f:
+    with open("logs/scraping.log", "w") as f:
         f.write("")
     scraper_config = read_json_file(CONFIG_PATH)
     force_running = args.force

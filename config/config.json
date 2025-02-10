@@ -1,6 +1,6 @@
 {
     "IOPScraper": {
-        "bucket_key": "raw_data/iopscience",
+        "bucket_key": "{main_folder}/iopscience",
         "base_url": "https://iopscience.iop.org",
         "cookie_selector": "div.cky-consent-container.cky-classic-bottom > div.cky-consent-bar > div > div > div.cky-notice-btn-wrapper > button.cky-btn.cky-btn-accept",
         "sources": [
@@ -79,7 +79,7 @@
         ]
     },
     "MDPIScraper": {
-        "bucket_key": "raw_data/mdpi",
+        "bucket_key": "{main_folder}/mdpi",
         "sources": [
             {
                 "name": "MDPI Journals",
@@ -212,7 +212,7 @@
         ]
     },
     "SpringerScraper": {
-        "bucket_key": "raw_data/springer",
+        "bucket_key": "{main_folder}/springer",
         "sources": [
             {
                 "name": "Springer journals / collections",
@@ -316,7 +316,7 @@
         ]
     },
     "AMSScraper": {
-        "bucket_key": "raw_data/ams",
+        "bucket_key": "{main_folder}/ams",
         "base_url": "https://journals.ametsoc.org",
         "journals": [
             {
@@ -370,7 +370,7 @@
         ]
     },
     "CopernicusScraper": {
-        "bucket_key": "raw_data/copernicus",
+        "bucket_key": "{main_folder}/copernicus",
         "journals": [
             {
                 "url": "https://acp.copernicus.org",
@@ -519,7 +519,7 @@
         ]
     },
     "SeosScraper": {
-        "bucket_key": "raw_data/seos",
+        "bucket_key": "{main_folder}/seos",
         "base_url": "https://seos-project.eu",
         "file_extension": "html",
         "sources": [
@@ -552,7 +552,7 @@
         ]
     },
     "NCBIScraper": {
-        "bucket_key": "raw_data/ncbi",
+        "bucket_key": "{main_folder}/ncbi",
         "base_url": "https://www.ncbi.nlm.nih.gov",
         "sources": [
             {
@@ -566,7 +566,7 @@
         ]
     },
     "CambridgeUniversityPressScraper": {
-        "bucket_key": "raw_data/cambridge_university_press",
+        "bucket_key": "{main_folder}/cambridge_university_press",
         "base_url": "https://www.cambridge.org",
         "cookie_selector": "a.cookie-close",
         "sources": [
@@ -579,7 +579,7 @@
         ]
     },
     "OxfordAcademicScraper": {
-        "bucket_key": "raw_data/oxford_academic",
+        "bucket_key": "{main_folder}/oxford_academic",
         "base_url": "https://academic.oup.com",
         "cookie_selector": "[id='accept-button']",
         "journals": [
@@ -595,7 +595,7 @@
         ]
     },
     "IEEEScraper": {
-        "bucket_key": "raw_data/ieee",
+        "bucket_key": "{main_folder}/ieee",
         "sources": [
             {
                 "name": "IEEE Journals",
@@ -629,7 +629,7 @@
         ]
     },
     "TaylorAndFrancisScraper": {
-        "bucket_key": "raw_data/taylor_and_francis",
+        "bucket_key": "{main_folder}/taylor_and_francis",
         "base_url": "https://www.tandfonline.com",
         "cookie_selector": "[id='onetrust-accept-btn-handler']",
         "sources": [
@@ -656,7 +656,7 @@
         ]
     },
     "FrontiersScraper": {
-        "bucket_key": "raw_data/frontiers",
+        "bucket_key": "{main_folder}/frontiers",
         "base_url": "https://www.frontiersin.org/",
         "cookie_selector": "[id='onetrust-accept-btn-handler']",
         "sources": [
@@ -667,7 +667,7 @@
         ]
     },
     "SageScraper": {
-        "bucket_key": "raw_data/sage",
+        "bucket_key": "{main_folder}/sage",
         "base_url": "https://journals.sagepub.com",
         "cookie_selector": "div.qc-cmp2-summary-buttons > button.css-1pdnrb0",
         "sources": [
@@ -677,7 +677,7 @@
         ]
     },
     "EOGEScraper": {
-        "bucket_key": "raw_data/eoge",
+        "bucket_key": "{main_folder}/eoge",
         "base_url": "https://eoge.ut.ac.ir",
         "sources": [
             {
@@ -687,7 +687,7 @@
         ]
     },
     "ArxivScraper": {
-        "bucket_key": "raw_data/arxiv",
+        "bucket_key": "{main_folder}/arxiv",
         "base_url": "https://arxiv.org",
         "sources": [
             {
@@ -697,7 +697,7 @@
         ]
     },
     "WileyScraper": {
-        "bucket_key": "raw_data/wiley",
+        "bucket_key": "{main_folder}/wiley",
         "cookie_selector": "button.osano-cm-accept-all",
         "sources": [
             {
@@ -843,7 +843,7 @@
         ]
     },
     "EOSScraper": {
-        "bucket_key": "raw_data/eos",
+        "bucket_key": "{main_folder}/eos",
         "base_url": "https://eos.org/",
         "cookie_selector": "a.cc-dismiss",
         "sources": [
@@ -895,7 +895,7 @@
         ]
     },
     "ESAScraper": {
-        "bucket_key": "raw_data/esa",
+        "bucket_key": "{main_folder}/esa",
         "sources": [
             {
                 "name": "ESA Earth Online",
@@ -1019,7 +1019,7 @@
         ]
     },
     "ElsevierScraper": {
-        "bucket_key": "raw_data/elsevier",
+        "bucket_key": "{main_folder}/elsevier",
         "base_url": "https://www.sciencedirect.com",
         "cookie_selector": "[id='onetrust-accept-btn-handler']",
         "sources":[
@@ -1061,7 +1061,7 @@
         ]
     },
     "NASAScraper": {
-        "bucket_key": "raw_data/nasa",
+        "bucket_key": "{main_folder}/nasa",
         "sources": [
             {
                 "name": "NASA EarthData Wiki",
@@ -1173,7 +1173,7 @@
         ]
     },
     "OpenNightLightsScraper": {
-        "bucket_key": "raw_data/open_night_lights_scraper",
+        "bucket_key": "{main_folder}/open_night_lights_scraper",
         "base_url": "https://worldbank.github.io/OpenNightLights/",
         "file_extension": "html",
         "sources": [
@@ -1184,7 +1184,7 @@
         ]
     },
     "WikipediaScraper": {
-        "bucket_key": "raw_data/wikipedia",
+        "bucket_key": "{main_folder}/wikipedia",
         "base_url": "https://en.wikipedia.org/",
         "file_extension": "html",
         "sources": [
@@ -1203,7 +1203,7 @@
         ]
     },
     "MITScraper": {
-        "bucket_key": "raw_data/mit",
+        "bucket_key": "{main_folder}/mit",
         "base_url": "https://ocw.mit.edu/",
         "sources": [
             {
@@ -1213,7 +1213,7 @@
         ]
     },
     "JAXAScraper": {
-        "bucket_key": "raw_data/jaxa",
+        "bucket_key": "{main_folder}/jaxa",
         "base_url": "https://earth.jaxa.jp/en/eo-knowledge",
         "file_extension": "html",
         "sources": [
@@ -1224,7 +1224,7 @@
         ]
     },
     "UKMetOfficeScraper": {
-        "bucket_key": "raw_data/uk_met_office",
+        "bucket_key": "{main_folder}/uk_met_office",
         "base_url": "https://library.metoffice.gov.uk",
         "cookie_selector": "button.cc-btn.cc-allow",
         "sources": [
@@ -1235,7 +1235,7 @@
         ]
     },
     "EOAScraper": {
-        "bucket_key": "raw_data/eoa",
+        "bucket_key": "{main_folder}/eoa",
         "base_url": "https://www.eoa.org.au/",
         "sources": [
             {
@@ -1244,7 +1244,7 @@
         ]
     },
     "ISPRSScraper": {
-        "bucket_key": "raw_data/isprs",
+        "bucket_key": "{main_folder}/isprs",
         "base_url": "https://www.isprs.org/",
         "sources": [
             {
@@ -1253,7 +1253,7 @@
         ]
     },
     "EUMETSATScraper": {
-        "bucket_key": "raw_data/eumetsat",
+        "bucket_key": "{main_folder}/eumetsat",
         "sources": [
             {
                 "name": "EUMETSAT Crawled Sites",
@@ -1313,7 +1313,7 @@
         ]
     },
     "EarthDataScienceScraper": {
-        "bucket_key": "raw_data/earth_data_science",
+        "bucket_key": "{main_folder}/earth_data_science",
         "base_url": "https://www.earthdatascience.org/",
         "file_extension": "html",
         "sources": [
@@ -1324,7 +1324,7 @@
         ]
     },
     "DirectLinksScraper": {
-        "bucket_key": "raw_data/miscellaneous",
+        "bucket_key": "{main_folder}/miscellaneous",
         "sources": [
             {
                 "name": "Servir",
