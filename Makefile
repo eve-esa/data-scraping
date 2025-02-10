@@ -29,3 +29,6 @@ sync-requirements: ## Update the local virtual environment with the latest requi
 
 run:  ## Run the application
 	docker exec -it $(shell docker ps -qf "name=app") /bin/sh -c "python -m main ${args}"
+
+runpod:  ## Run the application on the pod
+	docker exec -i $(shell docker ps -qf "name=app") /bin/sh -c "python -m main ${args}"

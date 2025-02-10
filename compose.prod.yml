@@ -1,0 +1,11 @@
+services:
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: build
+    volumes:
+      - .:/app
+    env_file:
+      - .env
