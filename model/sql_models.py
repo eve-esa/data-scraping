@@ -9,6 +9,8 @@ from helper.base_enum import Enum
 
 class DatabaseFieldType(Enum):
     TEXT = "TEXT"
+    MEDIUMTEXT = "MEDIUMTEXT"
+    LONGTEXT = "LONGTEXT"
     INTEGER = "INTEGER"
     VARCHAR = "VARCHAR"
     FLOAT = "FLOAT"
@@ -63,7 +65,7 @@ class ScraperOutput(BaseModel):
     def def_types(cls) -> Dict[str, DatabaseFieldDefinition]:
         return {
             "scraper": DatabaseFieldDefinition(type=DatabaseFieldType.VARCHAR, nullable=False),
-            "output": DatabaseFieldDefinition(type=DatabaseFieldType.TEXT, nullable=False),
+            "output": DatabaseFieldDefinition(type=DatabaseFieldType.LONGTEXT, nullable=False),
             "last_access_at": DatabaseFieldDefinition(type=DatabaseFieldType.VARCHAR),
         }
 
@@ -96,7 +98,7 @@ class ScraperAnalytics(BaseModel):
     def def_types(cls) -> Dict[str, DatabaseFieldDefinition]:
         return {
             "scraper": DatabaseFieldDefinition(type=DatabaseFieldType.VARCHAR, nullable=False),
-            "result": DatabaseFieldDefinition(type=DatabaseFieldType.TEXT, nullable=False),
+            "result": DatabaseFieldDefinition(type=DatabaseFieldType.LONGTEXT, nullable=False),
             "created_at": DatabaseFieldDefinition(type=DatabaseFieldType.VARCHAR),
             "last_access_at": DatabaseFieldDefinition(type=DatabaseFieldType.VARCHAR),
         }
