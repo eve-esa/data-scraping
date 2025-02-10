@@ -13,11 +13,11 @@ def init_db():
     base_package = "repository"
     package = importlib.import_module(base_package)
 
-    discovered_db_table_managers = {}
+    discovered_repositories = {}
     for _, module_name, _ in pkgutil.iter_modules(package.__path__):
         module = importlib.import_module(f"{base_package}.{module_name}")
 
-        discovered_db_table_managers |= {
+        discovered_repositories |= {
             name: obj_type
             for name, obj_type in inspect.getmembers(module)
             if inspect.isclass(obj_type)
@@ -27,7 +27,7 @@ def init_db():
 
     database_manager = DatabaseManager()
 
-    for db_table_manager_class in discovered_db_table_managers.values():
-        db_table_manager = db_table_manager_class()
-        table = db_table_manager.table_name
-        database_manager.create_table(table, db_table_manager.model_fields_definition)
+    for repository_type in discovered_repositories.values():
+        repository = repository_type()
+        table = repository.table_name
+        database_manager.create_table(table, repository.model_fields_definition)

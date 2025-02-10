@@ -1,5 +1,5 @@
 import json
-from typing import List, Type
+from typing import Type
 
 from model.analytics_models import AnalyticsModel
 from model.sql_models import ScraperAnalytics
@@ -13,13 +13,5 @@ class ScraperAnalyticsRepository(BaseRepository):
         )
 
     @property
-    def table_name(self) -> str:
-        return "scraper_analytics"
-
-    @property
     def model_type(self) -> Type[ScraperAnalytics]:
         return ScraperAnalytics
-
-    @property
-    def model_fields_excluded(self) -> List[str]:
-        return ["id"]

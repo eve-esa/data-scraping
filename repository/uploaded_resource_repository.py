@@ -76,13 +76,5 @@ class UploadedResourceRepository(BaseRepository):
             return result
 
     @property
-    def table_name(self) -> str:
-        return "uploaded_resources"
-
-    @property
     def model_type(self) -> Type[UploadedResource]:
         return UploadedResource
-
-    @property
-    def model_fields_excluded(self) -> List[str]:
-        return ["id", "content"]

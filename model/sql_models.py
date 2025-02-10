@@ -29,6 +29,11 @@ class BaseModel(PydanticBaseModel, ABC):
     def def_types(cls) -> Dict[str, DatabaseFieldDefinition]:
         pass
 
+    @classmethod
+    @abstractmethod
+    def table_name(cls) -> str:
+        pass
+
 
 class UploadedResource(BaseModel):
     scraper: str
@@ -49,6 +54,10 @@ class UploadedResource(BaseModel):
             "last_access_at": DatabaseFieldDefinition(type=String(length=255)),
         }
 
+    @classmethod
+    def table_name(cls) -> str:
+        return "uploaded_resources"
+
 
 class ScraperOutput(BaseModel):
     scraper: str
@@ -66,6 +75,10 @@ class ScraperOutput(BaseModel):
             "last_access_at": DatabaseFieldDefinition(type=String(length=255)),
         }
 
+    @classmethod
+    def table_name(cls) -> str:
+        return "scraper_outputs"
+
 
 class ScraperFailure(BaseModel):
     scraper: str
@@ -80,6 +93,10 @@ class ScraperFailure(BaseModel):
             "message": DatabaseFieldDefinition(type=Text),
             "last_access_at": DatabaseFieldDefinition(type=String(length=255)),
         }
+
+    @classmethod
+    def table_name(cls) -> str:
+        return "scraper_failures"
 
 
 class ScraperAnalytics(BaseModel):
@@ -99,3 +116,7 @@ class ScraperAnalytics(BaseModel):
             "created_at": DatabaseFieldDefinition(type=String(length=255)),
             "last_access_at": DatabaseFieldDefinition(type=String(length=255)),
         }
+
+    @classmethod
+    def table_name(cls) -> str:
+        return "scraper_analytics"

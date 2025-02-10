@@ -184,16 +184,10 @@ class BaseRepository(ABC):
         return self.model_type.def_types()
 
     @property
-    @abstractmethod
     def table_name(self) -> str:
-        pass
+        return self.model_type.table_name()
 
     @property
     @abstractmethod
     def model_type(self) -> Type[BaseModel]:
-        pass
-
-    @property
-    @abstractmethod
-    def model_fields_excluded(self) -> List[str]:
         pass
