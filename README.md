@@ -15,6 +15,8 @@ AWS_MAIN_FOLDER=raw_data
 
 MINIO_URL=http://minio:9100
 
+HEADLESS_BROWSER=true
+
 DB_HOST=mysql
 DB_PORT=3306
 DB_NAME=esa_eve
@@ -45,20 +47,20 @@ please populate all the keys in the `.env` file with the correct values.
 
 ## Configuration
 The configuration file is located in the `config` folder and is named `config.json`. The configuration file contains the parameters
-to be used in the ETL pipeline. Each main key of the JSON file represents the configuration of a different scraper.
+to be used in the pipeline. Each main key of the JSON file represents the configuration of a different scraper.
 The name of the key is the name of the scraper and the value is a dictionary containing the Pydantic model of the scraper configuration. For more examples, please take a look to the already implemented scrapers and their configurations.
 
 ## Usage
 
 ### Testing
 For the usage with testing purposes, please create a `.env` file in the root of the project with the following content, as
-per the [Pre-requisites](#pre-requisites) section. Then, you can run the following command to execute the ETL pipeline:
+per the [Pre-requisites](#pre-requisites) section. Then, you can run the following command to execute the pipeline:
 ```bash
 make up
 make run
 ```
 
-The command `make up` will start the docker container and `make run` will execute the ETL pipeline.
+The command `make up` will start the docker containers and `make run` will execute the pipeline.
 It is possible to specify the name(s) of the scraper(s) to be executed by adding the `--scrapers` parameter to the `make run` command. E.g.:
 ```bash
 make run args="--scrapers IOPScraper"
@@ -69,11 +71,11 @@ make run args="--scrapers IOPScraper SpringerScraper"
 ```
 
 The docker containers are locally required, since a MinIO server is used to store the data and emulate a remote S3 bucket.
-Every time the ETL pipeline is executed, the data is stored in the MinIO server and the configuration file is updated with the `done` key set to `True`.
+Every time the pipeline is executed, the data is stored in the MinIO server and the configuration file is updated with the `done` key set to `True`.
 
 **Additional Notes**: 
 1. The `make up` command must be executed only once, since the docker container is started and the MinIO server is started.
-The `make run` command can be executed multiple times to run the ETL pipeline.
+The `make run` command can be executed multiple times to run the pipeline.
 The `make down` command can be executed to stop the docker container.
 2. If you want to force the execution of one or more scrapers, even when they have been completed, you can add
 the `--force` parameter to the `make run` command. E.g.:
@@ -83,24 +85,14 @@ the `--force` parameter to the `make run` command. E.g.:
 
 ### Production
 For the usage with productive purposes, please create a `.env` file in the root of the project as per the [Pre-requisites](#pre-requisites) section. 
-Then, you can run the ETL pipeline as described in the previous section, but with the following commands:
+Then, you can run the pipeline as described in the previous section, but with the following commands:
 ```bash
-make up dockerfile=compose.prod.yml
-make run
-```
-The `compose.prod.yml` file is used to start the docker container in production mode. The `make run` command will execute the ETL pipeline.
-
-If `make run` returns some errors, you can use the following command to run the ETL pipeline in the production environment:
-```bash
+sh pod.sh
 make runpod
 ```
-which does not activate the pseudo-TTY.
-
-Finally, if you prefer to deploy the entire image to a Kubernetes cluster, you can use the following command to run the scrapers:
-```bash
-make run-no-docker
-```
-with, eventually, the same arguments as `make run`.
+The `pod.sh` shell script is used to deploy a suitable infrastructure into the remote Linux-based POD. The `make runpod`
+command will execute the pipeline, similarly to the `make run` command for the local usage. The command `make runpod`
+has the same parameters as the `make run` command.
 
 ## HowTo: add a new Scraper
 In order to add a new scraper, the following steps are required:
@@ -122,7 +114,7 @@ keys:
    - `file_extension`: the key returning the expected extension of the files to be downloaded / uploaded to the storage (optional, default ".pdf")
 
 ## Analytics: HowTo
-At the end of each Scraper, the ETL pipeline will store some statistics in the `scraper_analytics` table of the database.
+At the end of each Scraper, the pipeline will store some statistics in the `scraper_analytics` table of the database.
 The statistics are stored in a JSON-formatted string, per scraper. The JSON-formatted string contains the following keys:
 - `scraped`, i.e., the analysed URLs
 - `content_retrieved`: i.e., those resources successfully collected during the scraping but which contents were not
@@ -135,7 +127,7 @@ The latest statistics can be retrieved by running the following command:
 make run args="--analytics-only"
 ```
 
-The command will print the statistics of the last execution of the ETL pipeline. If you want to restrict the retrieval
+The command will print the statistics of the last execution of the pipeline. If you want to restrict the retrieval
 of the statistics to specific scraper(s), you can add the `--scrapers` parameter to the command. E.g.:
 ```bash
 make run args="--analytics-only --scrapers IOPScraper"

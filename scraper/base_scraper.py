@@ -87,16 +87,16 @@ class BaseScraper(ABC):
         Returns:
             BeautifulSoup: the fully rendered HTML of the URL.
         """
-        from helper.utils import get_user_agent, get_static_proxy_config, get_parsed_page_source
+        from helper.utils import get_user_agent, get_static_proxy_config, get_parsed_page_source, headless
 
         driver = Driver(
             browser="chrome",
             undetectable=True,
             uc_cdp_events=True,
             locale_code="en",
-            headless=self._config_model.headless,
-            headless1=self._config_model.headless,
-            headless2=self._config_model.headless,
+            headless=headless(),
+            headless1=headless(),
+            headless2=headless(),
             proxy=get_static_proxy_config(),
             disable_cookies=False,
             window_size="1920,1080",

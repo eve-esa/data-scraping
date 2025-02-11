@@ -444,3 +444,8 @@ def build_analytics(successes: List[str], failures: List[str]) -> AnalyticsModel
             failure=failures,
             percentages=percentages
         )
+
+
+def headless() -> bool:
+    v = os.getenv("HEADLESS_BROWSER", "true").lower()
+    return v == "true" or v == "1"

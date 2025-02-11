@@ -31,7 +31,4 @@ run:  ## Run the application
 	docker exec -it $(shell docker ps -qf "name=app") /bin/sh -c "python -m main ${args}"
 
 runpod:  ## Run the application on the pod
-	docker exec -i $(shell docker ps -qf "name=app") /bin/sh -c "python -m main ${args}"
-
-run-no-docker:  ## Run the application outside the docker container, i.e., within the host
 	python -m main ${args}
