@@ -91,20 +91,20 @@ class BaseScraper(ABC):
 
         driver = Driver(
             browser="chrome",
-            uc=True,
+            undetectable=True,
+            uc_cdp_events=True,
             locale_code="en",
             headless=self._config_model.headless,
             headless1=self._config_model.headless,
             headless2=self._config_model.headless,
             proxy=get_static_proxy_config(),
             disable_cookies=False,
-            disable_gpu=True,
-            no_sandbox=True,
             window_size="1920,1080",
             window_position="0,0",
             agent=get_user_agent(),
-            disable_ws=True,
             devtools=True,
+            use_wire=True,
+            use_auto_ext=True,
         )
 
         driver.get(url.replace('"', '\\\"'))
