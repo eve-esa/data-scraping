@@ -117,7 +117,7 @@ class BaseScraper(ABC):
                 )
                 driver.execute_script("arguments[0].click();", cookie_button)
             except TimeoutException as e:
-                self._logger.warning(f"Cookie popup not found. Error: {e}")
+                self._logger.warning(f"Cookie popup not found. {e}")
 
         # Scroll through the page to load all articles
         last_height = driver.execute_script("return document.body.scrollHeight")

@@ -49,9 +49,9 @@ class UploadedResource(BaseModel):
             "scraper": DatabaseFieldDefinition(type=String(length=255), nullable=False),
             "bucket_key": DatabaseFieldDefinition(type=Text, nullable=False),
             "source": DatabaseFieldDefinition(type=Text, nullable=False),
-            "sha256": DatabaseFieldDefinition(type=String(length=255)),
+            "sha256": DatabaseFieldDefinition(type=String(length=255), default=None),
             "success": DatabaseFieldDefinition(type=Boolean, nullable=False, default=False),
-            "last_access_at": DatabaseFieldDefinition(type=String(length=255)),
+            "last_access_at": DatabaseFieldDefinition(type=String(length=255), nullable=False),
         }
 
     @classmethod
@@ -72,7 +72,7 @@ class ScraperOutput(BaseModel):
         return {
             "scraper": DatabaseFieldDefinition(type=String(length=255), nullable=False),
             "output": DatabaseFieldDefinition(type=LONGTEXT, nullable=False),
-            "last_access_at": DatabaseFieldDefinition(type=String(length=255)),
+            "last_access_at": DatabaseFieldDefinition(type=String(length=255), nullable=False),
         }
 
     @classmethod
@@ -90,8 +90,8 @@ class ScraperFailure(BaseModel):
         return {
             "scraper": DatabaseFieldDefinition(type=String(length=255), nullable=False),
             "source": DatabaseFieldDefinition(type=Text, nullable=False),
-            "message": DatabaseFieldDefinition(type=Text),
-            "last_access_at": DatabaseFieldDefinition(type=String(length=255)),
+            "message": DatabaseFieldDefinition(type=Text, default=None),
+            "last_access_at": DatabaseFieldDefinition(type=String(length=255), nullable=False),
         }
 
     @classmethod
@@ -113,8 +113,8 @@ class ScraperAnalytics(BaseModel):
         return {
             "scraper": DatabaseFieldDefinition(type=String(length=255), nullable=False),
             "result": DatabaseFieldDefinition(type=LONGTEXT, nullable=False),
-            "created_at": DatabaseFieldDefinition(type=String(length=255)),
-            "last_access_at": DatabaseFieldDefinition(type=String(length=255)),
+            "created_at": DatabaseFieldDefinition(type=String(length=255), nullable=False),
+            "last_access_at": DatabaseFieldDefinition(type=String(length=255), nullable=False),
         }
 
     @classmethod
