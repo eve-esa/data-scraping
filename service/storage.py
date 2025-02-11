@@ -18,7 +18,7 @@ class S3Storage:
             aws_secret_access_key=os.getenv("AWS_SECRET_KEY")
         )
         self.bucket_name: Final[str] = os.getenv("AWS_BUCKET_NAME")
-        self.main_folder: Final[str] = os.getenv("AWS_MAIN_FOLDER")
+        self.main_folder: Final[str] = os.getenv("AWS_MAIN_FOLDER", "raw_data")
         self.logger: Final = setup_logger(__name__)
 
         self.create_bucket_if_not_existing()
