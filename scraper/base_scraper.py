@@ -103,7 +103,6 @@ class BaseScraper(ABC):
             window_position="0,0",
             agent=get_user_agent(),
             devtools=True,
-            use_wire=True,
             use_auto_ext=True,
         )
 
