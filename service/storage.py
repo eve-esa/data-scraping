@@ -18,7 +18,6 @@ class S3Storage:
             aws_secret_access_key=os.getenv("AWS_SECRET_KEY")
         )
         self.bucket_name: Final[str] = os.getenv("AWS_BUCKET_NAME")
-        self.main_folder: Final[str] = os.getenv("AWS_MAIN_FOLDER", "raw_data")
         self.logger: Final = setup_logger(__name__)
 
         self.create_bucket_if_not_existing()
@@ -49,14 +48,13 @@ class S3Storage:
             self.client.create_bucket(Bucket=self.bucket_name, CreateBucketConfiguration=location)
 
     def upload_content(self, resource: UploadedResource) -> bool:
-        bucket_key = resource.bucket_key.format(main_folder=self.main_folder)
-        self.logger.info(f"Uploading Source: {resource.source} to {bucket_key}")
+        self.logger.info(f"Uploading Source: {resource.source} to {resource.bucket_key}")
         try:
             # Upload to S3
-            self.client.put_object(Bucket=self.bucket_name, Key=bucket_key, Body=resource.content)
-            self.logger.info(f"Successfully uploaded to S3: {bucket_key}")
+            self.client.put_object(Bucket=self.bucket_name, Key=resource.bucket_key, Body=resource.content)
+            self.logger.info(f"Successfully uploaded to S3: {resource.bucket_key}")
 
             return True
         except Exception as e:
-            self.logger.error(f"Failed to upload content from {resource.source} to {bucket_key}. Error: {e}")
+            self.logger.error(f"Failed to upload content from {resource.source} to {resource.bucket_key}. Error: {e}")
             return False

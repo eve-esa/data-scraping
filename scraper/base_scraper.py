@@ -1,7 +1,8 @@
 import json
+import os
 from abc import ABC, abstractmethod
 import random
-from typing import List, Type, Any, Dict, Tuple
+from typing import List, Type, Any, Dict, Tuple, Final
 from bs4 import BeautifulSoup
 from selenium.common import TimeoutException
 from selenium.webdriver.support.wait import WebDriverWait
@@ -219,6 +220,9 @@ class BaseScraper(ABC):
         return True
 
     def _upload_resource_to_s3_and_store_to_db(self, resource: UploadedResource) -> bool:
+        main_folder: Final[str] = os.getenv("AWS_MAIN_FOLDER", "raw_data")
+        resource.bucket_key = resource.bucket_key.format(main_folder=main_folder)
+
         result = self._s3_client.upload_content(resource)
         resource.success = result
         self._uploaded_resource_repository.insert(resource, ["content"])
