@@ -211,7 +211,7 @@ class BaseScraper(ABC):
             self._upload_resource_to_s3_and_store_to_db(current_resource)
 
     def _check_valid_resource(self, resource: UploadedResource, resource_name: str) -> bool:
-        if resource.id:
+        if resource.id and resource.success:
             self._logger.warning(f"Resource {resource_name} already exists in the database, skipping upload.")
             return False
         if not resource.content:
@@ -225,7 +225,7 @@ class BaseScraper(ABC):
 
         result = self._s3_client.upload_content(resource)
         resource.success = result
-        self._uploaded_resource_repository.insert(resource, ["content"])
+        self._uploaded_resource_repository.upsert(resource, {"sha256": resource.sha256}, keys_to_purge=["content"])
 
         # Sleep after each successful download to avoid overwhelming the server
         time.sleep(random.uniform(2, 5))

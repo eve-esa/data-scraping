@@ -41,7 +41,10 @@ class BaseRepository(ABC):
         self,
         record: BaseModel,
         search_by: Dict[str, Any],
-        update_dict: Dict[str, Any],
+        update_dict: Dict[str, Any] | None = None,
+        order_by: str | None = None,
+        group_by: str | None = None,
+        desc: bool = False,
         keys_to_purge: List | None = None
     ) -> int:
         """
@@ -50,15 +53,21 @@ class BaseRepository(ABC):
         Args:
             record (BaseModel): The output to store
             search_by (Dict[str, Any]): The search criteria to check if the record already exists
-            update_dict (Dict[str, Any]): The fields to update if the record already
+            update_dict (Dict[str, Any]): The fields to update if the record already. If None, the entire record will be dumped, except the eventually purged keys
+            order_by (str): The field to order by
+            group_by (str): The field to group by
+            desc (bool): Whether to sort in descending order
             keys_to_purge (List[str]): The keys to purge from the record before inserting it into the database
 
         Returns:
             ID of the appended record
         """
         record_dict = self.before_insert(record.model_dump(), keys_to_purge)
+        update_dict = update_dict or record_dict
 
-        existing_records = self._database_manager.search_records(self.table_name, search_by, limit=1)
+        existing_records = self._database_manager.search_records(
+            self.table_name, search_by, order_by=order_by, group_by=group_by, desc=desc
+        )
         if existing_records:
             existing_record = existing_records[0]
             update_dict["last_access_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -96,6 +105,7 @@ class BaseRepository(ABC):
         conditions: Dict[str, Any],
         operator: str = "AND",
         order_by: str | None = None,
+        group_by: str | None = None,
         desc: bool = False,
         limit: int | None = None
     ) -> List[BaseModel]:
@@ -107,13 +117,16 @@ class BaseRepository(ABC):
             conditions (Dict[str, Any]): The condition criteria
             operator (str): The operator to use for the condition
             order_by (str): The field to order by
+            group_by (str): The field to group by
             desc (bool): Whether to sort in descending order
             limit (int): Maximum number of records to retrieve
 
         Returns:
             List[BaseModel]: The records that match the condition criteria and ordered by the specified field
         """
-        records = self._database_manager.search_records(self.table_name, conditions, operator, order_by, desc, limit)
+        records = self._database_manager.search_records(
+            self.table_name, conditions, operator, order_by, group_by, desc, limit
+        )
         return [self.model_type(**record) for record in records]
 
     def get_one_by(
@@ -121,6 +134,7 @@ class BaseRepository(ABC):
         conditions: Dict[str, Any],
         operator: str = "AND",
         order_by: str | None = None,
+        group_by: str | None = None,
         desc: bool = False,
     ) -> BaseModel | None:
         """
@@ -131,12 +145,15 @@ class BaseRepository(ABC):
             conditions (Dict[str, Any]): The condition criteria
             operator (str): The operator to use for the condition
             order_by (str): The field to order by
+            group_by (str): The field to group by
             desc (bool): Whether to sort in descending order
 
         Returns:
             BaseModel | None: The first record that matches the condition criteria and ordered by the specified field or None
         """
-        records = self._database_manager.search_records(self.table_name, conditions, operator, order_by, desc, limit=1)
+        records = self._database_manager.search_records(
+            self.table_name, conditions, operator, order_by, group_by, desc, limit=1
+        )
         if not records:
             return None
         return self.model_type(**records[0])

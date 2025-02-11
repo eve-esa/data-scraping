@@ -37,7 +37,7 @@ class AnalyticsManager:
         if not scrape_success:
             raise ValueError(f"Scraper {scraper} not found in the database.")
 
-        scrape_failures: List[ScraperFailure] = self._scraper_failure_repository.get_by({"scraper": scraper})
+        scrape_failures = self._scraper_failure_repository.get_by_scraper_and_latest_source(scraper)
 
         return build_analytics(extract_lists(scrape_success.output_json), [failure.source for failure in scrape_failures])
 

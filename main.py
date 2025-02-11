@@ -10,32 +10,31 @@ from service.analytics_manager import AnalyticsManager
 
 
 def main(args):
+    def parse_bool_arg(arg) -> bool:
+        if arg is None:
+            arg = True
+        elif isinstance(arg, str):
+            arg = arg.lower() == "true" or arg.lower() == "1"
+        return arg
+
     scrapers = discover_scrapers()
     if args.scrapers:
         scrapers = {name: scrapers[name] for name in args.scrapers if name in scrapers}
 
-    analytics_only = args.analytics_only
-    if analytics_only is None:
-        analytics_only = True
-    elif isinstance(analytics_only, str):
-        analytics_only = analytics_only.lower() == "true" or analytics_only.lower() == "1"
-
-    if analytics_only:
+    if parse_bool_arg(args.analytics_only):
         analytics_manager = AnalyticsManager()
         print(json.dumps(
             analytics_manager.find_multiple_latest_analytics(list(scrapers.keys()), as_dict=True),
             sort_keys=True,
             indent=4
         ))
-
         return
 
     # first of all, remove the scraping.log file
     with open("logs/scraping.log", "w") as f:
         f.write("")
     scraper_config = read_json_file(CONFIG_PATH)
-    force_running = args.force
-    run_scrapers(scrapers, scraper_config, force=force_running)
+    run_scrapers(scrapers, scraper_config, force=parse_bool_arg(args.force))
 
 
 if __name__ == "__main__":
@@ -55,6 +54,7 @@ if __name__ == "__main__":
         "-f",
         "--force",
         default=False,
+        nargs="?",
         help="Force scraping of all resources, regardless of the last time they were scraped.",
     )
 

@@ -84,6 +84,12 @@ class DatabaseManager:
         """
         return [col["name"] for col in self.get_table_info(table_name)]
 
+    def get_session(self):
+        return sessionmaker(bind=self.engine, expire_on_commit=True)()
+
+    def get_table(self, table_name: str):
+        return Table(table_name, self.metadata, autoload_with=self.engine)
+
     def get_record(self, table_name: str, record_id: int) -> Dict[str, Any] | None:
         """
         Retrieve a record from the database
@@ -95,10 +101,9 @@ class DatabaseManager:
         Returns:
             Dictionary with the record data, or None if the record was not found
         """
-        session = sessionmaker(bind=self.engine, expire_on_commit=True)()
+        session = self.get_session()
 
-        table = Table(table_name, self.metadata, autoload_with=self.engine)
-        result = session.query(table).filter_by(id=record_id).first()
+        result = session.query(self.get_table(table_name)).filter_by(id=record_id).first()
 
         session.close()
 
@@ -117,10 +122,9 @@ class DatabaseManager:
         Returns:
             ID of the inserted record
         """
-        session = sessionmaker(bind=self.engine, expire_on_commit=True)()
+        session = self.get_session()
 
-        table = Table(table_name, self.metadata, autoload_with=self.engine)
-        result = session.execute(table.insert().values(**data))
+        result = session.execute(self.get_table(table_name).insert().values(**data))
         session.commit()
         session.close()
 
@@ -138,9 +142,9 @@ class DatabaseManager:
         Returns:
             True if the update was successful
         """
-        session = sessionmaker(bind=self.engine, expire_on_commit=True)()
+        session = self.get_session()
 
-        table = Table(table_name, self.metadata, autoload_with=self.engine)
+        table = self.get_table(table_name)
         result = session.execute(
             table.update()
             .where(table.c.id == record_id)
@@ -161,9 +165,9 @@ class DatabaseManager:
         Returns:
             True if the deletion was successful
         """
-        session = sessionmaker(bind=self.engine, expire_on_commit=True)()
+        session = self.get_session()
 
-        table = Table(table_name, self.metadata, autoload_with=self.engine)
+        table = self.get_table(table_name)
         result = session.execute(
             table.delete().where(table.c.id == record_id)
         )
@@ -184,9 +188,9 @@ class DatabaseManager:
         Returns:
             True if the deletion was successful
         """
-        session = sessionmaker(bind=self.engine, expire_on_commit=True)()
+        session = self.get_session()
 
-        table = Table(table_name, self.metadata, autoload_with=self.engine)
+        table = self.get_table(table_name)
         query = session.query(table)
 
         # Build filter conditions
@@ -212,10 +216,9 @@ class DatabaseManager:
         Returns:
             True if the deletion was successful
         """
-        session = sessionmaker(bind=self.engine, expire_on_commit=True)()
+        session = self.get_session()
 
-        table = Table(table_name, self.metadata, autoload_with=self.engine)
-        result = session.query(table).delete()
+        result = session.query(self.get_table(table_name)).delete()
         session.commit()
         session.close()
 
@@ -231,10 +234,9 @@ class DatabaseManager:
         Returns:
             List of dictionaries, each representing a record
         """
-        session = sessionmaker(bind=self.engine, expire_on_commit=True)()
+        session = self.get_session()
 
-        table = Table(table_name, self.metadata, autoload_with=self.engine)
-        result = session.query(table).all()
+        result = session.query(self.get_table(table_name)).all()
         session.close()
 
         return [dict(row._mapping) for row in result]
@@ -245,6 +247,7 @@ class DatabaseManager:
         conditions: Dict[str, Any],
         operator: str = "AND",
         order_by: str | None = None,
+        group_by: str | None = None,
         desc: bool = False,
         limit: int | None = None
     ) -> List[Dict[str, Any]]:
@@ -256,15 +259,16 @@ class DatabaseManager:
             conditions: Dictionary with the search criteria
             operator: Logical operator between conditions ("AND" or "OR")
             order_by: Column to order by
+            group_by: Column to group by
             desc: Whether to sort in descending order
             limit: Maximum number of records to retrieve
 
         Returns:
             List of dictionaries, each representing a record
         """
-        session = sessionmaker(bind=self.engine, expire_on_commit=True)()
+        session = self.get_session()
 
-        table = Table(table_name, self.metadata, autoload_with=self.engine)
+        table = self.get_table(table_name)
         query = session.query(table)
 
         # Build filter conditions
@@ -279,6 +283,10 @@ class DatabaseManager:
         if order_by:
             column = getattr(table.c, order_by)
             query = query.order_by(column.desc() if desc else column.asc())
+
+        if group_by:
+            column = getattr(table.c, group_by)
+            query = query.group_by(column)
 
         # Apply limit
         if limit:

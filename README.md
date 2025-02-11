@@ -71,13 +71,30 @@ make run args="--scrapers IOPScraper SpringerScraper"
 The docker containers are locally required, since a MinIO server is used to store the data and emulate a remote S3 bucket.
 Every time the ETL pipeline is executed, the data is stored in the MinIO server and the configuration file is updated with the `done` key set to `True`.
 
-**Note**: The `make up` command must be executed only once, since the docker container is started and the MinIO server is started.
+**Additional Notes**: 
+1. The `make up` command must be executed only once, since the docker container is started and the MinIO server is started.
 The `make run` command can be executed multiple times to run the ETL pipeline.
 The `make down` command can be executed to stop the docker container.
+2. If you want to force the execution of one or more scrapers, even when they have been completed, you can add
+the `--force` parameter to the `make run` command. E.g.:
+   ```bash
+   make run args="--scrapers IOPScraper --force"
+   ```
 
 ### Production
 For the usage with productive purposes, please create a `.env` file in the root of the project as per the [Pre-requisites](#pre-requisites) section. 
-Then, you can run the ETL pipeline as described in the previous section.
+Then, you can run the ETL pipeline as described in the previous section, but with the following commands:
+```bash
+make up dockerfile=compose.prod.yml
+make run
+```
+The `compose.prod.yml` file is used to start the docker container in production mode. The `make run` command will execute the ETL pipeline.
+
+If `make run` returns some errors, you can use the following command to run the ETL pipeline in the production environment:
+```bash
+make runpod
+```
+which does not activate the pseudo-TTY.
 
 ## HowTo: add a new Scraper
 In order to add a new scraper, the following steps are required:
