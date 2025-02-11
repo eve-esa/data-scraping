@@ -107,6 +107,7 @@ class BaseScraper(ABC):
         )
 
         driver.get(url.replace('"', '\\\"'))
+        driver.uc_gui_click_captcha()
         self._wait_for_page_load(driver)
 
         # Handle cookie popup only once, for the first request

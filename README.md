@@ -96,6 +96,12 @@ make runpod
 ```
 which does not activate the pseudo-TTY.
 
+Finally, if you prefer to deploy the entire image to a Kubernetes cluster, you can use the following command to run the scrapers:
+```bash
+make run-no-docker
+```
+with, eventually, the same arguments as `make run`.
+
 ## HowTo: add a new Scraper
 In order to add a new scraper, the following steps are required:
 1. Create a new file in the `scraper` folder with the name of the scraper. E.g.: `new_editor_scraper.py`
