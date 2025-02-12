@@ -33,7 +33,7 @@ fi
 update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
 
 # Verify Python version
-PYTHON_VERSION=$(python --version)
+PYTHON_VERSION=$(python3 --version)
 echo "Using Python: $PYTHON_VERSION"
 
 # Install Google Chrome
@@ -44,8 +44,8 @@ wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.de
     && rm -rf /var/lib/apt/lists/*
 
 # Install PIP and Python libraries in the virtual environment
-python -m pip install -U pip
-python -m pip install --no-cache-dir -r requirements.txt
+python3 -m pip install -U pip
+python3 -m pip install --no-cache-dir -r requirements.txt
 
 # Install ChromeDriver
 seleniumbase get chromedriver
