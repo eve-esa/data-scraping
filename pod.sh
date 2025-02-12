@@ -36,8 +36,9 @@ if [ ! -d "$VENV_PATH" ]; then
     python3.10 -m venv $VENV_PATH
 fi
 
-# Make sure we use the virtual environment
-source $VENV_PATH/bin/activate
+# Make sure we use the virtual environment - using the full path to python instead of source
+export VIRTUAL_ENV=$VENV_PATH
+export PATH="$VENV_PATH/bin:$PATH"
 
 # Verify Python version
 PYTHON_VERSION=$(python --version)
@@ -51,11 +52,11 @@ wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.de
     && rm -rf /var/lib/apt/lists/*
 
 # Install PIP and Python libraries in the virtual environment
-python -m pip install -U pip
-python -m pip install --no-cache-dir -r requirements.txt
+$VENV_PATH/bin/python -m pip install -U pip
+make sync-requirements-pod
 
 # Install ChromeDriver
-seleniumbase get chromedriver
+$VENV_PATH/bin/seleniumbase get chromedriver
 
 # Add the current directory to the PATH
 export PATH="/usr/local/bin:${PATH}"

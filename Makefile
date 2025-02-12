@@ -23,12 +23,15 @@ down:  ## Stop docker containers
 stop:  ## Stop docker containers
 	docker compose ${docker-compose-files} stop
 
-sync-requirements: ## Update the local virtual environment with the latest requirements.
+sync-requirements: ## Update the local virtual environment as well as the container with the latest requirements.
 	docker exec -it $(shell docker ps -qf "name=app") /bin/sh -c "pip install --no-cache-dir -r requirements.txt"
-	$(PYTHON) -m pip install --no-cache-dir -r requirements.txt
+	$(MAKE) sync-requirements-pod
 
 run:  ## Run the application
 	docker exec -it $(shell docker ps -qf "name=app") /bin/sh -c "$(MAKE) runpod args='${args}'"
+
+sync-requirements-pod: ## Update the local virtual environment with the latest requirements.
+	$(PYTHON) -m pip install --no-cache-dir -r requirements.txt
 
 runpod:  ## Run the application on the pod
 	python -m main ${args}
