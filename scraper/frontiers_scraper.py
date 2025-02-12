@@ -1,7 +1,7 @@
 from typing import List, Type
 from bs4 import Tag, ResultSet
 
-from helper.utils import get_scraped_url
+from helper.utils import get_scraped_url_by_bs_tag
 from model.base_url_publisher_models import BaseUrlPublisherSource, SourceType, BaseUrlPublisherConfig
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
 
@@ -55,7 +55,7 @@ class FrontiersScraper(BaseUrlPublisherScraper):
                 tag
                 for tag in (
                     self._scrape_article(BaseUrlPublisherSource(
-                        url=get_scraped_url(tag, self._config_model.base_url), type=str(SourceType.ARTICLE)
+                        url=get_scraped_url_by_bs_tag(tag, self._config_model.base_url), type=str(SourceType.ARTICLE)
                     ))
                     for tag in article_tag_list
                 )

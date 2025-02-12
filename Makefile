@@ -28,7 +28,7 @@ sync-requirements: ## Update the local virtual environment with the latest requi
 	$(PYTHON) -m pip install --no-cache-dir -r requirements.txt
 
 run:  ## Run the application
-	docker exec -it $(shell docker ps -qf "name=app") /bin/sh -c "python -m main ${args}"
+	docker exec -it $(shell docker ps -qf "name=app") /bin/sh -c "$(MAKE) runpod args='${args}'"
 
 runpod:  ## Run the application on the pod
 	python -m main ${args}

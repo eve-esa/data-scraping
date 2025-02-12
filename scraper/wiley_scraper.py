@@ -2,7 +2,12 @@ from typing import Type, List
 from bs4 import ResultSet, Tag
 from selenium.webdriver.common.by import By
 
-from helper.utils import get_scraped_url, get_link_for_accessible_article, remove_query_string_from_url
+from helper.utils import (
+    get_scraped_url_by_bs_tag,
+    get_link_for_accessible_article,
+    remove_query_string_from_url,
+    get_parsed_page_source,
+)
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from model.wiley_models import WileyConfig
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
@@ -35,7 +40,7 @@ class WileyScraper(BasePaginationPublisherScraper):
             self.__base_url = source.base_url
             pdf_tags_journal = self._scrape_landing_page(source.landing_page_url, idx + 1)
             if pdf_tags_journal:
-                pdf_tags[source.name] = [get_scraped_url(tag, self.__base_url) for tag in pdf_tags_journal]
+                pdf_tags[source.name] = [get_scraped_url_by_bs_tag(tag, self.__base_url) for tag in pdf_tags_journal]
 
         return pdf_tags if pdf_tags else None
 
@@ -109,7 +114,6 @@ class WileyScraper(BasePaginationPublisherScraper):
 
         try:
             scraper, driver = self._scrape_url(url)
-            driver.quit()
 
             # look for the ePDF link in the article page
             epdf_tag = scraper.find(
@@ -121,10 +125,12 @@ class WileyScraper(BasePaginationPublisherScraper):
                 return None
 
             # now, scrape the ePDF page to get the final PDF link, and return this latter tag
-            scraper, driver = self._scrape_url(get_scraped_url(epdf_tag, self.__base_url))
+            driver.get(get_scraped_url_by_bs_tag(epdf_tag, self.__base_url))
             driver.quit()
 
-            if not (direct_pdf_tag := scraper.find("a", href=lambda href: href and "/doi/pdfdirect/" in href)):
+            if not (direct_pdf_tag := get_parsed_page_source(driver).find(
+                    "a", href=lambda href: href and "/doi/pdfdirect/" in href
+            )):
                 self._save_failure(url)
                 return None
 

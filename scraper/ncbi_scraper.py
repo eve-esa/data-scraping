@@ -1,7 +1,7 @@
 from typing import Type
 from bs4 import ResultSet
 
-from helper.utils import get_scraped_url
+from helper.utils import get_scraped_url_by_bs_tag
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from model.ncbi_models import NCBIConfig
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
@@ -30,7 +30,9 @@ class NCBIScraper(BasePaginationPublisherScraper):
             self._scrape_landing_page(source.landing_page_url, idx + 1)
             pdf_tags.extend(self._scrape_pagination(source.pagination_url, idx + 1))
 
-        return {"NCBI": [get_scraped_url(tag, self._config_model.base_url) for tag in pdf_tags]} if pdf_tags else None
+        return {"NCBI": [
+            get_scraped_url_by_bs_tag(tag, self._config_model.base_url) for tag in pdf_tags
+        ]} if pdf_tags else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> None:
         """

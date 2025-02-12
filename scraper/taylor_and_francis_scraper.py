@@ -1,7 +1,7 @@
 from typing import List, Type
 from bs4 import Tag
 
-from helper.utils import get_scraped_url, get_parsed_page_source
+from helper.utils import get_scraped_url_by_bs_tag, get_parsed_page_source
 from model.base_url_publisher_models import BaseUrlPublisherConfig
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper, BaseUrlPublisherSource, SourceType
 
@@ -54,7 +54,8 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
                 for x in issues_tag_list
                 if (
                     tags := self._scrape_issue_or_collection(BaseUrlPublisherSource(
-                        url=get_scraped_url(x, self._config_model.base_url), type=str(SourceType.ISSUE_OR_COLLECTION)
+                        url=get_scraped_url_by_bs_tag(x, self._config_model.base_url),
+                        type=str(SourceType.ISSUE_OR_COLLECTION)
                     ))
                 )
                 for tag in tags
@@ -96,7 +97,7 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
                 for x in article_tag_list
                 if (
                     tag := self._scrape_article(BaseUrlPublisherSource(
-                        url=get_scraped_url(x, self._config_model.base_url), type=str(SourceType.ARTICLE)
+                        url=get_scraped_url_by_bs_tag(x, self._config_model.base_url), type=str(SourceType.ARTICLE)
                     ))
                 )
             ]):

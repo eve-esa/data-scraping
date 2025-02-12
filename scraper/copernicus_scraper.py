@@ -1,7 +1,7 @@
 import os
 from typing import Type
 
-from helper.utils import get_scraped_url
+from helper.utils import get_scraped_url_by_bs_tag
 from model.base_iterative_publisher_models import (
     BaseIterativeWithConstraintPublisherJournal,
     IterativePublisherScrapeJournalOutput,
@@ -93,7 +93,9 @@ class CopernicusScraper(BaseIterativeWithConstraintPublisherScraper):
 
             if not (pdf_links := [
                 pdf_link
-                for pdf_link in map(lambda tag: self._scrape_article(get_scraped_url(tag, journal.url), journal.url), tags)
+                for pdf_link in map(
+                    lambda tag: self._scrape_article(get_scraped_url_by_bs_tag(tag, journal.url), journal.url), tags
+                )
                 if pdf_link
             ]):
                 self._save_failure(issue_url)
@@ -123,7 +125,7 @@ class CopernicusScraper(BaseIterativeWithConstraintPublisherScraper):
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             if pdf_tag := scraper.find("a", href=lambda href: href and ".pdf" in href):
-                return get_scraped_url(pdf_tag, base_url)
+                return get_scraped_url_by_bs_tag(pdf_tag, base_url)
 
             self._save_failure(article_url)
             return None

@@ -197,7 +197,7 @@ def remove_query_string_from_url(url: str | None = None) -> str | None:
     return f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
 
 
-def get_scraped_url(tag: Tag, base_url: str, with_querystring: bool | None = False) -> str:
+def get_scraped_url_by_bs_tag(tag: Tag, base_url: str, with_querystring: bool | None = False) -> str:
     """
     Get the URL from the Tag.
 
@@ -219,6 +219,31 @@ def get_scraped_url(tag: Tag, base_url: str, with_querystring: bool | None = Fal
 
     # Join with single slash
     result = f"{prefix}/{tag.get('href').lstrip('/')}"
+    return result if with_querystring else remove_query_string_from_url(result)
+
+
+def get_scraped_url_by_web_element(we: WebElement, base_url: str, with_querystring: bool | None = False) -> str:
+    """
+    Get the URL from the Tag.
+
+    Args:
+        we (WebElement): The Selenium WebElement.
+        base_url (str): The base URL.
+        with_querystring (bool): Whether to include the query string in the URL.
+
+    Returns:
+        List[str]: A list of URLs of the articles in the issue.
+    """
+    if we.get_attribute("href").startswith("http"):
+        return we.get_attribute("href")
+
+    # Remove trailing/leading slashes except in http(s)://
+    prefix = base_url.rstrip("/")
+    if prefix.endswith(":"):
+        prefix += "//"
+
+    # Join with single slash
+    result = f"{prefix}/{we.get_attribute('href').lstrip('/')}"
     return result if with_querystring else remove_query_string_from_url(result)
 
 
@@ -274,7 +299,7 @@ def get_link_for_accessible_article(article_tag: WebElement, base_url: str, xpat
     """
     try:
         article_tag.find_element(By.XPATH, xpath)
-        return get_scraped_url(Tag(name="a", attrs={"href": article_tag.get_attribute("href")}), base_url)
+        return get_scraped_url_by_web_element(article_tag, base_url)
     except NoSuchElementException:
         return None
 

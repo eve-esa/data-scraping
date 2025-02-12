@@ -1,7 +1,7 @@
 from typing import List, Type
 from bs4 import ResultSet, Tag
 
-from helper.utils import get_scraped_url
+from helper.utils import get_scraped_url_by_bs_tag, get_parsed_page_source
 from model.base_url_publisher_models import BaseUrlPublisherSource, BaseUrlPublisherConfig
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
 
@@ -25,14 +25,16 @@ class MITScraper(BaseUrlPublisherScraper):
 
         try:
             scraper, driver = self._scrape_url(source.url)
-            driver.quit()
 
             pdf_tag_list = []
             for tag in scraper.find_all("a", href=lambda href: href and "/courses/" in href and "/resources/earthsurface_" in href):
-                scraper_inner, driver_inner = self._scrape_url(get_scraped_url(tag, self._config_model.base_url))
-                driver_inner.quit()
-                if pdf_tag := scraper.find("a", href=lambda href: href and ".pdf" in href, class_="download-file"):
+                driver.get(get_scraped_url_by_bs_tag(tag, self._config_model.base_url))
+                if pdf_tag := get_parsed_page_source(driver).find(
+                        "a", href=lambda href: href and ".pdf" in href, class_="download-file"
+                ):
                     pdf_tag_list.append(pdf_tag)
+
+            driver.quit()
 
             if not pdf_tag_list:
                 self._save_failure(source.url)

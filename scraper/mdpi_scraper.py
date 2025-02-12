@@ -2,7 +2,7 @@ import os
 from typing import Type, Dict, List
 from bs4 import ResultSet, Tag
 
-from helper.utils import get_scraped_url
+from helper.utils import get_scraped_url_by_bs_tag
 from model.base_iterative_publisher_models import (
     IterativePublisherScrapeJournalOutput,
     IterativePublisherScrapeVolumeOutput,
@@ -100,7 +100,7 @@ class MDPIJournalsScraper(BaseIterativePublisherScraper, BaseMappedScraper):
             # Get all PDF links using Selenium to scroll and handle cookie popup once
             # Now find all PDF links using the class_="UD_Listings_ArticlePDF"
             tags = scraper.find_all("a", class_="UD_Listings_ArticlePDF", href=True)
-            if not (pdf_links := [get_scraped_url(tag, self._config_model.base_url) for tag in tags]):
+            if not (pdf_links := [get_scraped_url_by_bs_tag(tag, self._config_model.base_url) for tag in tags]):
                 self._save_failure(issue_url)
 
             self._logger.debug(f"PDF links found: {len(pdf_links)}")
@@ -139,7 +139,7 @@ class MDPIGoogleSearchScraper(BasePaginationPublisherScraper, BaseMappedScraper)
             pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
 
         return {"MDPI Google Search": [
-            get_scraped_url(tag, self._config_model.base_url) for tag in pdf_tags
+            get_scraped_url_by_bs_tag(tag, self._config_model.base_url) for tag in pdf_tags
         ]} if pdf_tags else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> ResultSet | List[Tag] | None:

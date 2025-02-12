@@ -1,7 +1,7 @@
 from typing import List, Type
 from bs4 import Tag, ResultSet
 
-from helper.utils import get_scraped_url, get_parsed_page_source
+from helper.utils import get_scraped_url_by_bs_tag, get_parsed_page_source
 from model.base_url_publisher_models import BaseUrlPublisherSource, SourceType, BaseUrlPublisherConfig
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
 
@@ -48,14 +48,14 @@ class EOGEScraper(BaseUrlPublisherScraper):
             issues_tag_list = get_parsed_page_source(driver).find_all(
                 "a", href=lambda href: href and "issue_" in href and ".html" in href
             )
-            driver.quit()
 
             # For each tag of issues previously collected, scrape the issue as a collection of articles
             if not (pdf_tag_list := [
                 tag
                 for tags in (
                     self._scrape_issue_or_collection(BaseUrlPublisherSource(
-                        url=get_scraped_url(tag, self._config_model.base_url), type=str(SourceType.ISSUE_OR_COLLECTION)
+                        url=get_scraped_url_by_bs_tag(tag, self._config_model.base_url),
+                        type=str(SourceType.ISSUE_OR_COLLECTION)
                     ))
                     for tag in issues_tag_list
                 )

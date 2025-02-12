@@ -1,7 +1,7 @@
 import os
 from typing import Type
 
-from helper.utils import get_scraped_url
+from helper.utils import get_scraped_url_by_bs_tag
 from model.base_iterative_publisher_models import (
     IterativePublisherScrapeJournalOutput,
     IterativePublisherScrapeVolumeOutput,
@@ -89,7 +89,7 @@ class OxfordAcademicScraper(BaseIterativePublisherScraper):
             if not (pdf_links := [
                 pdf_link
                 for pdf_link in
-                map(lambda tag: self._scrape_article(get_scraped_url(tag, self._config_model.base_url)), tags)
+                map(lambda tag: self._scrape_article(get_scraped_url_by_bs_tag(tag, self._config_model.base_url)), tags)
                 if pdf_link
             ]):
                 self._save_failure(issue_url)
@@ -119,7 +119,7 @@ class OxfordAcademicScraper(BaseIterativePublisherScraper):
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             pdf_tag = scraper.find("a", href=lambda href: href and ".pdf" in href, class_="al-link pdf article-pdfLink")
             if pdf_tag:
-                return get_scraped_url(pdf_tag, self._config_model.base_url)
+                return get_scraped_url_by_bs_tag(pdf_tag, self._config_model.base_url)
 
             self._save_failure(article_url)
             return None

@@ -1,6 +1,6 @@
 from typing import Type, List
 
-from helper.utils import get_scraped_url
+from helper.utils import get_scraped_url_by_bs_tag
 from model.isprs_models import ISPRSConfig
 from scraper.base_scraper import BaseScraper
 
@@ -23,9 +23,12 @@ class ISPRSScraper(BaseScraper):
                 )]
                 pdf_tags.extend(self.__scrape_archives(archive_links))
 
-                proceedings_links = [get_scraped_url(tag, self._config_model.base_url) for tag in scraper.find_all(
-                    "a", href=lambda href: href and "www.isprs.org" in href and "proceedings" in href
-                )]
+                proceedings_links = [
+                    get_scraped_url_by_bs_tag(tag, self._config_model.base_url)
+                    for tag in scraper.find_all(
+                        "a", href=lambda href: href and "www.isprs.org" in href and "proceedings" in href
+                    )
+                ]
                 if not (tags := self.__scrape_proceedings(proceedings_links)):
                     self._save_failure(source.url)
                 pdf_tags.extend(tags)
@@ -93,7 +96,7 @@ class ISPRSScraper(BaseScraper):
                 driver.quit()
 
                 result.extend([
-                    get_scraped_url(tag, link if link.endswith("/") else link[:link.rfind('/')])
+                    get_scraped_url_by_bs_tag(tag, link if link.endswith("/") else link[:link.rfind('/')])
                     for tag in scraper.find_all("a", href=lambda href: href and ".pdf" in href)
                 ])
             except Exception as e:

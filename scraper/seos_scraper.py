@@ -2,7 +2,7 @@ import os
 from typing import List, Type, Dict
 from bs4 import Tag
 
-from helper.utils import get_unique, get_scraped_url
+from helper.utils import get_unique, get_scraped_url_by_bs_tag
 from model.seos_models import SeosConfig, SeosSource
 from scraper.base_scraper import BaseScraper
 
@@ -57,7 +57,8 @@ class SeosScraper(BaseScraper):
                 self._logger.error(f"Failed to process Chapter {i}. Error: {e}")
 
         if not (html_links := get_unique([
-            get_scraped_url(tag, os.path.join(self._config_model.base_url, source.folder)) for tag in html_tags
+            get_scraped_url_by_bs_tag(tag, os.path.join(self._config_model.base_url, source.folder))
+            for tag in html_tags
         ])):
             self._save_failure(source.url)
 

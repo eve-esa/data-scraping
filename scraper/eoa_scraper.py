@@ -1,10 +1,9 @@
 import random
 import time
 from typing import Type, List
-from bs4 import Tag
 from selenium.webdriver.common.by import By
 
-from helper.utils import get_scraped_url, parse_google_drive_link
+from helper.utils import parse_google_drive_link, get_scraped_url_by_web_element
 from model.eoa_models import EOAConfig
 from scraper.base_scraper import BaseScraper
 
@@ -27,12 +26,7 @@ class EOAScraper(BaseScraper):
                 )
                 driver.quit()
 
-                pdf_links.extend([
-                    get_scraped_url(
-                        Tag(name="a", attrs={"href": tag.get_attribute("href")}), self._config_model.base_url
-                    )
-                    for tag in tags
-                ])
+                pdf_links.extend([get_scraped_url_by_web_element(tag, self._config_model.base_url) for tag in tags])
             except Exception as e:
                 self._log_and_save_failure(source.url, f"An error occurred while scraping the URL: {source.url}. Error: {e}")
 

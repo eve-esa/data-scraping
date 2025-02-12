@@ -6,7 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from helper.utils import get_scraped_url, unpack_zip_files
+from helper.utils import get_scraped_url_by_bs_tag, unpack_zip_files
 from model.elsevier_models import (
     SourceType,
     ElsevierConfig,
@@ -71,7 +71,7 @@ class ElsevierScraper(BaseScraper):
                 self._log_and_save_failure(source.url, "No issue found")
                 return None
 
-            issue_url = get_scraped_url(first_issue_tag, self._config_model.base_url)
+            issue_url = get_scraped_url_by_bs_tag(first_issue_tag, self._config_model.base_url)
 
             journal_links = []
             while issue_url:
@@ -116,7 +116,7 @@ class ElsevierScraper(BaseScraper):
 
             # find the element with tag "a", class "anchor" and attribute `navname` equal to "prev-next-issue"
             next_issue_tag = scraper.find("a", class_="anchor", navname="prev-next-issue")
-            next_issue_link = get_scraped_url(
+            next_issue_link = get_scraped_url_by_bs_tag(
                 next_issue_tag, self._config_model.base_url
             ) if next_issue_tag.get("href") else None
 

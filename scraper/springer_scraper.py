@@ -2,7 +2,7 @@ from typing import List, Dict, Type
 from bs4 import ResultSet, Tag
 from selenium.webdriver.common.by import By
 
-from helper.utils import get_scraped_url
+from helper.utils import get_scraped_url_by_bs_tag, get_scraped_url_by_web_element, get_parsed_page_source
 from model.base_mapped_models import BaseMappedUrlSource, BaseMappedPaginationConfig, BaseMappedUrlConfig
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
@@ -67,7 +67,7 @@ class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
                 tag
                 for tag in (
                     self._scrape_article(BaseMappedUrlSource(
-                        url=get_scraped_url(tag, self._config_model.base_url), type=str(SourceType.ARTICLE)
+                        url=get_scraped_url_by_bs_tag(tag, self._config_model.base_url), type=str(SourceType.ARTICLE)
                     ))
                     for tag in article_tag_list
                 )
@@ -156,7 +156,7 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedScra
             pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
 
         return {"Springer": [
-            get_scraped_url(tag, self._config_model.base_url) for tag in pdf_tags
+            get_scraped_url_by_bs_tag(tag, self._config_model.base_url) for tag in pdf_tags
         ]} if pdf_tags else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> ResultSet | List[Tag]:
@@ -200,16 +200,12 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedScra
                 value="//a[contains(@class, 'app-card-open__link')]/parent::h3/preceding-sibling::div[contains(@class, 'app-entitlement') and .//svg[contains(@class, 'app-entitlement__icon--full-access')]]",
                 by=By.XPATH,
             )
-            driver.quit()
 
             pdf_tag_list = []
             for tag in open_access_article_tag_list:
-                scraper_inner, driver_inner = self._scrape_url(get_scraped_url(
-                    Tag(name="a", attrs={"href": tag.get_attribute("href")}), self._config_model.base_url
-                ))
-                driver_inner.quit()
+                driver.get(get_scraped_url_by_web_element(tag, self._config_model.base_url))
 
-                if not (pdf_tag := scraper_inner.find(
+                if not (pdf_tag := get_parsed_page_source(driver).find(
                     "a",
                     href=lambda href: href and ".pdf" in href,
                     class_=lambda class_: class_ and "c-pdf-download__link" in class_
@@ -219,6 +215,8 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedScra
 
             if not pdf_tag_list:
                 self._save_failure(url)
+
+            driver.quit()
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list

@@ -2,7 +2,7 @@ import os
 from typing import Type
 from selenium.webdriver.common.by import By
 
-from helper.utils import get_scraped_url, get_link_for_accessible_article
+from helper.utils import get_scraped_url_by_bs_tag, get_link_for_accessible_article
 from model.ams_models import AMSConfig, AMSJournal
 from model.base_iterative_publisher_models import (
     IterativePublisherScrapeJournalOutput,
@@ -149,7 +149,7 @@ class AMSScraper(BaseIterativePublisherScraper):
             scraper, driver = self._scrape_url(article_url)
             driver.quit()
             if pdf_tag := scraper.find("a", href=True, class_="pdf-download"):
-                return get_scraped_url(pdf_tag, self._config_model.base_url)
+                return get_scraped_url_by_bs_tag(pdf_tag, self._config_model.base_url)
 
             self._save_failure(article_url)
             return None

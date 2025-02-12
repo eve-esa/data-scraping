@@ -1,7 +1,7 @@
 from typing import List, Type
 from bs4 import Tag, ResultSet
 
-from helper.utils import get_scraped_url
+from helper.utils import get_scraped_url_by_bs_tag
 from model.base_pagination_publisher_models import BasePaginationPublisherConfig, BasePaginationPublisherScrapeOutput
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
 
@@ -25,11 +25,11 @@ class CambridgeUniversityPressScraper(BasePaginationPublisherScraper):
             BasePaginationPublisherScrapeOutput: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.
         """
         pdf_links = [
-            get_scraped_url(pdf_tag, self._config_model.base_url)
+            get_scraped_url_by_bs_tag(pdf_tag, self._config_model.base_url)
             for idx, source in enumerate(self._config_model.sources)
             for tag in self._scrape_landing_page(source.landing_page_url, idx + 1)
             for pdf_tag in self._scrape_pagination(
-                f"{get_scraped_url(tag, self._config_model.base_url)}?pageNum={{page_number}}",
+                f"{get_scraped_url_by_bs_tag(tag, self._config_model.base_url)}?pageNum={{page_number}}",
                 idx + 1
             )
         ]
