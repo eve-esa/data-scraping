@@ -19,21 +19,21 @@ apt-get update && apt-get install -y \
     libssl-dev \
     default-libmysqlclient-dev \
     pkg-config \
-    software-properties-common
+    software-properties-common \
+    python3-apt
 
-# Install Python 3.10 if not available
+# Check if Python 3.10 is already installed
 if ! command -v python3.10 &> /dev/null; then
     echo "Python 3.10 not found. Installing..."
+    # Install Python 3.10
     add-apt-repository -y ppa:deadsnakes/ppa
     apt-get update
-    apt-get install -y python3.10 python3.10-venv python3.10-dev python3.10-apt
+    apt-get install -y python3.10 python3.10-dev python3.10-distutils python3.10-apt
 fi
 
-# Update the alternatives for Python, PIP, and other tools, in order to use Python 3.10
+# Make Python 3.10 the default
 update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
-# create the folder /usr/local/lib/python3.10/site-packages if not existing
-mkdir -p /usr/local/lib/python3.10/site-packages
-ln -s /usr/lib/python3/dist-packages/apt_pkg.cpython-38-x86_64-linux-gnu.so /usr/local/lib/python3.10/site-packages/apt_pkg.so
+update-alternatives --set python3 /usr/bin/python3.10
 
 # Verify Python version
 PYTHON_VERSION=$(python3 --version)
@@ -42,11 +42,9 @@ echo "Using Python: $PYTHON_VERSION"
 # Install Google Chrome
 wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
     && apt-get install ./google-chrome-stable_current_amd64.deb -y --fix-missing \
-    && rm google-chrome-stable_current_amd64.deb \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm google-chrome-stable_current_amd64.deb
 
-# Install PIP and Python libraries in the virtual environment
+# Install Python requirements
 python3 -m pip install -U pip
 python3 -m pip install --no-cache-dir -r requirements.txt
 
@@ -55,5 +53,8 @@ seleniumbase get chromedriver
 
 # Add the current directory to the PATH
 export PATH="/usr/local/bin:${PATH}"
+
+# Clean up
+apt-get clean && rm -rf /var/lib/apt/lists/*
 
 echo "Setup completed successfully!"
