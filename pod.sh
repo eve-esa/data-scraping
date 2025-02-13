@@ -31,7 +31,9 @@ fi
 
 # Update the alternatives for Python, PIP, and other tools, in order to use Python 3.10
 update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
-ln -s /usr/lib/python3/dist-packages/apt_pkg.cpython-3*-x86_64-linux-gnu.so /usr/local/lib/python3.10/site-packages/apt_pkg.so
+# create the folder /usr/local/lib/python3.10/site-packages if not existing
+mkdir -p /usr/local/lib/python3.10/site-packages
+ln -s /usr/lib/python3/dist-packages/apt_pkg.cpython-38-x86_64-linux-gnu.so /usr/local/lib/python3.10/site-packages/apt_pkg.so
 
 # Verify Python version
 PYTHON_VERSION=$(python3 --version)
