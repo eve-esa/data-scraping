@@ -25,8 +25,11 @@ apt-get update && apt-get install -y \
 # Check if Python 3.10 is already installed
 if ! command -v python3.10 &> /dev/null; then
     echo "Python 3.10 not found. Installing..."
-    # Install Python 3.10
-    add-apt-repository -y ppa:deadsnakes/ppa
+
+    # Add deadsnakes PPA manually
+    echo "deb http://ppa.launchpad.net/deadsnakes/ppa/ubuntu $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/deadsnakes.list
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys F23C5A6CF475977595C89F51BA6932366A755776
+
     apt-get update
     apt-get install -y python3.10 python3.10-dev python3.10-distutils
 
