@@ -2,11 +2,7 @@ import os
 from typing import Type
 
 from helper.utils import get_scraped_url_by_bs_tag
-from model.base_iterative_publisher_models import (
-    IterativePublisherScrapeJournalOutput,
-    IterativePublisherScrapeVolumeOutput,
-    IterativePublisherScrapeIssueOutput,
-)
+from model.base_iterative_publisher_models import IterativePublisherScrapeIssueOutput
 from model.oxford_academic_models import OxfordAcademicConfig, OxfordAcademicJournal
 from scraper.base_iterative_publisher_scraper import BaseIterativePublisherScraper
 
@@ -33,33 +29,6 @@ class OxfordAcademicScraper(BaseIterativePublisherScraper):
             str: The journal identifier
         """
         return model.code
-
-    def _scrape_journal(self, journal: OxfordAcademicJournal) -> IterativePublisherScrapeJournalOutput:
-        """
-        Scrape all volumes of a journal.
-
-        Args:
-            journal (OxfordAcademicJournal): The journal to scrape.
-
-        Returns:
-            IterativePublisherScrapeJournalOutput: A dictionary containing the PDF links.
-        """
-        self._logger.info(f"Processing Journal {journal.name}")
-        return self._build_journal_links(journal)
-
-    def _scrape_volume(self, journal: OxfordAcademicJournal, volume_num: int) -> IterativePublisherScrapeVolumeOutput:
-        """
-        Scrape all issues of a volume.
-
-        Args:
-            journal (OxfordAcademicJournal): The journal to scrape.
-            volume_num (int): The volume number.
-
-        Returns:
-            IterativePublisherScrapeVolumeOutput: A dictionary containing the PDF links.
-        """
-        self._logger.info(f"Processing Volume {volume_num}")
-        return self._build_volume_links(journal, volume_num)
 
     def _scrape_issue(
         self, journal: OxfordAcademicJournal, volume_num: int, issue_num: int

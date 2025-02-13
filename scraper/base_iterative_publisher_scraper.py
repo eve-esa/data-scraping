@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from typing import List
-from pydantic import BaseModel
 
 from helper.utils import get_unique
 from model.base_iterative_publisher_models import (
@@ -63,7 +62,6 @@ class BaseIterativePublisherScraper(BaseScraper):
             if (scrape_issue_result := self._scrape_issue(journal, volume_num, issue_num))
         }
 
-    @abstractmethod
     def _scrape_journal(self, journal: BaseIterativePublisherJournal) -> IterativePublisherScrapeJournalOutput:
         """
         Scrape all volumes of a journal. This method must be implemented in the derived class.
@@ -74,9 +72,9 @@ class BaseIterativePublisherScraper(BaseScraper):
         Returns:
             IterativePublisherScrapeJournalOutput: A dictionary containing the PDF links.
         """
-        pass
+        self._logger.info(f"Processing Journal {journal.name}")
+        return self._build_journal_links(journal)
 
-    @abstractmethod
     def _scrape_volume(self, journal: BaseIterativePublisherJournal, volume_num: int) -> IterativePublisherScrapeVolumeOutput:
         """
         Scrape all issues of a volume. This method must be implemented in the derived class.
@@ -88,7 +86,8 @@ class BaseIterativePublisherScraper(BaseScraper):
         Returns:
             IterativePublisherScrapeVolumeOutput: A dictionary containing the PDF links.
         """
-        pass
+        self._logger.info(f"Processing Volume {volume_num}")
+        return self._build_volume_links(journal, volume_num)
 
     @abstractmethod
     def _scrape_issue(
@@ -118,12 +117,12 @@ class BaseIterativePublisherScraper(BaseScraper):
         pass
 
     @abstractmethod
-    def journal_identifier(self, model: BaseModel) -> str:
+    def journal_identifier(self, model: BaseIterativePublisherJournal) -> str:
         """
         Return the journal identifier. This method must be implemented in the derived class.
 
         Args:
-            model (BaseModel): The configuration model.
+            model (BaseIterativePublisherJournal): The configuration model.
 
         Returns:
             str: The journal identifier
@@ -132,20 +131,21 @@ class BaseIterativePublisherScraper(BaseScraper):
 
 
 class BaseIterativeWithConstraintPublisherScraper(BaseIterativePublisherScraper, ABC):
-    def __init__(self):
-        super().__init__()
-
-        self.__all_issues_missing = 0  # Track if all issues are missing for the volume
-
     def _build_journal_links(self, journal: BaseIterativeWithConstraintPublisherJournal):
+        missing_volume_count = 0  # Track consecutive missing volumes
         links = {}
+
+        # Iterate over each volume in the specified range
         for volume_num in range(journal.start_volume, journal.end_volume + 1):
-            self.__all_issues_missing = 0
-
             res = self._scrape_volume(journal, volume_num)
+            if res:
+                missing_volume_count = 0
+                links[volume_num] = res
+            else:
+                missing_volume_count += 1
 
-            if self.__all_issues_missing == journal.end_issue - journal.start_issue + 1:
-                self._logger.warning(f"No issues found for Volume {volume_num}. Moving to next journal.")
+            if missing_volume_count >= journal.consecutive_missing_volumes_threshold:
+                self._logger.warning(f"Consecutive missing volumes for Journal {journal.name}. Moving to the next journal.")
                 break  # Exit loop and move to the next journal
 
             links[volume_num] = res
@@ -166,7 +166,6 @@ class BaseIterativeWithConstraintPublisherScraper(BaseIterativePublisherScraper,
                 links[issue_num] = res
             else:
                 missing_issue_count += 1
-                self.__all_issues_missing += 1
 
             if missing_issue_count >= journal.consecutive_missing_issues_threshold:
                 self._logger.warning(f"Consecutive missing issues for Volume {volume_num}. Moving to the next volume.")

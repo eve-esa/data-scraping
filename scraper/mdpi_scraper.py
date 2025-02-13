@@ -3,11 +3,7 @@ from typing import Type, Dict, List
 from bs4 import ResultSet, Tag
 
 from helper.utils import get_scraped_url_by_bs_tag
-from model.base_iterative_publisher_models import (
-    IterativePublisherScrapeJournalOutput,
-    IterativePublisherScrapeVolumeOutput,
-    IterativePublisherScrapeIssueOutput,
-)
+from model.base_iterative_publisher_models import IterativePublisherScrapeIssueOutput
 from model.base_mapped_models import BaseMappedPaginationConfig
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from model.mdpi_models import MDPIConfig, MDPIJournal
@@ -48,33 +44,6 @@ class MDPIJournalsScraper(BaseIterativePublisherScraper, BaseMappedScraper):
             str: The journal identifier
         """
         return model.name
-
-    def _scrape_journal(self, journal: MDPIJournal) -> IterativePublisherScrapeJournalOutput:
-        """
-        Scrape all volumes of a journal.
-
-        Args:
-            journal (MDPIJournal): The journal to scrape.
-
-        Returns:
-            IterativePublisherScrapeJournalOutput: A dictionary containing the PDF links.
-        """
-        self._logger.info(f"Processing Journal {journal.name}")
-        return self._build_journal_links(journal)
-
-    def _scrape_volume(self, journal: MDPIJournal, volume_num: int) -> IterativePublisherScrapeVolumeOutput:
-        """
-        Scrape all issues of a volume.
-
-        Args:
-            journal (MDPIJournal): The journal to scrape.
-            volume_num (int): The volume number.
-
-        Returns:
-            IterativePublisherScrapeVolumeOutput: A dictionary containing the PDF links.
-        """
-        self._logger.info(f"Processing Volume {volume_num}")
-        return self._build_volume_links(journal, volume_num)
 
     def _scrape_issue(
         self, journal: MDPIJournal, volume_num: int, issue_num: int

@@ -14,6 +14,7 @@ class BaseIterativePublisherJournal(BaseModel):
 
 
 class BaseIterativeWithConstraintPublisherJournal(BaseIterativePublisherJournal):
+    consecutive_missing_volumes_threshold: int | None = 3
     consecutive_missing_issues_threshold: int | None = 3
 
 
