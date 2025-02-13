@@ -31,4 +31,4 @@ run:  ## Run the application
 	docker exec -it $(shell docker ps -qf "name=app") /bin/sh -c "$(MAKE) runpod args='${args}'"
 
 runpod:  ## Run the application on the pod
-	python -m main ${args}
+	python3.10 -m main ${args}
