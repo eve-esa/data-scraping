@@ -3,7 +3,7 @@
 # Exit on error
 set -e
 
-# Install the libraries for the Linux-based OS
+# Install basic system dependencies
 apt-get update && apt-get install -y \
     wget \
     unzip \
@@ -28,12 +28,17 @@ if ! command -v python3.10 &> /dev/null; then
     # Install Python 3.10
     add-apt-repository -y ppa:deadsnakes/ppa
     apt-get update
-    apt-get install -y python3.10 python3.10-dev python3.10-distutils python3.10-apt
-fi
+    apt-get install -y python3.10 python3.10-dev python3.10-distutils
 
-# Make Python 3.10 the default
-update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
-update-alternatives --set python3 /usr/bin/python3.10
+    # Make Python 3.10 the default
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
+    update-alternatives --set python3 /usr/bin/python3.10
+
+    # Install pip for Python 3.10
+    curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10
+else
+    echo "Python 3.10 is already installed"
+fi
 
 # Verify Python version
 PYTHON_VERSION=$(python3 --version)
