@@ -6,9 +6,8 @@ from typing import List, Type, Any, Dict, Final
 from bs4 import BeautifulSoup
 from selenium.common import TimeoutException
 from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from seleniumbase import Driver
+from seleniumbase import SB
+from seleniumbase.common.exceptions import NoSuchElementException
 from seleniumbase.core.download_helper import get_downloads_folder
 import time
 
@@ -24,7 +23,8 @@ from repository.uploaded_resource_repository import UploadedResourceRepository
 
 class BaseScraper(ABC):
     def __init__(self) -> None:
-        self._driver: Driver = None
+        self._driver: SB = None
+        self._sb_with_proxy = True
         self._config_model = None
         self._logging_db_scraper = self.__class__.__name__
         self._download_folder_path = get_downloads_folder()
@@ -50,9 +50,8 @@ class BaseScraper(ABC):
         self.set_config_model(config_model)
         self._scraper_failure_repository.delete_by({"scraper": name_scraper})
 
-        self.setup_driver()
-        scraping_results = self.scrape()
-        self.shutdown_driver()
+        with self.setup_driver() as self._driver:
+            scraping_results = self.scrape()
 
         if scraping_results is None:
             return
@@ -79,56 +78,30 @@ class BaseScraper(ABC):
         self._logging_db_scraper = scraper
         return self
 
+    def set_driver(self, driver: SB):
+        self._driver = driver
+        return self
+
     def setup_driver(self):
-        from helper.utils import get_user_agent, get_static_proxy_config, headless
+        from helper.utils import get_sb_configuration
 
-        self._driver = Driver(
-            browser="chrome",
-            undetectable=True,
-            locale_code="en",
-            headless2=headless(),
-            proxy=get_static_proxy_config(),
-            disable_cookies=False,
-            window_size="1920,1080",
-            window_position="0,0",
-            agent=get_user_agent(),
-            use_auto_ext=True,
-        )
+        return SB(**get_sb_configuration(self._sb_with_proxy))
 
-    def shutdown_driver(self):
-        self._driver.quit()
-
-    def _scrape_url(self, url: str, cookie_wait: int = 10, pause_time: int = 2) -> BeautifulSoup:
+    def _scrape_url(self, url: str, pause_time: int = 2) -> BeautifulSoup:
         """
         Scrape the URL using Selenium and BeautifulSoup.
 
         Args:
             url (str): url contains volume and issue number. Eg: https://www.mdpi.com/2072-4292/1/3
-            cookie_wait (int): time to wait for the cookie popup to appear
             pause_time (int): time to pause between scrolls
 
         Returns:
             BeautifulSoup: the fully rendered HTML of the URL.
         """
-        from helper.utils import headless
-
-        headless_mode = headless()
-
         self._driver.get(url)
+        self._driver.uc_gui_click_captcha()
         self._wait_for_page_load()
-        if not headless_mode:
-            self._driver.uc_gui_click_captcha()
-            self._wait_for_page_load()
-
-        # Handle cookie popup only once, for the first request
-        if self._config_model.cookie_selector:
-            try:
-                cookie_button = WebDriverWait(self._driver, cookie_wait).until(
-                    EC.element_to_be_clickable((By.CSS_SELECTOR, self._config_model.cookie_selector))
-                )
-                self._driver.execute_script("arguments[0].click();", cookie_button)
-            except TimeoutException as e:
-                self._logger.warning(f"Cookie popup not found. {e}")
+        self._wait_for_cookie_popup()
 
         # Scroll through the page to load all articles
         last_height = self._driver.execute_script("return document.body.scrollHeight")
@@ -189,6 +162,15 @@ class BaseScraper(ABC):
             lambda d: d.execute_script("return document.readyState") == "complete"
         )
 
+    def _wait_for_cookie_popup(self, cookie_wait: int = 10):
+        # Handle cookie popup only once, for the first request
+        if self._config_model.cookie_selector:
+            try:
+                self._driver.assert_element(self._config_model.cookie_selector, timeout=cookie_wait)
+                self._driver.click(self._config_model.cookie_selector, timeout=6)
+            except (TimeoutException, NoSuchElementException) as e:
+                self._logger.warning(f"Cookie popup not found. {e}")
+
     def _get_parsed_page_source(self) -> BeautifulSoup:
         """
         Get the page source parsed by BeautifulSoup.
@@ -196,7 +178,7 @@ class BaseScraper(ABC):
         Returns:
             BeautifulSoup: The parsed page source.
         """
-        return BeautifulSoup(self._driver.page_source, "html.parser")
+        return BeautifulSoup(self._driver.get_page_source(), "html.parser")
 
     def _save_failure(self, source: str, message: str | None = None):
         message = message or "No source link found."

@@ -13,6 +13,10 @@ from model.base_pagination_publisher_models import BasePaginationPublisherSource
 from model.base_url_publisher_models import BaseUrlPublisherSource, BaseUrlPublisherConfig
 
 
+class BaseMappedBaseSource(BaseModel):
+    url: str
+
+
 class BaseMappedItemSource(BaseModel):
     href: str | None = None
     class_: str | None = None
@@ -64,6 +68,11 @@ class BaseMappedCrawlingConfig(BaseCrawlingConfig):
     bucket_key: str | None = None
 
 
+class BaseMappedBaseConfig(BaseConfig):
+    bucket_key: str | None = None
+    sources: List[BaseMappedBaseSource]
+
+
 BaseMappedSourceConfig: TypeAlias = (
     BaseMappedIterativeConfig
     | BaseMappedIterativeWithConstraintConfig
@@ -71,6 +80,7 @@ BaseMappedSourceConfig: TypeAlias = (
     | BaseMappedUrlConfig
     | BaseMappedDirectConfig
     | BaseMappedCrawlingConfig
+    | BaseMappedBaseConfig
 )
 
 

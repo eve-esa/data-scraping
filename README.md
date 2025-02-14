@@ -3,7 +3,7 @@ Code for the main ETL pipeline to be utilized to collect, scrape and transform t
 
 ## Pre-requisites
 
-For the local usage, please create a `.env` file in the root of the project with the following content (ask to the
+For the local usage, please create a `.env` file in the root of the project with the following content (ask the
 project maintainer for the values of the keys):
 ```bash
 AWS_URL=http://minio:9100
@@ -16,6 +16,7 @@ AWS_MAIN_FOLDER=raw_data
 MINIO_URL=http://minio:9100
 
 HEADLESS_BROWSER=true
+XVFB_MODE=true
 
 DB_HOST=mysql
 DB_PORT=3306

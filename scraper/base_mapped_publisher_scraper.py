@@ -15,12 +15,6 @@ class BaseMappedPublisherScraper(BaseScraper):
         self._bucket_keys = {}
         self._file_extensions = {}
 
-    def setup_driver(self):
-        pass
-
-    def shutdown_driver(self):
-        pass
-
     @property
     @abstractmethod
     def mapping(self) -> Dict[str, Type[BaseMappedScraper]]:

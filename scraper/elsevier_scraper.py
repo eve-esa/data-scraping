@@ -2,9 +2,6 @@ import os.path
 import random
 import time
 from typing import Type, List
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 
 from helper.utils import get_scraped_url_by_bs_tag, unpack_zip_files
 from model.elsevier_models import (
@@ -131,15 +128,15 @@ class ElsevierScraper(BaseScraper):
                 return ElsevierScrapeIssueOutput(was_scraped=False, next_issue_url=next_issue_link)
 
             # wait for the page to load and get the element with tag "button", child of "form.js-download-full-issue-form"
-            button_download = WebDriverWait(self._driver, 10).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "form.js-download-full-issue-form button"))
-            )
+            self._driver.assert_element("form.js-download-full-issue-form button", timeout=10)
             # click on the button to download the issue
-            self._driver.execute_script("arguments[0].click();", button_download)
+            self._driver.click("form.js-download-full-issue-form button")
 
             # wait for the download to complete
             self._logger.info(f"Downloading PDFs from {source.url} to {self._download_folder_path}")
             self.__wait_end_download()
+
+            self._driver.delete_all_cookies()
 
             # unpack zip files before uploading
             if not unpack_zip_files(self._download_folder_path):
@@ -161,6 +158,10 @@ class ElsevierScraper(BaseScraper):
         """
         start_time = time.time()
 
+        # first of all, wait until the `js-pdf-download-modal-content` element is no more present
+        self._driver.assert_element_absent("div.js-pdf-download-modal-content", timeout=timeout)
+
+        # then, wait until the download is completed
         while time.time() - start_time < timeout:
             # check if there are completed zip files temporary files in the directory
             completed_downloads = [f for f in os.listdir(self._download_folder_path) if f.endswith(".zip")]

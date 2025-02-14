@@ -2,15 +2,17 @@ import time
 from typing import List, Type
 from bs4 import ResultSet, Tag
 from selenium.common import TimeoutException
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
-from seleniumbase import Driver
 
 from model.base_url_publisher_models import BaseUrlPublisherSource, BaseUrlPublisherConfig
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
 
 
 class UKMetOfficeScraper(BaseUrlPublisherScraper):
+    def __init__(self):
+        super().__init__()
+        self._sb_with_proxy = False
+
     @property
     def config_model_type(self) -> Type[BaseUrlPublisherConfig]:
         """
@@ -20,21 +22,6 @@ class UKMetOfficeScraper(BaseUrlPublisherScraper):
             Type[BaseUrlPublisherConfig]: The configuration model type
         """
         return BaseUrlPublisherConfig
-
-    def setup_driver(self):
-        from helper.utils import get_user_agent, headless
-
-        self._driver = Driver(
-            browser="chrome",
-            undetectable=True,
-            locale_code="en",
-            headless2=headless(),
-            disable_cookies=False,
-            window_size="1920,1080",
-            window_position="0,0",
-            agent=get_user_agent(),
-            use_auto_ext=True,
-        )
 
     def _scrape_journal(self, source: BaseUrlPublisherSource) -> ResultSet | List[Tag] | None:
         pass
@@ -54,11 +41,7 @@ class UKMetOfficeScraper(BaseUrlPublisherScraper):
             for page_button in page_buttons.values():
                 self._driver.execute_script("arguments[0].click();", page_button)
                 try:
-                    loader = self._driver.find_element(By.ID, "loading-overflow")
-
-                    WebDriverWait(self._driver, 10).until(
-                        lambda x: "display: none" in loader.get_attribute("style")
-                    )
+                    self._driver.assert_element_not_visible("#loading-overflow", timeout=10)
                 except TimeoutException:
                     pass
 

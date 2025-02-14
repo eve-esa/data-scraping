@@ -1,13 +1,17 @@
 import os
+import random
+import time
 from abc import ABC
 from typing import List, Type, Dict
 from bs4 import Tag, ResultSet
-from seleniumbase import Driver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
 
 from helper.utils import get_scraped_url_by_bs_tag
 from model.base_mapped_models import BaseMappedUrlSource, BaseMappedPaginationConfig, BaseMappedCrawlingConfig
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from model.base_url_publisher_models import BaseUrlPublisherConfig
+from model.nasa_models import NASANTRSConfig, NASANTRSScraperOutput
 from scraper.base_crawling_scraper import BaseCrawlingScraper
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
@@ -29,20 +33,9 @@ class NASAScraper(BaseMappedPublisherScraper):
 
 
 class NASAMixin(BaseScraper, ABC):
-    def setup_driver(self):
-        from helper.utils import get_user_agent, headless
-
-        self._driver = Driver(
-            browser="chrome",
-            undetectable=True,
-            locale_code="en",
-            headless2=headless(),
-            disable_cookies=False,
-            window_size="1920,1080",
-            window_position="0,0",
-            agent=get_user_agent(),
-            use_auto_ext=True,
-        )
+    def __init__(self):
+        super().__init__()
+        self._sb_with_proxy = False
 
 
 class NASAEarthDataWikiScraper(BaseUrlPublisherScraper, BaseMappedScraper, NASAMixin):
@@ -97,43 +90,63 @@ class NASAEarthDataWikiScraper(BaseUrlPublisherScraper, BaseMappedScraper, NASAM
         pass
 
 
-class NASANTRSScraper(BasePaginationPublisherScraper, BaseMappedScraper, NASAMixin):
-    def __init__(self):
-        super().__init__()
-        self.__page_size = None
-
+class NASANTRSScraper(BaseMappedScraper, NASAMixin):
     @property
-    def config_model_type(self) -> Type[BaseMappedPaginationConfig]:
-        return BaseMappedPaginationConfig
+    def config_model_type(self) -> Type[NASANTRSConfig]:
+        return NASANTRSConfig
 
-    def scrape(self) -> BasePaginationPublisherScrapeOutput | None:
+    def scrape(self) -> NASANTRSScraperOutput | None:
         pdf_tags = []
         for idx, source in enumerate(self._config_model.sources):
-            self.__page_size = source.page_size
-            pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
+            self._logger.info(f"Processing Source {source.url}")
+
+            scraper = self._scrape_url(source.url)
+            while True:
+                if not (pdf_tag_list := scraper.find_all("a", href=lambda href: href and ".pdf" in href)):
+                    self._logger.info("No PDF links found: Breaking the loop")
+                    break
+
+                self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
+
+                pdf_tags.extend(pdf_tag_list)
+
+                try:
+                    next_page_button = self._driver.find_element(
+                        "button.mat-paginator-navigation-next", by=By.CSS_SELECTOR
+                    )
+
+                    # if next page button has class `mat-button-disabled`, then break the loop
+                    if "mat-button-disabled" in next_page_button.get_attribute("class"):
+                        break
+
+                    # otherwise, click on it and wait until the page is loaded
+                    self._logger.info("Clicking on Next Page Button")
+
+                    self._driver.execute_script("arguments[0].click();", next_page_button)
+
+                    # Sleep for some time to avoid being blocked by the server on the next request
+                    time.sleep(random.uniform(1.5, 3.5))
+
+                    self._driver.uc_gui_click_captcha()
+                    self._wait_for_page_load()
+                    self._wait_for_cookie_popup()
+
+                    scraper = self._get_parsed_page_source()
+                except Exception:
+                    break
 
         return {"NASA NTRS": [
             get_scraped_url_by_bs_tag(tag, self._config_model.base_url) for tag in pdf_tags
         ]} if pdf_tags else None
 
-    def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> ResultSet | List[Tag] | None:
-        self._logger.info(f"Processing Landing Page {landing_page_url}")
+    def post_process(self, scrape_output: NASANTRSScraperOutput) -> List[str]:
+        return [link for links in scrape_output.values() for link in links]
 
-        return self._scrape_pagination(landing_page_url, source_number, base_zero=True, page_size=self.__page_size)
-
-    def _scrape_page(self, url: str) -> ResultSet | List[Tag] | None:
-        try:
-            scraper = self._scrape_url(url)
-
-            # Now, visit each article link and find the PDF link
-            if not (pdf_tag_list := scraper.find_all("a", href=lambda href: href and ".pdf" in href)):
-                self._save_failure(url)
-
-            self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
-            return pdf_tag_list
-        except Exception as e:
-            self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
-            return None
+    def _wait_for_page_load(self, timeout: int | None = 20):
+        WebDriverWait(self._driver, timeout).until(
+            lambda d: d.execute_script("return document.readyState") == "complete"
+                      and not d.execute_script("return document.querySelector('div.loading-container')")
+        )
 
 
 class NASAEOSScraper(BasePaginationPublisherScraper, BaseMappedScraper, NASAMixin):

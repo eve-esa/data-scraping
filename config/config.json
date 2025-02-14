@@ -1100,8 +1100,7 @@
                     "base_url": "https://ntrs.nasa.gov",
                     "sources": [
                         {
-                            "landing_page_url": "https://ntrs.nasa.gov/search?subjectCategory=Earth%20Resources%20And%20Remote%20Sensing&page=%7B%22size%22:{page_size},%22from%22:{start_index}%7D",
-                            "page_size": 200
+                            "url": "https://ntrs.nasa.gov/search?subjectCategory=Earth%20Resources%20And%20Remote%20Sensing&page=%7B%22size%22:200,%22from%22:0%7D"
                         }
                     ]
                 }

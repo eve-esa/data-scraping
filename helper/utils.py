@@ -466,3 +466,28 @@ def build_analytics(successes: List[str], failures: List[str]) -> AnalyticsModel
 def headless() -> bool:
     v = os.getenv("HEADLESS_BROWSER", "true").lower()
     return v == "true" or v == "1"
+
+
+def xvfb_mode() -> bool:
+    v = os.getenv("XVFB_MODE", "false").lower()
+    return v == "true" or v == "1"
+
+
+def get_sb_configuration(with_proxy: bool | None = True) -> Dict:
+    result = {
+        "browser": "chrome",
+        "undetectable": True,
+        "locale_code": "en",
+        "headless2": headless(),
+        "disable_cookies": False,
+        "window_size": "1920,1080",
+        "window_position": "0,0",
+        "agent": get_user_agent(),
+        "use_auto_ext": True,
+        "xvfb": xvfb_mode(),
+    }
+
+    if with_proxy:
+        result["proxy"] = get_static_proxy_config()
+
+    return result

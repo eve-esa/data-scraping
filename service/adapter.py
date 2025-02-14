@@ -19,9 +19,8 @@ class ScrapeAdapter:
         scraper = self.__scraper_type()
         scraper.set_config_model(self.__config_model).set_logging_db_scraper(self.__logging_scraper)
 
-        scraper.setup_driver()
-        results = scraper.scrape()
-        scraper.shutdown_driver()
+        with scraper.setup_driver() as driver:
+            results = scraper.set_driver(driver).scrape()
 
         return results
 
