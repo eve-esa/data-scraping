@@ -8,7 +8,6 @@ from selenium.common import TimeoutException
 from selenium.webdriver.support.wait import WebDriverWait
 from seleniumbase import SB
 from seleniumbase.common.exceptions import NoSuchElementException
-from seleniumbase.core.download_helper import get_downloads_folder
 import time
 
 from helper.logger import setup_logger
@@ -27,7 +26,6 @@ class BaseScraper(ABC):
         self._sb_with_proxy = True
         self._config_model = None
         self._logging_db_scraper = self.__class__.__name__
-        self._download_folder_path = get_downloads_folder()
 
         self._logger = setup_logger(self.__class__.__name__)
         self._s3_client = S3Storage()
@@ -41,14 +39,13 @@ class BaseScraper(ABC):
     def __call__(self, config_model: BaseConfig, force: bool = False):
         from helper.utils import is_json_serializable
 
-        name_scraper = self.__class__.__name__
-        if not force and self._scraper_output_repository.get_one_by({"scraper": name_scraper}):
-            self._logger.warning(f"Scraper {name_scraper} already done")
+        if not force and self._scraper_output_repository.get_one_by({"scraper": self._logging_db_scraper}):
+            self._logger.warning(f"Scraper {self.__class__.__name__} already done")
             return
 
         self._logger.info(f"Running scraper {self.__class__.__name__}")
         self.set_config_model(config_model)
-        self._scraper_failure_repository.delete_by({"scraper": name_scraper})
+        self._scraper_failure_repository.delete_by({"scraper": self._logging_db_scraper})
 
         with self.setup_driver() as self._driver:
             scraping_results = self.scrape()
@@ -60,12 +57,12 @@ class BaseScraper(ABC):
         self.upload_to_s3(links)
 
         output = ScraperOutput(
-            scraper=name_scraper,
+            scraper=self._logging_db_scraper,
             output=json.dumps(scraping_results if is_json_serializable(scraping_results) else links)
         )
         self._scraper_output_repository.upsert(output, {"scraper": output.scraper}, {"output": output.output})
 
-        self._analytics_manager.build_and_store_analytics(name_scraper)
+        self._analytics_manager.build_and_store_analytics(self._logging_db_scraper)
 
         self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")
         return
@@ -201,7 +198,7 @@ class BaseScraper(ABC):
 
         for link in sources_links:
             current_resource = self._uploaded_resource_repository.get_by_url(
-                self.__class__.__name__,
+                self._logging_db_scraper,
                 self._config_model.bucket_key,
                 link,
                 self._config_model.file_extension

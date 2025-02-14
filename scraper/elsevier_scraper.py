@@ -133,13 +133,14 @@ class ElsevierScraper(BaseScraper):
             self._driver.click("form.js-download-full-issue-form button")
 
             # wait for the download to complete
-            self._logger.info(f"Downloading PDFs from {source.url} to {self._download_folder_path}")
+            download_folder_path = self._driver.get_browser_downloads_folder()
+            self._logger.info(f"Downloading PDFs from {source.url} to {download_folder_path}")
             self.__wait_end_download()
 
             self._driver.delete_all_cookies()
 
             # unpack zip files before uploading
-            if not unpack_zip_files(self._download_folder_path):
+            if not unpack_zip_files(download_folder_path):
                 self._logger.warning("No zip files found or timeout reached")
                 return ElsevierScrapeIssueOutput(was_scraped=False, next_issue_url=next_issue_link)
 
@@ -157,6 +158,7 @@ class ElsevierScraper(BaseScraper):
             timeout (int): The timeout in seconds. Default is 60 seconds.
         """
         start_time = time.time()
+        download_folder_path = self._driver.get_browser_downloads_folder()
 
         # first of all, wait until the `js-pdf-download-modal-content` element is no more present
         self._driver.assert_element_absent("div.js-pdf-download-modal-content", timeout=timeout)
@@ -164,7 +166,7 @@ class ElsevierScraper(BaseScraper):
         # then, wait until the download is completed
         while time.time() - start_time < timeout:
             # check if there are completed zip files temporary files in the directory
-            completed_downloads = [f for f in os.listdir(self._download_folder_path) if f.endswith(".zip")]
+            completed_downloads = [f for f in os.listdir(download_folder_path) if f.endswith(".zip")]
             if completed_downloads:
                 return
 
@@ -173,16 +175,18 @@ class ElsevierScraper(BaseScraper):
     def upload_to_s3(self, sources_links: List[str]):
         self._logger.debug("Uploading files to S3")
 
-        for file in os.listdir(self._download_folder_path):
+        download_folder_path = self._driver.get_browser_downloads_folder()
+
+        for file in os.listdir(download_folder_path):
             if not file.endswith(self._config_model.file_extension):
                 continue
 
-            file_path = os.path.join(self._download_folder_path, file)
+            file_path = self._driver.get_path_of_downloaded_file(file)
             if not os.path.isfile(file_path):
                 continue
 
             current_resource = self._uploaded_resource_repository.get_by_content(
-                self.__class__.__name__, self._config_model.bucket_key, file_path
+                self._logging_db_scraper, self._config_model.bucket_key, file_path
             )
             if not self._check_valid_resource(current_resource, file):
                 continue

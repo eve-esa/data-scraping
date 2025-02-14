@@ -572,12 +572,12 @@
         "base_url": "https://www.ncbi.nlm.nih.gov",
         "sources": [
             {
-                "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/?term=\"earth+observation\"",
-                "pagination_url": "https://www.ncbi.nlm.nih.gov/pmc/?term=\"earth+observation\"&EntrezSystem2.PEntrez.PMC.Pmc_PageController.PreviousPageName=results&EntrezSystem2.PEntrez.PMC.Pmc_ResultsPanel.Pmc_DisplayBar.PageSize=100&EntrezSystem2.PEntrez.PMC.Pmc_ResultsPanel.Entrez_Pager.CurrPage={page_number}&EntrezSystem2.PEntrez.DbConnector.LastQueryKey={source_number}&EntrezSystem2.PEntrez.DbConnector.Cmd=PageChanged"
+                "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/?term=\\\"earth+observation\\\"",
+                "pagination_url": "https://www.ncbi.nlm.nih.gov/pmc/?term=\\\"earth+observation\\\"&EntrezSystem2.PEntrez.PMC.Pmc_PageController.PreviousPageName=results&EntrezSystem2.PEntrez.PMC.Pmc_ResultsPanel.Pmc_DisplayBar.PageSize=100&EntrezSystem2.PEntrez.PMC.Pmc_ResultsPanel.Entrez_Pager.CurrPage={page_number}&EntrezSystem2.PEntrez.DbConnector.LastQueryKey={source_number}&EntrezSystem2.PEntrez.DbConnector.Cmd=PageChanged"
             },
             {
-                "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/?term=\"Remote+Sensing\"",
-                "pagination_url": "https://www.ncbi.nlm.nih.gov/pmc/?term=\"Remote+Sensing\"&EntrezSystem2.PEntrez.PMC.Pmc_PageController.PreviousPageName=results&EntrezSystem2.PEntrez.PMC.Pmc_ResultsPanel.Pmc_DisplayBar.PageSize=100&EntrezSystem2.PEntrez.PMC.Pmc_ResultsPanel.Entrez_Pager.CurrPage={page_number}&EntrezSystem2.PEntrez.DbConnector.LastQueryKey={source_number}&EntrezSystem2.PEntrez.DbConnector.Cmd=PageChanged"
+                "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/?term=\\\"Remote+Sensing\\\"",
+                "pagination_url": "https://www.ncbi.nlm.nih.gov/pmc/?term=\\\"Remote+Sensing\\\"&EntrezSystem2.PEntrez.PMC.Pmc_PageController.PreviousPageName=results&EntrezSystem2.PEntrez.PMC.Pmc_ResultsPanel.Pmc_DisplayBar.PageSize=100&EntrezSystem2.PEntrez.PMC.Pmc_ResultsPanel.Entrez_Pager.CurrPage={page_number}&EntrezSystem2.PEntrez.DbConnector.LastQueryKey={source_number}&EntrezSystem2.PEntrez.DbConnector.Cmd=PageChanged"
             }
         ]
     },
@@ -688,7 +688,7 @@
         "cookie_selector": "div.qc-cmp2-summary-buttons > button.css-1pdnrb0",
         "sources": [
             {
-                "landing_page_url": "https://journals.sagepub.com/action/doSearch?AllField=\"remote+sensing\"&startPage={page_number}&rel=&access=18&pageSize=100"
+                "landing_page_url": "https://journals.sagepub.com/action/doSearch?AllField=\\\"remote+sensing\\\"&startPage={page_number}&rel=&access=18&pageSize=100"
             }
         ]
     },
@@ -707,7 +707,7 @@
         "base_url": "https://arxiv.org",
         "sources": [
             {
-                "landing_page_url": "https://arxiv.org/search/?searchtype=all&query=\"Earth+Observation\"&abstracts=show&size={page_size}&order=-announced_date_first&start={start_index}",
+                "landing_page_url": "https://arxiv.org/search/?searchtype=all&query=\\\"Earth+Observation\\\"&abstracts=show&size={page_size}&order=-announced_date_first&start={start_index}",
                 "page_size": 100
             }
         ]

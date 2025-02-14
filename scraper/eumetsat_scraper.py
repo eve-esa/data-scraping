@@ -31,6 +31,10 @@ class EUMETSATCrawlingScraper(BaseCrawlingScraper, BaseMappedScraper):
 
 
 class EUMETSATCaseStudiesScraper(BaseUrlPublisherScraper, BaseMappedScraper):
+    def __init__(self):
+        super().__init__()
+        self._sb_with_proxy = False
+
     @property
     def config_model_type(self) -> Type[BaseMappedUrlConfig]:
         return BaseMappedUrlConfig
