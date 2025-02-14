@@ -1,6 +1,8 @@
 import os
+from abc import ABC
 from typing import List, Type, Dict
 from bs4 import Tag, ResultSet
+from seleniumbase import Driver
 
 from helper.utils import get_scraped_url_by_bs_tag
 from model.base_mapped_models import BaseMappedUrlSource, BaseMappedPaginationConfig, BaseMappedCrawlingConfig
@@ -9,7 +11,7 @@ from model.base_url_publisher_models import BaseUrlPublisherConfig
 from scraper.base_crawling_scraper import BaseCrawlingScraper
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
-from scraper.base_scraper import BaseMappedScraper
+from scraper.base_scraper import BaseMappedScraper, BaseScraper
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
 
 
@@ -26,7 +28,24 @@ class NASAScraper(BaseMappedPublisherScraper):
         }
 
 
-class NASAEarthDataWikiScraper(BaseUrlPublisherScraper, BaseMappedScraper):
+class NASAMixin(BaseScraper, ABC):
+    def setup_driver(self):
+        from helper.utils import get_user_agent, headless
+
+        self._driver = Driver(
+            browser="chrome",
+            undetectable=True,
+            locale_code="en",
+            headless2=headless(),
+            disable_cookies=False,
+            window_size="1920,1080",
+            window_position="0,0",
+            agent=get_user_agent(),
+            use_auto_ext=True,
+        )
+
+
+class NASAEarthDataWikiScraper(BaseUrlPublisherScraper, BaseMappedScraper, NASAMixin):
     @property
     def config_model_type(self) -> Type[BaseUrlPublisherConfig]:
         """
@@ -78,7 +97,7 @@ class NASAEarthDataWikiScraper(BaseUrlPublisherScraper, BaseMappedScraper):
         pass
 
 
-class NASANTRSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
+class NASANTRSScraper(BasePaginationPublisherScraper, BaseMappedScraper, NASAMixin):
     def __init__(self):
         super().__init__()
         self.__page_size = None
@@ -117,7 +136,7 @@ class NASANTRSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
             return None
 
 
-class NASAEOSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
+class NASAEOSScraper(BasePaginationPublisherScraper, BaseMappedScraper, NASAMixin):
     @property
     def config_model_type(self) -> Type[BaseMappedPaginationConfig]:
         return BaseMappedPaginationConfig
@@ -150,7 +169,7 @@ class NASAEOSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
             return None
 
 
-class NASAEarthDataScraper(BasePaginationPublisherScraper, BaseMappedScraper):
+class NASAEarthDataScraper(BasePaginationPublisherScraper, BaseMappedScraper, NASAMixin):
     def __init__(self):
         super().__init__()
         self.__href = None
@@ -227,7 +246,7 @@ class NASAEarthDataPDFScraper(NASAEarthDataScraper):
             return None
 
 
-class NASACrawlingScraper(BaseCrawlingScraper, BaseMappedScraper):
+class NASACrawlingScraper(BaseCrawlingScraper, BaseMappedScraper, NASAMixin):
     @property
     def config_model_type(self) -> Type[BaseMappedCrawlingConfig]:
         return BaseMappedCrawlingConfig

@@ -138,7 +138,7 @@ class ElsevierScraper(BaseScraper):
             self._driver.execute_script("arguments[0].click();", button_download)
 
             # wait for the download to complete
-            self._logger.info(f"Downloading PDFs from {source.url}")
+            self._logger.info(f"Downloading PDFs from {source.url} to {self._download_folder_path}")
             self.__wait_end_download()
 
             # unpack zip files before uploading
@@ -148,7 +148,7 @@ class ElsevierScraper(BaseScraper):
 
             return ElsevierScrapeIssueOutput(was_scraped=True, next_issue_url=next_issue_link)
         except Exception as e:
-            self._log_and_save_failure(source.url, f"Error scraping journal: {e}")
+            self._log_and_save_failure(source.url, f"Error scraping issue: {e}")
             return ElsevierScrapeIssueOutput(was_scraped=False, next_issue_url=None)
 
     def __wait_end_download(self, timeout: int | None = 60):

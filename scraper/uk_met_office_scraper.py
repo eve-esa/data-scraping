@@ -33,7 +33,6 @@ class UKMetOfficeScraper(BaseUrlPublisherScraper):
             window_size="1920,1080",
             window_position="0,0",
             agent=get_user_agent(),
-            devtools=True,
             use_auto_ext=True,
         )
 

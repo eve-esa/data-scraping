@@ -9,7 +9,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from seleniumbase import Driver
-from seleniumbase.fixtures import constants
+from seleniumbase.core.download_helper import get_downloads_folder
 import time
 
 from helper.logger import setup_logger
@@ -27,7 +27,7 @@ class BaseScraper(ABC):
         self._driver: Driver = None
         self._config_model = None
         self._logging_db_scraper = self.__class__.__name__
-        self._download_folder_path = constants.Files.DOWNLOADS_FOLDER
+        self._download_folder_path = get_downloads_folder()
 
         self._logger = setup_logger(self.__class__.__name__)
         self._s3_client = S3Storage()
@@ -92,7 +92,6 @@ class BaseScraper(ABC):
             window_size="1920,1080",
             window_position="0,0",
             agent=get_user_agent(),
-            devtools=True,
             use_auto_ext=True,
         )
 
@@ -111,10 +110,15 @@ class BaseScraper(ABC):
         Returns:
             BeautifulSoup: the fully rendered HTML of the URL.
         """
+        from helper.utils import headless
+
+        headless_mode = headless()
+
         self._driver.get(url)
         self._wait_for_page_load()
-        self._driver.uc_gui_click_captcha()
-        self._wait_for_page_load()
+        if not headless_mode:
+            self._driver.uc_gui_click_captcha()
+            self._wait_for_page_load()
 
         # Handle cookie popup only once, for the first request
         if self._config_model.cookie_selector:
