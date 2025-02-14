@@ -1,7 +1,7 @@
 from typing import List, Type
 from bs4 import Tag
 
-from helper.utils import get_scraped_url_by_bs_tag, get_parsed_page_source
+from helper.utils import get_scraped_url_by_bs_tag
 from model.base_url_publisher_models import BaseUrlPublisherConfig
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper, BaseUrlPublisherSource, SourceType
 
@@ -29,12 +29,11 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
         """
         self._logger.info(f"Processing Journal {source.url}")
 
-        driver = None
         try:
-            _, driver = self._scrape_url(source.url)
+            self._scrape_url(source.url)
 
             # Click all the volume links to load all the issues
-            driver.execute_script("""
+            self._driver.execute_script("""
                 async function clickButtons() {
                     const buttons = document.querySelectorAll('button.volume_link');
                     for (const button of buttons) {
@@ -46,7 +45,7 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
             """)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
-            issues_tag_list = get_parsed_page_source(driver).find_all("a", href=True, class_="issue-link")
+            issues_tag_list = self._get_parsed_page_source().find_all("a", href=True, class_="issue-link")
 
             # For each tag of issues previously collected, scrape the issue as a collection of articles
             if not (pdf_tag_list := [
@@ -62,14 +61,9 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
             ]):
                 self._save_failure(source.url)
 
-            driver.quit()
-
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
-            if driver:
-                driver.quit()
-
             self._log_and_save_failure(source.url, f"Failed to process Journal {source.url}. Error: {e}")
             return None
 
@@ -86,8 +80,7 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
         try:
-            scraper, driver = self._scrape_url(source.url)
-            driver.quit()
+            scraper = self._scrape_url(source.url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             article_tag_list = scraper.find_all(
@@ -127,8 +120,7 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
         self._logger.info(f"Processing Article {source.url}")
 
         try:
-            scraper, driver = self._scrape_url(source.url)
-            driver.quit()
+            scraper = self._scrape_url(source.url)
 
             # Find the PDF link using appropriate class or tag (if lambda returns True, it will be included in the list)
             if not (tag := scraper.find("a", href=lambda href: href and "/doi/" in href and "/pdf/" in href, class_="show-pdf")):

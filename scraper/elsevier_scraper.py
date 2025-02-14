@@ -62,8 +62,7 @@ class ElsevierScraper(BaseScraper):
         self._logger.info(f"Scraping Journal: {source.name}")
 
         try:
-            scraper, driver = self._scrape_url(source.url)
-            driver.quit()
+            scraper = self._scrape_url(source.url)
 
             # get the first link (i.e., the newest issue) in the page with the tag "a", class "js-issue-item-link"
             first_issue_tag = scraper.find("a", class_="js-issue-item-link")
@@ -111,9 +110,8 @@ class ElsevierScraper(BaseScraper):
         """
         self._logger.info(f"Scraping Issue: {source.name}, URL: {source.url}")
 
-        driver = None
         try:
-            scraper, driver = self._scrape_url(source.url)
+            scraper = self._scrape_url(source.url)
 
             # find the element with tag "a", class "anchor" and attribute `navname` equal to "prev-next-issue"
             next_issue_tag = scraper.find("a", class_="anchor", navname="prev-next-issue")
@@ -133,11 +131,11 @@ class ElsevierScraper(BaseScraper):
                 return ElsevierScrapeIssueOutput(was_scraped=False, next_issue_url=next_issue_link)
 
             # wait for the page to load and get the element with tag "button", child of "form.js-download-full-issue-form"
-            button_download = WebDriverWait(driver, 10).until(
+            button_download = WebDriverWait(self._driver, 10).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "form.js-download-full-issue-form button"))
             )
             # click on the button to download the issue
-            driver.execute_script("arguments[0].click();", button_download)
+            self._driver.execute_script("arguments[0].click();", button_download)
 
             # wait for the download to complete
             self._logger.info(f"Downloading PDFs from {source.url}")
@@ -148,12 +146,8 @@ class ElsevierScraper(BaseScraper):
                 self._logger.warning("No zip files found or timeout reached")
                 return ElsevierScrapeIssueOutput(was_scraped=False, next_issue_url=next_issue_link)
 
-            driver.quit()
             return ElsevierScrapeIssueOutput(was_scraped=True, next_issue_url=next_issue_link)
         except Exception as e:
-            if driver:
-                driver.quit()
-
             self._log_and_save_failure(source.url, f"Error scraping journal: {e}")
             return ElsevierScrapeIssueOutput(was_scraped=False, next_issue_url=None)
 

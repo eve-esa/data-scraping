@@ -106,7 +106,7 @@ class AMSScraper(BaseIterativePublisherScraper):
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
         try:
-            scraper, driver = self._scrape_url(issue_url)
+            scraper = self._scrape_url(issue_url)
             if any(keyword in scraper.text.lower() for keyword in ["not found", "maintenance"]):
                 self._log_and_save_failure(issue_url, f"Issue {issue_num} in Volume {volume_num} not found or under maintenance.")
                 return None
@@ -114,7 +114,7 @@ class AMSScraper(BaseIterativePublisherScraper):
             # find all the article links in the issue by keeping only the links to the accessible articles
             article_links = [
                 link
-                for tag in driver.find_elements(
+                for tag in self._driver.find_elements(
                     value=f"//a[contains(@class, 'c-Button--link') and contains(@href, '/view/journals/{journal.code}/{volume_num}/{issue_num}/')]",
                     by=By.XPATH,
                 )
@@ -146,8 +146,7 @@ class AMSScraper(BaseIterativePublisherScraper):
         self._logger.info(f"Processing Article URL: {article_url}")
 
         try:
-            scraper, driver = self._scrape_url(article_url)
-            driver.quit()
+            scraper = self._scrape_url(article_url)
             if pdf_tag := scraper.find("a", href=True, class_="pdf-download"):
                 return get_scraped_url_by_bs_tag(pdf_tag, self._config_model.base_url)
 

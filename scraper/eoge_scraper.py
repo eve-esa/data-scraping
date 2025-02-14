@@ -1,7 +1,7 @@
 from typing import List, Type
 from bs4 import Tag, ResultSet
 
-from helper.utils import get_scraped_url_by_bs_tag, get_parsed_page_source
+from helper.utils import get_scraped_url_by_bs_tag
 from model.base_url_publisher_models import BaseUrlPublisherSource, SourceType, BaseUrlPublisherConfig
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
 
@@ -29,12 +29,11 @@ class EOGEScraper(BaseUrlPublisherScraper):
         """
         self._logger.info(f"Processing Journal {source.url}")
 
-        driver = None
         try:
-            _, driver = self._scrape_url(source.url)
+            self._scrape_url(source.url)
 
             # Click all the volume links to load all the issues
-            driver.execute_script("""
+            self._driver.execute_script("""
                 async function clickButtons() {
                     const buttons = document.querySelectorAll('a[data-toggle="collapse"]');
                     for (const button of buttons) {
@@ -46,11 +45,9 @@ class EOGEScraper(BaseUrlPublisherScraper):
             """)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
-            issues_tag_list = get_parsed_page_source(driver).find_all(
+            issues_tag_list = self._get_parsed_page_source().find_all(
                 "a", href=lambda href: href and "issue_" in href and ".html" in href
             )
-
-            driver.quit()
 
             # For each tag of issues previously collected, scrape the issue as a collection of articles
             if not (pdf_tag_list := [
@@ -69,9 +66,6 @@ class EOGEScraper(BaseUrlPublisherScraper):
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
-            if driver:
-                driver.quit()
-
             self._log_and_save_failure(source.url, f"Failed to process Journal {source.url}. Error: {e}")
             return None
 
@@ -88,8 +82,7 @@ class EOGEScraper(BaseUrlPublisherScraper):
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
         try:
-            scraper, driver = self._scrape_url(source.url)
-            driver.quit()
+            scraper = self._scrape_url(source.url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             if not (pdf_tag_list := scraper.find_all(

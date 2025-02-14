@@ -63,8 +63,7 @@ class ArxivScraper(BasePaginationPublisherScraper):
             ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
         """
         try:
-            scraper, driver = self._scrape_url(url)
-            driver.quit()
+            scraper = self._scrape_url(url)
 
             # Now, visit each article link and find the PDF link
             if not (pdf_tag_list := scraper.find_all("a", href=lambda href: href and "/pdf/" in href)):

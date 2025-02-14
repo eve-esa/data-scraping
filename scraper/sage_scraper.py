@@ -1,7 +1,7 @@
 from typing import Type, List
 from bs4 import Tag
 
-from helper.utils import get_scraped_url_by_bs_tag, get_parsed_page_source
+from helper.utils import get_scraped_url_by_bs_tag
 from model.base_pagination_publisher_models import BasePaginationPublisherConfig, BasePaginationPublisherScrapeOutput
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
 
@@ -56,9 +56,8 @@ class SageScraper(BasePaginationPublisherScraper):
         Returns:
             List[Tag] | None: A list of Tag objects containing the tags to the PDF links. If something went wrong, return None.
         """
-        driver = None
         try:
-            scraper, driver = self._scrape_url(url)
+            scraper = self._scrape_url(url)
 
             # Find all article links in the pagination URL, using the appropriate class or tag (if lambda returns True, it will be included in the list)
             articles_links = [get_scraped_url_by_bs_tag(tag, self._config_model.base_url) for tag in scraper.find_all(
@@ -68,9 +67,9 @@ class SageScraper(BasePaginationPublisherScraper):
             # Now, visit each article link and find the PDF link
             pdf_tag_list = []
             for article_link in articles_links:
-                driver.get(article_link)
+                self._driver.get(article_link)
 
-                if (tag := get_parsed_page_source(driver).find(
+                if (tag := self._get_parsed_page_source().find(
                         "a",
                         id="favourite-download",
                         href=lambda href: href and "/doi/pdf/" in href,
@@ -81,13 +80,8 @@ class SageScraper(BasePaginationPublisherScraper):
             if not pdf_tag_list:
                 self._save_failure(url)
 
-            driver.quit()
-
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
-            if driver:
-                driver.quit()
-
             self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None

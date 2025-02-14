@@ -19,7 +19,11 @@ class ScrapeAdapter:
         scraper = self.__scraper_type()
         scraper.set_config_model(self.__config_model).set_logging_db_scraper(self.__logging_scraper)
 
-        return scraper.scrape()
+        scraper.setup_driver()
+        results = scraper.scrape()
+        scraper.shutdown_driver()
+
+        return results
 
     def post_process(self, scrape_output: Any) -> Any:
         if self.__scraper_type is None:

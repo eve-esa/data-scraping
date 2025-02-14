@@ -23,11 +23,10 @@ class WikipediaScraper(BaseUrlPublisherScraper):
     def _scrape_issue_or_collection(self, source: BaseUrlPublisherSource) -> List[Tag] | None:
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
-        driver = None
         try:
-            _, driver = self._scrape_url(source.url)
+            self._scrape_url(source.url)
 
-            html_tag_list = driver.find_elements(value="div.mw-category-generated a", by=By.CSS_SELECTOR)
+            html_tag_list = self._driver.find_elements(value="div.mw-category-generated a", by=By.CSS_SELECTOR)
 
             if not (result := [
                 Tag(name="a", attrs={"href": tag.get_attribute("href")})
@@ -36,14 +35,9 @@ class WikipediaScraper(BaseUrlPublisherScraper):
             ]):
                 self._save_failure(source.url)
 
-            driver.quit()
-
             self._logger.debug(f"HTML links found: {len(result)}")
             return result
         except Exception as e:
-            if driver:
-                driver.quit()
-
             self._log_and_save_failure(source.url, f"Failed to process Issue / Collection {source.url}. Error: {e}")
             return None
 

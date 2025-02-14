@@ -15,8 +15,7 @@ class ISPRSScraper(BaseScraper):
         for source in self._config_model.sources:
             self._logger.info(f"Scraping URL: {source.url}")
             try:
-                scraper, driver = self._scrape_url(source.url)
-                driver.quit()
+                scraper = self._scrape_url(source.url)
 
                 archive_links = [tag.get("href") for tag in scraper.find_all(
                     "a", href=lambda href: href and "isprs-archives" in href and "search" not in href
@@ -45,8 +44,7 @@ class ISPRSScraper(BaseScraper):
 
             archive_result = []
             try:
-                scraper, driver = self._scrape_url(link)
-                driver.quit()
+                scraper = self._scrape_url(link)
 
                 article_tags = scraper.find_all("a", href=True, class_="article-title")
                 for article_tag in article_tags:
@@ -69,8 +67,7 @@ class ISPRSScraper(BaseScraper):
 
     def __scrape_archive_article(self, article_link: str) -> str | None:
         try:
-            scraper, driver = self._scrape_url(article_link)
-            driver.quit()
+            scraper = self._scrape_url(article_link)
 
             if (pdf_tag := scraper.find(
                 "a",
@@ -92,8 +89,7 @@ class ISPRSScraper(BaseScraper):
             self._logger.info(f"Scraping proceedings: {link}")
 
             try:
-                scraper, driver = self._scrape_url(link)
-                driver.quit()
+                scraper = self._scrape_url(link)
 
                 result.extend([
                     get_scraped_url_by_bs_tag(tag, link if link.endswith("/") else link[:link.rfind('/')])

@@ -10,11 +10,10 @@ import zipfile
 from typing import Dict, List, Type, Tuple
 import requests
 import yaml
-from bs4 import Tag, BeautifulSoup
+from bs4 import Tag
 from pydantic import ValidationError, BaseModel
 from urllib.parse import urlparse, parse_qs
 from fake_useragent import UserAgent
-from seleniumbase import Driver
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.by import By
 from selenium.common import NoSuchElementException
@@ -398,16 +397,6 @@ def get_resource_from_remote(source_url: str, referer_url: str) -> bytes:
 
         response.raise_for_status()  # Check for request errors
         return c
-
-
-def get_parsed_page_source(driver: Driver) -> BeautifulSoup:
-    """
-    Get the page source parsed by BeautifulSoup.
-
-    Returns:
-        BeautifulSoup: The parsed page source.
-    """
-    return BeautifulSoup(driver.get_page_source(), "html.parser")
 
 
 def extract_lists(input_data: List | Dict) -> List[str]:

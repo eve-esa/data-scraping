@@ -2,7 +2,7 @@ import json
 import os
 from abc import ABC, abstractmethod
 import random
-from typing import List, Type, Any, Dict, Tuple, Final
+from typing import List, Type, Any, Dict, Final
 from bs4 import BeautifulSoup
 from selenium.common import TimeoutException
 from selenium.webdriver.support.wait import WebDriverWait
@@ -24,6 +24,7 @@ from repository.uploaded_resource_repository import UploadedResourceRepository
 
 class BaseScraper(ABC):
     def __init__(self) -> None:
+        self._driver: Driver = None
         self._config_model = None
         self._logging_db_scraper = self.__class__.__name__
         self._download_folder_path = constants.Files.DOWNLOADS_FOLDER
@@ -49,7 +50,10 @@ class BaseScraper(ABC):
         self.set_config_model(config_model)
         self._scraper_failure_repository.delete_by({"scraper": name_scraper})
 
+        self.setup_driver()
         scraping_results = self.scrape()
+        self.shutdown_driver()
+
         if scraping_results is None:
             return
 
@@ -75,16 +79,13 @@ class BaseScraper(ABC):
         self._logging_db_scraper = scraper
         return self
 
-    def _get_driver(self) -> Driver:
+    def setup_driver(self):
         from helper.utils import get_user_agent, get_static_proxy_config, headless
 
-        return Driver(
+        self._driver = Driver(
             browser="chrome",
             undetectable=True,
-            uc_cdp_events=True,
             locale_code="en",
-            headless=headless(),
-            headless1=headless(),
             headless2=headless(),
             proxy=get_static_proxy_config(),
             disable_cookies=False,
@@ -93,10 +94,12 @@ class BaseScraper(ABC):
             agent=get_user_agent(),
             devtools=True,
             use_auto_ext=True,
-            uc_subprocess=True,
         )
 
-    def _scrape_url(self, url: str, cookie_wait: int = 3, pause_time: int = 2) -> Tuple[BeautifulSoup, Driver]:
+    def shutdown_driver(self):
+        self._driver.quit()
+
+    def _scrape_url(self, url: str, cookie_wait: int = 10, pause_time: int = 2) -> BeautifulSoup:
         """
         Scrape the URL using Selenium and BeautifulSoup.
 
@@ -108,26 +111,23 @@ class BaseScraper(ABC):
         Returns:
             BeautifulSoup: the fully rendered HTML of the URL.
         """
-        from helper.utils import get_parsed_page_source
-
-        driver = self._get_driver()
-
-        driver.get(url.replace('"', '\\\"'))
-        driver.uc_gui_click_captcha()
-        self._wait_for_page_load(driver)
+        self._driver.get(url)
+        self._wait_for_page_load()
+        self._driver.uc_gui_click_captcha()
+        self._wait_for_page_load()
 
         # Handle cookie popup only once, for the first request
         if self._config_model.cookie_selector:
             try:
-                cookie_button = WebDriverWait(driver, cookie_wait).until(
+                cookie_button = WebDriverWait(self._driver, cookie_wait).until(
                     EC.element_to_be_clickable((By.CSS_SELECTOR, self._config_model.cookie_selector))
                 )
-                driver.execute_script("arguments[0].click();", cookie_button)
+                self._driver.execute_script("arguments[0].click();", cookie_button)
             except TimeoutException as e:
                 self._logger.warning(f"Cookie popup not found. {e}")
 
         # Scroll through the page to load all articles
-        last_height = driver.execute_script("return document.body.scrollHeight")
+        last_height = self._driver.execute_script("return document.body.scrollHeight")
 
         scrollable_js = """
             function getScrollableElement() {
@@ -144,7 +144,7 @@ class BaseScraper(ABC):
 
         while True:
             # Scroll down to the bottom
-            driver.execute_script(f"""
+            self._driver.execute_script(f"""
                 {scrollable_js}
                 if (scrollable) {{
                     scrollable.scrollTop = scrollable.scrollHeight;
@@ -154,7 +154,7 @@ class BaseScraper(ABC):
             """)
 
             if self._config_model.read_more_button:
-                driver.execute_script(f"""
+                self._driver.execute_script(f"""
                     const button = Array.from(document.querySelectorAll('{self._config_model.read_more_button.selector}')).find(btn => 
                       btn.textContent.trim().toUpperCase() === "{self._config_model.read_more_button.text}".toUpperCase()
                     );
@@ -166,7 +166,7 @@ class BaseScraper(ABC):
             time.sleep(pause_time)
 
             # Calculate new scroll height and compare with the last height
-            new_height = driver.execute_script(f"""
+            new_height = self._driver.execute_script(f"""
                 {scrollable_js}
                 return scrollable ? scrollable.scrollHeight : document.body.scrollHeight;
             """)
@@ -178,12 +178,21 @@ class BaseScraper(ABC):
         time.sleep(random.uniform(0.5, 3.5))
 
         # Get the fully rendered HTML
-        return get_parsed_page_source(driver), driver
+        return self._get_parsed_page_source()
 
-    def _wait_for_page_load(self, driver: Driver, timeout: int | None = 20):
-        WebDriverWait(driver, timeout).until(
+    def _wait_for_page_load(self, timeout: int | None = 20):
+        WebDriverWait(self._driver, timeout).until(
             lambda d: d.execute_script("return document.readyState") == "complete"
         )
+
+    def _get_parsed_page_source(self) -> BeautifulSoup:
+        """
+        Get the page source parsed by BeautifulSoup.
+
+        Returns:
+            BeautifulSoup: The parsed page source.
+        """
+        return BeautifulSoup(self._driver.page_source, "html.parser")
 
     def _save_failure(self, source: str, message: str | None = None):
         message = message or "No source link found."

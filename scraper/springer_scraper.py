@@ -2,7 +2,7 @@ from typing import List, Dict, Type
 from bs4 import ResultSet, Tag
 from selenium.webdriver.common.by import By
 
-from helper.utils import get_scraped_url_by_bs_tag, get_scraped_url_by_web_element, get_parsed_page_source
+from helper.utils import get_scraped_url_by_bs_tag, get_scraped_url_by_web_element
 from model.base_mapped_models import BaseMappedUrlSource, BaseMappedPaginationConfig, BaseMappedUrlConfig
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
@@ -48,8 +48,7 @@ class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
         article_tag_list = []
         while True:
             try:
-                scraper, driver = self._scrape_url(f"{source.url}?filterOpenAccess=false&page={counter}")
-                driver.quit()
+                scraper = self._scrape_url(f"{source.url}?filterOpenAccess=false&page={counter}")
 
                 # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
                 tags = scraper.find_all("a", href=lambda href: href and "/article/" in href)
@@ -94,8 +93,7 @@ class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
         try:
-            scraper, driver = self._scrape_url(source.url)
-            driver.quit()
+            scraper = self._scrape_url(source.url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             if not (pdf_tag_list := scraper.find_all("a", href=lambda href: href and "/pdf/" in href)):
@@ -120,8 +118,7 @@ class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
         self._logger.info(f"Processing Article {source.url}")
 
         try:
-            scraper, driver = self._scrape_url(source.url)
-            driver.quit()
+            scraper = self._scrape_url(source.url)
 
             # Find the PDF link using appropriate class or tag (if lambda returns True, it will be included in the list)
             if not (tag := scraper.find("a", href=lambda href: href and "/pdf/" in href)):
@@ -186,28 +183,26 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedScra
         Returns:
             ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
         """
-        driver = None
         try:
-            scraper, driver = self._scrape_url(url)
+            scraper = self._scrape_url(url)
 
             article_tag_list = scraper.find_all("a", href=True, class_="app-card-open__link")
             if not article_tag_list:
-                driver.quit()
                 return None
 
             # by using Selenium's driver, search for all "a" tags, with class "app-card-open__link", href attribute and which parent has the previous sibling:
             # - with class "app-entitlement"
             # - containing a svg with class "app-entitlement__icon.app-entitlement__icon--full-access
-            open_access_article_tag_list = driver.find_elements(
+            open_access_article_tag_list = self._driver.find_elements(
                 value="//a[contains(@class, 'app-card-open__link')]/parent::h3/preceding-sibling::div[contains(@class, 'app-entitlement') and .//svg[contains(@class, 'app-entitlement__icon--full-access')]]",
                 by=By.XPATH,
             )
 
             pdf_tag_list = []
             for tag in open_access_article_tag_list:
-                driver.get(get_scraped_url_by_web_element(tag, self._config_model.base_url))
+                self._driver.get(get_scraped_url_by_web_element(tag, self._config_model.base_url))
 
-                if not (pdf_tag := get_parsed_page_source(driver).find(
+                if not (pdf_tag := self._get_parsed_page_source().find(
                     "a",
                     href=lambda href: href and ".pdf" in href,
                     class_=lambda class_: class_ and "c-pdf-download__link" in class_
@@ -218,13 +213,8 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedScra
             if not pdf_tag_list:
                 self._save_failure(url)
 
-            driver.quit()
-
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
-            if driver:
-                driver.quit()
-
             self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None

@@ -16,12 +16,11 @@ class EOAScraper(BaseScraper):
     def scrape(self) -> List[str] | None:
         pdf_links = []
         for source in self._config_model.sources:
-            driver = None
             try:
-                _, driver = self._scrape_url(source.url)
+                self._scrape_url(source.url)
 
                 # with Selenium, look for all "a" tags with "drive.google.com" in "href" and containing the "low" within the lowercased text
-                tags = driver.find_elements(
+                tags = self._driver.find_elements(
                     value="//a[contains(@href, 'drive.google.com') and contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'low')]",
                     by=By.XPATH,
                 )
@@ -29,9 +28,6 @@ class EOAScraper(BaseScraper):
                 pdf_links.extend([get_scraped_url_by_web_element(tag, self._config_model.base_url) for tag in tags])
             except Exception as e:
                 self._log_and_save_failure(source.url, f"An error occurred while scraping the URL: {source.url}. Error: {e}")
-            finally:
-                if driver:
-                    driver.quit()
 
         return pdf_links if pdf_links else None
 

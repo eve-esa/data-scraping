@@ -35,7 +35,7 @@ class BasePaginationPublisherScraper(BaseScraper):
                 kwargs | {"page_number": page_number, "source_number": source_number, "start_index": start_index}
             ))
 
-            self._logger.info(f"Processing Pagination {page_url}")
+            self._logger.info(f"Processing Page {page_url}")
 
             page_tag_list = self._scrape_page(page_url)
             if not self._check_tag_list(page_tag_list):

@@ -63,8 +63,7 @@ class MDPIJournalsScraper(BaseIterativePublisherScraper, BaseMappedScraper):
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
         try:
-            scraper, driver = self._scrape_url(issue_url)
-            driver.quit()
+            scraper = self._scrape_url(issue_url)
 
             # Get all PDF links using Selenium to scroll and handle cookie popup once
             # Now find all PDF links using the class_="UD_Listings_ArticlePDF"
@@ -119,9 +118,8 @@ class MDPIGoogleSearchScraper(BasePaginationPublisherScraper, BaseMappedScraper)
     def _scrape_page(self, url: str) -> ResultSet | List[Tag] | None:
         def get_mdpi_pdf_tags(mdpi_tag: Tag):
             mdpi_url = mdpi_tag.get("href")
-            scraper_, driver_ = self._scrape_url(mdpi_url)
-            driver_.quit()
-            tags = scraper_.find_all(
+            self._driver.get(mdpi_url)
+            tags = self._get_parsed_page_source().find_all(
                 "a",
                 href=True,
                 class_=lambda class_: class_ and ("UD_Listings_ArticlePDF" in class_ or "UD_ArticlePDF" in class_),
@@ -131,8 +129,7 @@ class MDPIGoogleSearchScraper(BasePaginationPublisherScraper, BaseMappedScraper)
 
         try:
             # first of all, scrape the Google Search URL
-            scraper, driver = self._scrape_url(url)
-            driver.quit()
+            scraper = self._scrape_url(url)
 
             mdpi_tags = scraper.find_all(
                 "a",

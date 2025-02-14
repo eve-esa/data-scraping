@@ -42,8 +42,7 @@ class FrontiersScraper(BaseUrlPublisherScraper):
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
         try:
-            scraper, driver = self._scrape_url(source.url)
-            driver.quit()
+            scraper = self._scrape_url(source.url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             article_tag_list = scraper.find_all(
@@ -82,8 +81,7 @@ class FrontiersScraper(BaseUrlPublisherScraper):
         self._logger.info(f"Processing Article {source.url}")
 
         try:
-            scraper, driver = self._scrape_url(source.url)
-            driver.quit()
+            scraper = self._scrape_url(source.url)
 
             # Find the PDF link using appropriate class or tag (if lambda returns True, it will be included in the list)
             if not (tag := scraper.find("a", href=lambda href: href and "/pdf" in href, class_="ActionsDropDown__option")):

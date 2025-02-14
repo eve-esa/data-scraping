@@ -55,8 +55,7 @@ class NCBIScraper(BasePaginationPublisherScraper):
             ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
         """
         try:
-            scraper, driver = self._scrape_url(url)
-            driver.quit()
+            scraper = self._scrape_url(url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             if not (pdf_tag_list := scraper.find_all(

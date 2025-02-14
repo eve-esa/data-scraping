@@ -2,12 +2,7 @@ from typing import Type, List
 from bs4 import ResultSet, Tag
 from selenium.webdriver.common.by import By
 
-from helper.utils import (
-    get_scraped_url_by_bs_tag,
-    get_link_for_accessible_article,
-    remove_query_string_from_url,
-    get_parsed_page_source,
-)
+from helper.utils import get_scraped_url_by_bs_tag, get_link_for_accessible_article, remove_query_string_from_url
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from model.wiley_models import WileyConfig
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
@@ -68,12 +63,11 @@ class WileyScraper(BasePaginationPublisherScraper):
         Returns:
             ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
         """
-        driver = None
         try:
-            _, driver = self._scrape_url(url)
+            self._scrape_url(url)
 
             # Find all article links in the pagination URL, using the appropriate class or tag (if lambda returns True, it will be included in the list)
-            article_tags = driver.find_elements(
+            article_tags = self._driver.find_elements(
                 value="//a[contains(@class, 'publication_title') and contains(@class, 'visitable') and contains(@href, '/doi/')]",
                 by=By.XPATH,
             )
@@ -88,8 +82,6 @@ class WileyScraper(BasePaginationPublisherScraper):
                 ))
             ]
 
-            driver.quit()
-
             # Now, visit each article link and find the PDF link
             if not (pdf_tag_list := [
                 tag for article_link in articles_links if (tag := self.__scrape_article(article_link))
@@ -99,9 +91,6 @@ class WileyScraper(BasePaginationPublisherScraper):
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
-            if driver:
-                driver.quit()
-
             self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None
 
@@ -117,9 +106,8 @@ class WileyScraper(BasePaginationPublisherScraper):
         """
         self._logger.info(f"Processing Article {url}")
 
-        driver = None
         try:
-            scraper, driver = self._scrape_url(url)
+            scraper = self._scrape_url(url)
 
             # look for the ePDF link in the article page
             epdf_tag = scraper.find(
@@ -131,20 +119,15 @@ class WileyScraper(BasePaginationPublisherScraper):
                 return None
 
             # now, scrape the ePDF page to get the final PDF link, and return this latter tag
-            driver.get(get_scraped_url_by_bs_tag(epdf_tag, self.__base_url))
+            self._driver.get(get_scraped_url_by_bs_tag(epdf_tag, self.__base_url))
 
-            if not (direct_pdf_tag := get_parsed_page_source(driver).find(
+            if not (direct_pdf_tag := self._get_parsed_page_source().find(
                     "a", href=lambda href: href and "/doi/pdfdirect/" in href
             )):
-                driver.quit()
                 self._save_failure(url)
                 return None
 
-            driver.quit()
             return Tag(name="a", attrs={"href": remove_query_string_from_url(direct_pdf_tag.get("href"))})
         except Exception as e:
-            if driver:
-                driver.quit()
-
             self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None
