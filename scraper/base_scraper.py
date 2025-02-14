@@ -204,6 +204,7 @@ class BaseScraper(ABC):
                 self._config_model.file_extension
             )
             if not self._check_valid_resource(current_resource, link):
+                self._store_resource_to_db(current_resource, False)
                 continue
 
             self._upload_resource_to_s3_and_store_to_db(current_resource)
@@ -222,13 +223,18 @@ class BaseScraper(ABC):
         resource.bucket_key = resource.bucket_key.format(main_folder=main_folder)
 
         result = self._s3_client.upload_content(resource)
-        resource.success = result
-        self._uploaded_resource_repository.upsert(resource, {"sha256": resource.sha256}, keys_to_purge=["content"])
+        self._store_resource_to_db(resource, result)
 
         # Sleep after each successful download to avoid overwhelming the server
         time.sleep(random.uniform(2, 5))
 
         return result
+
+    def _store_resource_to_db(self, resource: UploadedResource, success: bool) -> int:
+        resource.success = success
+        return self._uploaded_resource_repository.upsert(
+            resource, {"sha256": resource.sha256}, keys_to_purge=["content"]
+        )
 
     @abstractmethod
     def scrape(self) -> Any | None:
