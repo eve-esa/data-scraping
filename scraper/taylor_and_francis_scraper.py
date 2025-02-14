@@ -29,6 +29,7 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
         """
         self._logger.info(f"Processing Journal {source.url}")
 
+        driver = None
         try:
             _, driver = self._scrape_url(source.url)
 
@@ -46,7 +47,6 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             issues_tag_list = get_parsed_page_source(driver).find_all("a", href=True, class_="issue-link")
-            driver.quit()
 
             # For each tag of issues previously collected, scrape the issue as a collection of articles
             if not (pdf_tag_list := [
@@ -62,9 +62,14 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
             ]):
                 self._save_failure(source.url)
 
+            driver.quit()
+
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
+            if driver:
+                driver.quit()
+
             self._log_and_save_failure(source.url, f"Failed to process Journal {source.url}. Error: {e}")
             return None
 

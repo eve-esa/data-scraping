@@ -43,6 +43,7 @@ class NASAEarthDataWikiScraper(BaseUrlPublisherScraper, BaseMappedScraper):
     def _scrape_issue_or_collection(self, source: BaseMappedUrlSource) -> ResultSet | List[Tag] | None:
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
+        driver = None
         try:
             _, driver = self._scrape_url(source.url)
 
@@ -68,9 +69,14 @@ class NASAEarthDataWikiScraper(BaseUrlPublisherScraper, BaseMappedScraper):
             )):
                 self._save_failure(source.url)
 
+            driver.quit()
+
             self._logger.debug(f"HTML links found: {len(html_tag_list)}")
             return html_tag_list
         except Exception as e:
+            if driver:
+                driver.quit()
+
             self._log_and_save_failure(source.url, f"Failed to process Issue / Collection {source.url}. Error: {e}")
             return None
 
@@ -203,6 +209,7 @@ class NASAEarthDataPDFScraper(NASAEarthDataScraper):
         ]} if pdf_tags else None
 
     def _scrape_page(self, url: str) -> ResultSet | List[Tag] | None:
+        driver = None
         try:
             scraper, driver = self._scrape_url(url)
 
@@ -228,6 +235,9 @@ class NASAEarthDataPDFScraper(NASAEarthDataScraper):
                 self._save_failure(url)
             return pdf_tag_list
         except Exception as e:
+            if driver:
+                driver.quit()
+
             self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None
 

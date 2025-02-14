@@ -29,6 +29,7 @@ class EOGEScraper(BaseUrlPublisherScraper):
         """
         self._logger.info(f"Processing Journal {source.url}")
 
+        driver = None
         try:
             _, driver = self._scrape_url(source.url)
 
@@ -49,6 +50,8 @@ class EOGEScraper(BaseUrlPublisherScraper):
                 "a", href=lambda href: href and "issue_" in href and ".html" in href
             )
 
+            driver.quit()
+
             # For each tag of issues previously collected, scrape the issue as a collection of articles
             if not (pdf_tag_list := [
                 tag
@@ -66,6 +69,9 @@ class EOGEScraper(BaseUrlPublisherScraper):
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
+            if driver:
+                driver.quit()
+
             self._log_and_save_failure(source.url, f"Failed to process Journal {source.url}. Error: {e}")
             return None
 

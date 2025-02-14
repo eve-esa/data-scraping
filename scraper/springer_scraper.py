@@ -186,11 +186,13 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedScra
         Returns:
             ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
         """
+        driver = None
         try:
             scraper, driver = self._scrape_url(url)
 
             article_tag_list = scraper.find_all("a", href=True, class_="app-card-open__link")
             if not article_tag_list:
+                driver.quit()
                 return None
 
             # by using Selenium's driver, search for all "a" tags, with class "app-card-open__link", href attribute and which parent has the previous sibling:
@@ -221,5 +223,8 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedScra
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
+            if driver:
+                driver.quit()
+
             self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None

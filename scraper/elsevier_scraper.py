@@ -111,6 +111,7 @@ class ElsevierScraper(BaseScraper):
         """
         self._logger.info(f"Scraping Issue: {source.name}, URL: {source.url}")
 
+        driver = None
         try:
             scraper, driver = self._scrape_url(source.url)
 
@@ -137,7 +138,6 @@ class ElsevierScraper(BaseScraper):
             )
             # click on the button to download the issue
             driver.execute_script("arguments[0].click();", button_download)
-            driver.quit()
 
             # wait for the download to complete
             self._logger.info(f"Downloading PDFs from {source.url}")
@@ -148,8 +148,12 @@ class ElsevierScraper(BaseScraper):
                 self._logger.warning("No zip files found or timeout reached")
                 return ElsevierScrapeIssueOutput(was_scraped=False, next_issue_url=next_issue_link)
 
+            driver.quit()
             return ElsevierScrapeIssueOutput(was_scraped=True, next_issue_url=next_issue_link)
         except Exception as e:
+            if driver:
+                driver.quit()
+
             self._log_and_save_failure(source.url, f"Error scraping journal: {e}")
             return ElsevierScrapeIssueOutput(was_scraped=False, next_issue_url=None)
 

@@ -42,6 +42,7 @@ class SeosScraper(BaseScraper):
             List[str]: A list of HTML links.
         """
         self._logger.info(f"Processing Source {source.url}")
+
         scraper, driver = self._scrape_url(source.url)
         driver.quit()
 

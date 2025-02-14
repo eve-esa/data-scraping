@@ -75,21 +75,10 @@ class BaseScraper(ABC):
         self._logging_db_scraper = scraper
         return self
 
-    def _scrape_url(self, url: str, cookie_wait: int = 3, pause_time: int = 2) -> Tuple[BeautifulSoup, Driver]:
-        """
-        Scrape the URL using Selenium and BeautifulSoup.
+    def _get_driver(self) -> Driver:
+        from helper.utils import get_user_agent, get_static_proxy_config, headless
 
-        Args:
-            url (str): url contains volume and issue number. Eg: https://www.mdpi.com/2072-4292/1/3
-            cookie_wait (int): time to wait for the cookie popup to appear
-            pause_time (int): time to pause between scrolls
-
-        Returns:
-            BeautifulSoup: the fully rendered HTML of the URL.
-        """
-        from helper.utils import get_user_agent, get_static_proxy_config, get_parsed_page_source, headless
-
-        driver = Driver(
+        return Driver(
             browser="chrome",
             undetectable=True,
             uc_cdp_events=True,
@@ -104,7 +93,24 @@ class BaseScraper(ABC):
             agent=get_user_agent(),
             devtools=True,
             use_auto_ext=True,
+            uc_subprocess=True,
         )
+
+    def _scrape_url(self, url: str, cookie_wait: int = 3, pause_time: int = 2) -> Tuple[BeautifulSoup, Driver]:
+        """
+        Scrape the URL using Selenium and BeautifulSoup.
+
+        Args:
+            url (str): url contains volume and issue number. Eg: https://www.mdpi.com/2072-4292/1/3
+            cookie_wait (int): time to wait for the cookie popup to appear
+            pause_time (int): time to pause between scrolls
+
+        Returns:
+            BeautifulSoup: the fully rendered HTML of the URL.
+        """
+        from helper.utils import get_parsed_page_source
+
+        driver = self._get_driver()
 
         driver.get(url.replace('"', '\\\"'))
         driver.uc_gui_click_captcha()

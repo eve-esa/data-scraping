@@ -381,6 +381,9 @@ def get_resource_from_remote(source_url: str, referer_url: str) -> bytes:
             verify=False,
         )
         c = response.content
+
+        response.raise_for_status()  # Check for request errors
+        return c
     except Exception:
         response = requests.get(
             source_url,
@@ -393,8 +396,8 @@ def get_resource_from_remote(source_url: str, referer_url: str) -> bytes:
         )
         c = response.content
 
-    response.raise_for_status()  # Check for request errors
-    return c
+        response.raise_for_status()  # Check for request errors
+        return c
 
 
 def get_parsed_page_source(driver: Driver) -> BeautifulSoup:

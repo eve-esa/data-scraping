@@ -68,6 +68,7 @@ class WileyScraper(BasePaginationPublisherScraper):
         Returns:
             ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
         """
+        driver = None
         try:
             _, driver = self._scrape_url(url)
 
@@ -76,7 +77,6 @@ class WileyScraper(BasePaginationPublisherScraper):
                 value="//a[contains(@class, 'publication_title') and contains(@class, 'visitable') and contains(@href, '/doi/')]",
                 by=By.XPATH,
             )
-            driver.quit()
 
             articles_links = [
                 link
@@ -88,6 +88,8 @@ class WileyScraper(BasePaginationPublisherScraper):
                 ))
             ]
 
+            driver.quit()
+
             # Now, visit each article link and find the PDF link
             if not (pdf_tag_list := [
                 tag for article_link in articles_links if (tag := self.__scrape_article(article_link))
@@ -97,6 +99,9 @@ class WileyScraper(BasePaginationPublisherScraper):
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
+            if driver:
+                driver.quit()
+
             self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None
 
@@ -112,6 +117,7 @@ class WileyScraper(BasePaginationPublisherScraper):
         """
         self._logger.info(f"Processing Article {url}")
 
+        driver = None
         try:
             scraper, driver = self._scrape_url(url)
 
@@ -126,15 +132,19 @@ class WileyScraper(BasePaginationPublisherScraper):
 
             # now, scrape the ePDF page to get the final PDF link, and return this latter tag
             driver.get(get_scraped_url_by_bs_tag(epdf_tag, self.__base_url))
-            driver.quit()
 
             if not (direct_pdf_tag := get_parsed_page_source(driver).find(
                     "a", href=lambda href: href and "/doi/pdfdirect/" in href
             )):
+                driver.quit()
                 self._save_failure(url)
                 return None
 
+            driver.quit()
             return Tag(name="a", attrs={"href": remove_query_string_from_url(direct_pdf_tag.get("href"))})
         except Exception as e:
+            if driver:
+                driver.quit()
+
             self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None

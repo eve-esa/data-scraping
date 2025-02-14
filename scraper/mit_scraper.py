@@ -23,6 +23,7 @@ class MITScraper(BaseUrlPublisherScraper):
     def _scrape_issue_or_collection(self, source: BaseUrlPublisherSource) -> List[Tag] | None:
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
+        driver = None
         try:
             scraper, driver = self._scrape_url(source.url)
 
@@ -42,6 +43,9 @@ class MITScraper(BaseUrlPublisherScraper):
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
+            if driver:
+                driver.quit()
+
             self._log_and_save_failure(source.url, f"Failed to process Issue / Collection {source.url}. Error: {e}")
             return None
 

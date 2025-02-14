@@ -56,6 +56,7 @@ class SageScraper(BasePaginationPublisherScraper):
         Returns:
             List[Tag] | None: A list of Tag objects containing the tags to the PDF links. If something went wrong, return None.
         """
+        driver = None
         try:
             scraper, driver = self._scrape_url(url)
 
@@ -85,5 +86,8 @@ class SageScraper(BasePaginationPublisherScraper):
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
         except Exception as e:
+            if driver:
+                driver.quit()
+
             self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None
