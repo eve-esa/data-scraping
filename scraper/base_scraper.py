@@ -152,7 +152,7 @@ class BaseScraper(ABC):
             last_height = new_height
 
         # Sleep for some time to avoid being blocked by the server on the next request
-        time.sleep(random.uniform(0.5, 3.5))
+        time.sleep(random.uniform(2, 5))
 
         # Get the fully rendered HTML
         return self._get_parsed_page_source()

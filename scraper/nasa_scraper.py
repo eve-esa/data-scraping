@@ -125,7 +125,7 @@ class NASANTRSScraper(BaseMappedScraper, NASAMixin):
                     self._driver.execute_script("arguments[0].click();", next_page_button)
 
                     # Sleep for some time to avoid being blocked by the server on the next request
-                    time.sleep(random.uniform(1.5, 3.5))
+                    time.sleep(random.uniform(2, 5))
 
                     self._driver.uc_gui_click_captcha()
                     self._wait_for_page_load()

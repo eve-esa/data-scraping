@@ -1,3 +1,4 @@
+import random
 import time
 from typing import List, Type
 from bs4 import ResultSet, Tag
@@ -48,7 +49,7 @@ class UKMetOfficeScraper(BaseUrlPublisherScraper):
                 scraper = self._get_parsed_page_source()
                 pdf_tag_list.extend(scraper.find_all("a", href=True, class_="card-link-value"))
 
-                time.sleep(1)
+                time.sleep(random.uniform(2, 5))
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
 
