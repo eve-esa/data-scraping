@@ -115,7 +115,7 @@ class AMSScraper(BaseIterativePublisherScraper):
             article_links = [
                 link
                 for tag in self._driver.find_elements(
-                    value=f"//a[contains(@class, 'c-Button--link') and contains(@href, '/view/journals/{journal.code}/{volume_num}/{issue_num}/')]",
+                    f"//a[contains(@class, 'c-Button--link') and contains(@href, '/view/journals/{journal.code}/{volume_num}/{issue_num}/')]",
                     by=By.XPATH,
                 )
                 if (link := get_link_for_accessible_article(

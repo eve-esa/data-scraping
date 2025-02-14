@@ -26,7 +26,7 @@ class WikipediaScraper(BaseUrlPublisherScraper):
         try:
             self._scrape_url(source.url)
 
-            html_tag_list = self._driver.find_elements(value="div.mw-category-generated a", by=By.CSS_SELECTOR)
+            html_tag_list = self._driver.find_elements("div.mw-category-generated a", by=By.CSS_SELECTOR)
 
             if not (result := [
                 Tag(name="a", attrs={"href": tag.get_attribute("href")})

@@ -194,7 +194,7 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedScra
             # - with class "app-entitlement"
             # - containing a svg with class "app-entitlement__icon.app-entitlement__icon--full-access
             open_access_article_tag_list = self._driver.find_elements(
-                value="//a[contains(@class, 'app-card-open__link')]/parent::h3/preceding-sibling::div[contains(@class, 'app-entitlement') and .//svg[contains(@class, 'app-entitlement__icon--full-access')]]",
+                "//a[contains(@class, 'app-card-open__link')]/parent::h3/preceding-sibling::div[contains(@class, 'app-entitlement') and .//svg[contains(@class, 'app-entitlement__icon--full-access')]]",
                 by=By.XPATH,
             )
 

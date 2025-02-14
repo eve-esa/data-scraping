@@ -35,7 +35,7 @@ class UKMetOfficeScraper(BaseUrlPublisherScraper):
 
             pdf_tag_list = []
 
-            page_buttons = self._driver.find_elements(value="a.role-button.page-link", by=By.CSS_SELECTOR)
+            page_buttons = self._driver.find_elements("a.role-button.page-link", by=By.CSS_SELECTOR)
             # keep only those buttons having a number as a text, and not repeating the same number
             page_buttons = {page_button.text: page_button for page_button in page_buttons if page_button.text.isdigit()}
 
