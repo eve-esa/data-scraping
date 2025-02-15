@@ -27,7 +27,7 @@ from scraper.base_scraper import BaseScraper, BaseMappedScraper
 
 
 try:
-    _ua = UserAgent(browsers=['chrome', 'firefox', 'edge', 'opera'])
+    _ua = UserAgent()
 except FakeUserAgentError:
     _ua = None
 
