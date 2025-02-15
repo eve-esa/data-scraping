@@ -60,11 +60,7 @@ class BaseCrawlingScraper(BaseScraper):
             current_resource = self._uploaded_resource_repository.get_by_content(
                 self._logging_db_scraper, self._config_model.bucket_key, file_path
             )
-            if not self._check_valid_resource(current_resource, file_path.replace(self.crawling_folder_path, "")):
-                self._store_resource_to_db(current_resource, False)
-                continue
-
-            self._upload_resource_to_s3_and_store_to_db(current_resource)
+            self._upload_resource_to_s3(current_resource, file_path.replace(self.crawling_folder_path, ""))
 
             # Sleep after each successful download to avoid overwhelming the server
             time.sleep(random.uniform(2, 5))

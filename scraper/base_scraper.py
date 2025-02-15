@@ -203,34 +203,25 @@ class BaseScraper(ABC):
                 link,
                 self._config_model.file_extension
             )
-            if not self._check_valid_resource(current_resource, link):
-                self._store_resource_to_db(current_resource, False)
-                continue
+            self._upload_resource_to_s3(current_resource, link)
 
-            self._upload_resource_to_s3_and_store_to_db(current_resource)
+            # Sleep after each successful download to avoid overwhelming the server
+            time.sleep(random.uniform(2, 5))
 
-    def _check_valid_resource(self, resource: UploadedResource, resource_name: str) -> bool:
+    def _upload_resource_to_s3(self, resource: UploadedResource, resource_name: str) -> int | None:
         if resource.id and resource.success:
-            self._logger.warning(f"Resource {resource_name} already exists in the database, skipping upload.")
-            return False
-        if not resource.content:
+            self._logger.warning(f"Resource {resource_name} was already successfully uploaded, skipping.")
+            return None
+
+        if resource.content:
+            main_folder: Final[str] = os.getenv("AWS_MAIN_FOLDER", "raw_data")
+            resource.bucket_key = resource.bucket_key.format(main_folder=main_folder)
+
+            success = self._s3_client.upload_content(resource)
+        else:
             self._logger.warning(f"We were unable to retrieve the content from {resource_name}, skipping upload.")
-            return False
-        return True
+            success = False
 
-    def _upload_resource_to_s3_and_store_to_db(self, resource: UploadedResource) -> bool:
-        main_folder: Final[str] = os.getenv("AWS_MAIN_FOLDER", "raw_data")
-        resource.bucket_key = resource.bucket_key.format(main_folder=main_folder)
-
-        result = self._s3_client.upload_content(resource)
-        self._store_resource_to_db(resource, result)
-
-        # Sleep after each successful download to avoid overwhelming the server
-        time.sleep(random.uniform(2, 5))
-
-        return result
-
-    def _store_resource_to_db(self, resource: UploadedResource, success: bool) -> int:
         resource.success = success
         return self._uploaded_resource_repository.upsert(
             resource, {"sha256": resource.sha256}, keys_to_purge=["content"]

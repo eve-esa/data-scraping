@@ -1,7 +1,7 @@
 import os
 from typing import Type, Dict, List
-
 from bs4 import Tag, ResultSet
+from selenium.webdriver.common.by import By
 
 from model.base_mapped_models import BaseMappedCrawlingConfig, BaseMappedUrlConfig
 from model.base_url_publisher_models import BaseUrlPublisherSource
@@ -47,6 +47,15 @@ class EUMETSATCaseStudiesScraper(BaseUrlPublisherScraper, BaseMappedScraper):
 
         try:
             scraper = self._scrape_url(source.url)
+
+            # if a tag named `announcement-modal-component` exists, find the button with the class `btn-close` and click it
+            try:
+                btn_close = self._driver.find_element(
+                    "//announcement-modal-component//button[@class='btn-close']", by=By.XPATH
+                )
+                self._driver.execute_script("arguments[0].click();", btn_close)
+            except Exception:
+                pass
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             if not (html_tag_list := scraper.find_all(

@@ -1298,7 +1298,7 @@
                 "name": "EUMETSAT Case Studies",
                 "scraper": "EUMETSATCaseStudiesScraper",
                 "config": {
-                    "base_url": "https://www.eumetsat.int/",
+                    "base_url": "https://user.eumetsat.int/",
                     "cookie_selector": "div.cc-compliance.cc-highlight a.cc-btn.cc-allow",
                     "file_extension": "html",
                     "read_more_button": {
