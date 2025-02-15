@@ -1,4 +1,6 @@
 import os
+import random
+import time
 from typing import Type, Dict, List
 from bs4 import Tag, ResultSet
 from selenium.webdriver.common.by import By
@@ -54,6 +56,7 @@ class EUMETSATCaseStudiesScraper(BaseUrlPublisherScraper, BaseMappedScraper):
                     "//announcement-modal-component//button[@class='btn-close']", by=By.XPATH
                 )
                 self._driver.execute_script("arguments[0].click();", btn_close)
+                time.sleep(random.uniform(0.5, 1.5))
             except Exception:
                 pass
 
