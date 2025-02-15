@@ -4,6 +4,7 @@ import json
 import os
 import pkgutil
 import queue
+import shutil
 from logging.handlers import QueueListener
 from multiprocessing import Queue, Process
 import zipfile
@@ -13,15 +14,22 @@ import yaml
 from bs4 import Tag
 from pydantic import ValidationError, BaseModel
 from urllib.parse import urlparse, parse_qs
-from fake_useragent import UserAgent
+from fake_useragent import UserAgent, FakeUserAgentError
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.by import By
 from selenium.common import NoSuchElementException
 import time
 
+from helper.constants import DEFAULT_UA, DEFAULT_CRAWLING_FOLDER
 from helper.logger import setup_logger, setup_worker_logging
 from model.analytics_models import AnalyticsModelItem, AnalyticsModelItemPercentage
 from scraper.base_scraper import BaseScraper, BaseMappedScraper
+
+
+try:
+    _ua = UserAgent(browsers=['chrome', 'firefox', 'edge', 'opera'])
+except FakeUserAgentError:
+    _ua = None
 
 
 # Load the YAML file
@@ -178,6 +186,9 @@ def run_scrapers(
         # Small delay to ensure all logs are processed
         time.sleep(0.1)
 
+        # remove the entire crawling folder, if it exists
+        shutil.rmtree(DEFAULT_CRAWLING_FOLDER)
+
 
 def remove_query_string_from_url(url: str | None = None) -> str | None:
     """
@@ -304,13 +315,15 @@ def get_link_for_accessible_article(article_tag: WebElement, base_url: str, xpat
 
 
 def get_user_agent(include_mobile: bool = False) -> str:
-    ua = UserAgent()
-    random_ua = ua.random
+    if _ua is None:
+        return DEFAULT_UA
+
+    random_ua = _ua.random
     if include_mobile:
         return random_ua
 
     while "mobile" in random_ua.lower():
-        random_ua = ua.random
+        random_ua = _ua.random
 
     return random_ua
 

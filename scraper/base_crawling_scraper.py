@@ -1,11 +1,11 @@
 from abc import abstractmethod
 import os
 import random
-import shutil
 import time
 from typing import Type, List
 from scrapy.crawler import CrawlerProcess
 
+from helper.constants import DEFAULT_CRAWLING_FOLDER
 from model.base_crawling_models import BaseCrawlingConfig, BaseCrawlingScraperOutput
 from scraper.base_scraper import BaseScraper
 from service.crawler import EveSpider
@@ -31,7 +31,7 @@ class BaseCrawlingScraper(BaseScraper):
         process = CrawlerProcess()
 
         self._logger.info("Starting the crawling process.")
-        process.crawl(EveSpider, start_urls=start_urls, download_folder_path=self.crawling_folder_path)
+        process.crawl(EveSpider, start_urls=start_urls, download_folder_path=self._get_crawling_folder_path())
         process.start()
         process.join()
 
@@ -45,12 +45,13 @@ class BaseCrawlingScraper(BaseScraper):
 
     def upload_to_s3(self, sources_links: List[str]):
         self._logger.debug("Uploading files to S3")
+        crawling_folder = self._get_crawling_folder_path()
 
         file_paths = [
-            os.path.join(self.crawling_folder_path, file)
-            for file in os.listdir(self.crawling_folder_path)
+            os.path.join(crawling_folder, file)
+            for file in os.listdir(crawling_folder)
             if file.endswith(self._config_model.file_extension)
-            and os.path.isfile(os.path.join(self.crawling_folder_path, file))
+            and os.path.isfile(os.path.join(crawling_folder, file))
         ]
         if not file_paths:
             for source_link in sources_links:
@@ -60,13 +61,13 @@ class BaseCrawlingScraper(BaseScraper):
             current_resource = self._uploaded_resource_repository.get_by_content(
                 self._logging_db_scraper, self._config_model.bucket_key, file_path
             )
-            self._upload_resource_to_s3(current_resource, file_path.replace(self.crawling_folder_path, ""))
+            self._upload_resource_to_s3(current_resource, file_path.replace(self._get_crawling_folder_path(), ""))
 
             # Sleep after each successful download to avoid overwhelming the server
             time.sleep(random.uniform(2, 5))
 
-        # remove the entire download folder
-        shutil.rmtree(self.crawling_folder_path)
+    def _get_crawling_folder_path(self) -> str:
+        return os.path.join(DEFAULT_CRAWLING_FOLDER, self.crawling_folder_path)
 
     @property
     @abstractmethod

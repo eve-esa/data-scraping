@@ -266,4 +266,4 @@ class NASACrawlingScraper(BaseCrawlingScraper, BaseMappedScraper, NASAMixin):
 
     @property
     def crawling_folder_path(self) -> str:
-        return os.path.join(os.getcwd(), "crawled", "nasa")
+        return "nasa"

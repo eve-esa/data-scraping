@@ -29,7 +29,7 @@ class EUMETSATCrawlingScraper(BaseCrawlingScraper, BaseMappedScraper):
 
     @property
     def crawling_folder_path(self) -> str:
-        return os.path.join(os.getcwd(), "crawled", "eumetsat")
+        return "eumetsat"
 
 
 class EUMETSATCaseStudiesScraper(BaseUrlPublisherScraper, BaseMappedScraper):
