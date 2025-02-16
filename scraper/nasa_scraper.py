@@ -1,7 +1,5 @@
-import os
 import random
 import time
-from abc import ABC
 from typing import List, Type, Dict
 from bs4 import Tag, ResultSet
 from selenium.webdriver.common.by import By
@@ -32,13 +30,7 @@ class NASAScraper(BaseMappedPublisherScraper):
         }
 
 
-class NASAMixin(BaseScraper, ABC):
-    def __init__(self):
-        super().__init__()
-        self._sb_with_proxy = False
-
-
-class NASAEarthDataWikiScraper(BaseUrlPublisherScraper, BaseMappedScraper, NASAMixin):
+class NASAEarthDataWikiScraper(BaseUrlPublisherScraper, BaseMappedScraper):
     @property
     def config_model_type(self) -> Type[BaseUrlPublisherConfig]:
         """
@@ -90,7 +82,7 @@ class NASAEarthDataWikiScraper(BaseUrlPublisherScraper, BaseMappedScraper, NASAM
         pass
 
 
-class NASANTRSScraper(BaseMappedScraper, NASAMixin):
+class NASANTRSScraper(BaseMappedScraper, BaseScraper):
     @property
     def config_model_type(self) -> Type[NASANTRSConfig]:
         return NASANTRSConfig
@@ -149,7 +141,7 @@ class NASANTRSScraper(BaseMappedScraper, NASAMixin):
         )
 
 
-class NASAEOSScraper(BasePaginationPublisherScraper, BaseMappedScraper, NASAMixin):
+class NASAEOSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
     @property
     def config_model_type(self) -> Type[BaseMappedPaginationConfig]:
         return BaseMappedPaginationConfig
@@ -182,7 +174,7 @@ class NASAEOSScraper(BasePaginationPublisherScraper, BaseMappedScraper, NASAMixi
             return None
 
 
-class NASAEarthDataScraper(BasePaginationPublisherScraper, BaseMappedScraper, NASAMixin):
+class NASAEarthDataScraper(BasePaginationPublisherScraper, BaseMappedScraper):
     def __init__(self):
         super().__init__()
         self.__href = None
@@ -259,7 +251,7 @@ class NASAEarthDataPDFScraper(NASAEarthDataScraper):
             return None
 
 
-class NASACrawlingScraper(BaseCrawlingScraper, BaseMappedScraper, NASAMixin):
+class NASACrawlingScraper(BaseCrawlingScraper, BaseMappedScraper):
     @property
     def config_model_type(self) -> Type[BaseMappedCrawlingConfig]:
         return BaseMappedCrawlingConfig

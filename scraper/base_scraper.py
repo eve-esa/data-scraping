@@ -4,10 +4,11 @@ from abc import ABC, abstractmethod
 import random
 from typing import List, Type, Any, Dict, Final
 from bs4 import BeautifulSoup
-from selenium.common import TimeoutException
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from seleniumbase import SB
 from seleniumbase.common.exceptions import NoSuchElementException
+from seleniumbase.common.exceptions import TimeoutException
 import time
 
 from helper.logger import setup_logger
@@ -23,7 +24,6 @@ from repository.uploaded_resource_repository import UploadedResourceRepository
 class BaseScraper(ABC):
     def __init__(self) -> None:
         self._driver: SB = None
-        self._sb_with_proxy = True
         self._config_model = None
         self._logging_db_scraper = self.__class__.__name__
 
@@ -82,7 +82,7 @@ class BaseScraper(ABC):
     def setup_driver(self):
         from helper.utils import get_sb_configuration
 
-        return SB(**get_sb_configuration(self._sb_with_proxy))
+        return SB(**get_sb_configuration(self._config_model.scraping_with_proxy))
 
     def _scrape_url(self, url: str, pause_time: int = 2) -> BeautifulSoup:
         """
@@ -99,6 +99,7 @@ class BaseScraper(ABC):
         self._driver.uc_gui_click_captcha()
         self._wait_for_page_load()
         self._wait_for_cookie_popup()
+        self._on_page_loaded_event()
 
         # Scroll through the page to load all articles
         last_height = self._driver.execute_script("return document.body.scrollHeight")
@@ -159,14 +160,29 @@ class BaseScraper(ABC):
             lambda d: d.execute_script("return document.readyState") == "complete"
         )
 
-    def _wait_for_cookie_popup(self, cookie_wait: int = 10):
+    def _wait_for_cookie_popup(self, timeout: int = 10):
         # Handle cookie popup only once, for the first request
         if self._config_model.cookie_selector:
             try:
-                self._driver.assert_element(self._config_model.cookie_selector, timeout=cookie_wait)
-                self._driver.click(self._config_model.cookie_selector, timeout=6)
+                self._driver.assert_element(self._config_model.cookie_selector, timeout=timeout)
+                self._driver.click(self._config_model.cookie_selector, timeout=timeout)
             except (TimeoutException, NoSuchElementException) as e:
                 self._logger.warning(f"Cookie popup not found. {e}")
+
+    def _on_page_loaded_event(self):
+        """
+        This method is called after the page is loaded. It can be used to handle any event that needs to be done after
+        the page is loaded.
+        """
+        # if a modal exists, find the button with the class `btn-close` and click it
+        try:
+            btn_close = self._driver.find_element(
+                "//div[contains(@class, 'modal-content')]//button[contains(@class, 'btn-close')]", by=By.XPATH
+            )
+            self._driver.execute_script("arguments[0].click();", btn_close)
+            time.sleep(random.uniform(0.5, 1.5))
+        except Exception:
+            pass
 
     def _get_parsed_page_source(self) -> BeautifulSoup:
         """
@@ -198,10 +214,7 @@ class BaseScraper(ABC):
 
         for link in sources_links:
             current_resource = self._uploaded_resource_repository.get_by_url(
-                self._logging_db_scraper,
-                self._config_model.bucket_key,
-                link,
-                self._config_model.file_extension
+                self._logging_db_scraper, link, self._config_model
             )
             self._upload_resource_to_s3(current_resource, link)
 
@@ -213,16 +226,16 @@ class BaseScraper(ABC):
             self._logger.warning(f"Resource {resource_name} was already successfully uploaded, skipping.")
             return None
 
-        if resource.content:
-            main_folder: Final[str] = os.getenv("AWS_MAIN_FOLDER", "raw_data")
-            resource.bucket_key = resource.bucket_key.format(main_folder=main_folder)
+        main_folder: Final[str] = os.getenv("AWS_MAIN_FOLDER", "raw_data")
+        resource.bucket_key = resource.bucket_key.format(main_folder=main_folder)
+        resource.content_retrieved = bool(resource.content)
 
-            success = self._s3_client.upload_content(resource)
+        if resource.content_retrieved:
+            resource.success = self._s3_client.upload_content(resource)
         else:
             self._logger.warning(f"We were unable to retrieve the content from {resource_name}, skipping upload.")
-            success = False
+            resource.success = False
 
-        resource.success = success
         return self._uploaded_resource_repository.upsert(
             resource, {"sha256": resource.sha256}, keys_to_purge=["content"]
         )

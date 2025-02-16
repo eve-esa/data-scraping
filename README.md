@@ -2,9 +2,18 @@
 Code for the main ETL pipeline to be utilized to collect, scrape and transform training data.
 
 ## Pre-requisites
+For the local usage, please create a virtual environment in the `venv` folder by running the following command:
+```bash
+python3 -m venv venv
+```
 
-For the local usage, please create a `.env` file in the root of the project with the following content (ask the
-project maintainer for the values of the keys):
+Then, activate the virtual environment by running the following command:
+```bash
+source venv/bin/activate
+```
+
+Now that the virtual environment is activated, please create a `.env` file in the root of the project with the following
+content (ask the project maintainer for the values of the keys):
 ```bash
 AWS_URL=http://minio:9100
 AWS_REGION=us-east-1
@@ -15,8 +24,8 @@ AWS_MAIN_FOLDER=raw_data
 
 MINIO_URL=http://minio:9100
 
-HEADLESS_BROWSER=true
-XVFB_MODE=true
+HEADLESS_BROWSER=<true|false>
+XVFB_MODE=<true|false>
 
 DB_HOST=mysql
 DB_PORT=3306
@@ -54,15 +63,16 @@ The name of the key is the name of the scraper and the value is a dictionary con
 ## Usage
 
 ### Testing
-For the usage with testing purposes, please create a `.env` file in the root of the project with the following content, as
-per the [Pre-requisites](#pre-requisites) section. Then, you can run the following command to execute the pipeline:
+For the usage with testing purposes, please create a `.env` file in the root of the project as per the [Pre-requisites](#pre-requisites)
+section. Then, you can run the following command to execute the pipeline:
 ```bash
 make up
 make run
 ```
 
 The command `make up` will start the docker containers and `make run` will execute the pipeline.
-It is possible to specify the name(s) of the scraper(s) to be executed by adding the `--scrapers` parameter to the `make run` command. E.g.:
+It is possible to specify the name(s) of the scraper(s) to be executed by adding the `--scrapers` parameter to the
+`make run` command. E.g.:
 ```bash
 make run args="--scrapers IOPScraper"
 ```
@@ -72,7 +82,7 @@ make run args="--scrapers IOPScraper SpringerScraper"
 ```
 
 The docker containers are locally required, since a MinIO server is used to store the data and emulate a remote S3 bucket.
-Every time the pipeline is executed, the data is stored in the MinIO server and the configuration file is updated with the `done` key set to `True`.
+Every time the pipeline is executed, the data are stored into the MinIO server.
 
 **Additional Notes**: 
 1. The `make up` command must be executed only once, since the docker container is started and the MinIO server is started.
@@ -118,8 +128,8 @@ keys:
 At the end of each Scraper, the pipeline will store some statistics in the `scraper_analytics` table of the database.
 The statistics are stored in a JSON-formatted string, per scraper. The JSON-formatted string contains the following keys:
 - `scraped`, i.e., the analysed URLs
-- `content_retrieved`: i.e., those resources successfully collected during the scraping but which contents were not
-finally retrieved from the remote URLs
+- `content_retrieved`: i.e., those resources successfully collected during the scraping, grouped according to whether
+their contents were finally retrieved from the remote URLs
 - `uploaded`: i.e., those resources successfully collected during the scraping and which contents were finally retrieved
 from the remote URLs, with the result of the upload to the remote storage
 

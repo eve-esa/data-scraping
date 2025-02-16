@@ -4,11 +4,12 @@ import json
 import os
 import pkgutil
 import queue
+import random
 import shutil
 from logging.handlers import QueueListener
 from multiprocessing import Queue, Process
 import zipfile
-from typing import Dict, List, Type, Tuple
+from typing import Dict, List, Type, Tuple, Any
 import requests
 import yaml
 from bs4 import Tag
@@ -17,8 +18,11 @@ from urllib.parse import urlparse, parse_qs
 from fake_useragent import UserAgent, FakeUserAgentError
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.by import By
-from selenium.common import NoSuchElementException
 import time
+from selenium.webdriver.support.wait import WebDriverWait
+from seleniumbase import SB
+from seleniumbase.common.exceptions import NoSuchElementException
+from seleniumbase.common.exceptions import TimeoutException
 
 from helper.constants import DEFAULT_UA, DEFAULT_CRAWLING_FOLDER
 from helper.logger import setup_logger, setup_worker_logging
@@ -187,7 +191,8 @@ def run_scrapers(
         time.sleep(0.1)
 
         # remove the entire crawling folder, if it exists
-        shutil.rmtree(DEFAULT_CRAWLING_FOLDER)
+        if os.path.exists(DEFAULT_CRAWLING_FOLDER):
+            shutil.rmtree(DEFAULT_CRAWLING_FOLDER)
 
 
 def remove_query_string_from_url(url: str | None = None) -> str | None:
@@ -374,42 +379,55 @@ def parse_google_drive_link(google_drive_link: str) -> Tuple[str, str]:
     return file_id, download_url
 
 
-def get_resource_from_remote(source_url: str, referer_url: str) -> bytes:
+def get_resource_from_remote_by_request(source_url: str, request_with_proxy: bool = False) -> bytes:
     proxy = get_interacting_proxy_config()
+    headers = {
+        "User-Agent": get_user_agent(),
+        "Accept": "application/pdf",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Referer": "https://www.google.com",
+    }
 
-    try:
-        response = requests.get(
-            source_url,
-            headers={
-                "User-Agent": get_user_agent(),
-                "Accept": "application/pdf,*/*",
-                "Accept-Language": "en-US,en;q=0.9",
-                "Referer": referer_url,
-            },
-            proxies={
-                "http": proxy,
-                "https": proxy,
-            },
-            verify=False,
+    response = requests.get(
+        source_url, headers=headers, proxies={"http": proxy, "https": proxy}, verify=False
+    ) if request_with_proxy else requests.get(source_url, headers=headers)
+
+    response.raise_for_status()  # Check for request errors
+    return response.content
+
+
+def get_resource_from_remote_by_scraping(
+    source_url: str,
+    loading_tag: str | None = None,
+    scraping_with_proxy: bool = False,
+    cookie_selector: str | None = None,
+    timeout: int | None = 20,
+) -> bytes:
+    # return the resource from the scraping if the loading tag is provided
+    with SB(**get_sb_configuration(scraping_with_proxy)) as sb:
+        sb.get(source_url)
+        sb.uc_gui_click_captcha()
+        WebDriverWait(sb, timeout).until(
+            lambda d: d.execute_script("return document.readyState") == "complete"
+                      and (
+                          not d.execute_script(f"return document.querySelector('{loading_tag}')") if loading_tag else True
+                      )
         )
-        c = response.content
 
-        response.raise_for_status()  # Check for request errors
-        return c
-    except Exception:
-        response = requests.get(
-            source_url,
-            headers={
-                "User-Agent": get_user_agent(),
-                "Accept": "application/pdf,*/*",
-                "Accept-Language": "en-US,en;q=0.9",
-                "Referer": referer_url,
-            },
-        )
-        c = response.content
+        # Handle cookie popup only once, for the first request
+        if cookie_selector:
+            try:
+                sb.assert_element(cookie_selector, timeout=timeout)
+                sb.click(cookie_selector, timeout=timeout)
+            except (TimeoutException, NoSuchElementException):
+                pass
 
-        response.raise_for_status()  # Check for request errors
-        return c
+        # Sleep for some time to avoid being blocked by the server on the next request
+        time.sleep(random.uniform(2, 5))
+
+        # Get the fully rendered HTML
+        content = sb.get_page_source()
+        return content.encode("utf-8")
 
 
 def extract_lists(input_data: List | Dict) -> List[str]:
@@ -476,13 +494,8 @@ def build_analytics(successes: List[str], failures: List[str]) -> AnalyticsModel
         )
 
 
-def headless() -> bool:
-    v = os.getenv("HEADLESS_BROWSER", "true").lower()
-    return v == "true" or v == "1"
-
-
-def xvfb_mode() -> bool:
-    v = os.getenv("XVFB_MODE", "false").lower()
+def get_bool_env(key: str, default: str) -> bool:
+    v = os.getenv(key, default).lower()
     return v == "true" or v == "1"
 
 
@@ -491,13 +504,13 @@ def get_sb_configuration(with_proxy: bool | None = True) -> Dict:
         "browser": "chrome",
         "undetectable": True,
         "locale_code": "en",
-        "headless2": headless(),
+        "headless2": get_bool_env("HEADLESS_BROWSER", "true"),
         "disable_cookies": False,
         "window_size": "1920,1080",
         "window_position": "0,0",
         "agent": get_user_agent(),
         "use_auto_ext": True,
-        "xvfb": xvfb_mode(),
+        "xvfb": get_bool_env("XVFB_MODE", "false"),
     }
 
     if with_proxy:

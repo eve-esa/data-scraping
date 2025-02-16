@@ -41,6 +41,7 @@ class UploadedResource(BaseModel):
     source: str
     sha256: str | None = None
     content: bytes | None = None
+    content_retrieved: bool | None = False
     success: bool | None = True
 
     @classmethod
@@ -51,6 +52,7 @@ class UploadedResource(BaseModel):
             "source": DatabaseFieldDefinition(type=Text, nullable=False),
             "sha256": DatabaseFieldDefinition(type=String(length=255), default=None),
             "success": DatabaseFieldDefinition(type=Boolean, nullable=False, default=False),
+            "content_retrieved": DatabaseFieldDefinition(type=Boolean, nullable=False, default=False),
             "last_access_at": DatabaseFieldDefinition(type=String(length=255), nullable=False),
         }
 

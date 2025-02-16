@@ -920,6 +920,7 @@
                     "base_url": "https://earth.esa.int/",
                     "cookie_selector": "div#__next > div.fixed.bottom-0.left-0.right-0.bg-brand-bg-darker.text-white.font-esa > div.mx-auto.p-8.flex.flex-col > div.pt-4.flex.flex-col.gap-8.items-center.justify-center > button.p-1.uppercase.border.transition-colors",
                     "file_extension": "html",
+                    "scraping_with_proxy": false,
                     "read_more_button": {
                         "selector": "button",
                         "text": "READ MORE"
@@ -938,6 +939,7 @@
                 "name": "ESA Newcomers Earth Observation Guide",
                 "config": {
                     "file_extension": "html",
+                    "scraping_with_proxy": false,
                     "urls": [
                         "https://business.esa.int/newcomers-earth-observation-guide"
                     ]
@@ -950,6 +952,7 @@
                     "base_url": "https://www.eoportal.org/",
                     "cookie_selector": "div#__next > main > div.cy-page-content > div.cy-cookie-popup.css-1pa6g3f > div.css-1r4dq04 > button.chakra-button.css-122lbyf",
                     "file_extension": "html",
+                    "scraping_with_proxy": false,
                     "sources": [
                         {
                             "url": "https://www.eoportal.org/satellite-missions?Mission+type=EO",
@@ -966,6 +969,7 @@
                 "config": {
                     "base_url": "https://sentiwiki.copernicus.eu/",
                     "cookie_selector": "div#vp-js-cookies__notice > div.vp-cookies__notice.no-print.vp-non-modal-dialog.fixed.bottom-0.z-non-modal-dialog.w-full.p-4.shadow-lg > div.flex.flex-row.items-center.space-x-2 > button.vp-button.vp-button--primary",
+                    "scraping_with_proxy": false,
                     "sources": [
                         {
                             "url": "https://sentiwiki.copernicus.eu/web/document-library",
@@ -980,6 +984,7 @@
                 "scraper": "EsaUrlScraper",
                 "config": {
                     "base_url": "https://eo4society.esa.int/",
+                    "scraping_with_proxy": false,
                     "sources": [
                         {
                             "url": "https://eo4society.esa.int/result-type/publications/page/2/",
@@ -995,6 +1000,7 @@
                 "config": {
                     "base_url": "https://database.eohandbook.com/database/",
                     "file_extension": "html",
+                    "scraping_with_proxy": false,
                     "sources": [
                         {
                             "url": "https://database.eohandbook.com/database/instrumentindex.aspx",
@@ -1015,6 +1021,8 @@
                 "config": {
                     "base_url": "https://opensciencedata.esa.int/",
                     "file_extension": "html",
+                    "loading_tag": "div.v-progress-linear",
+                    "scraping_with_proxy": false,
                     "sources": [
                         {
                             "url": "https://opensciencedata.esa.int/search",
@@ -1027,6 +1035,7 @@
             {
                 "name": "Earth Observation Handbook 2023",
                 "config": {
+                    "scraping_with_proxy": false,
                     "urls": [
                         "https://eohandbook.com/gst/documents/CEOS_EO_Handbook_2023_light.pdf"
                     ]
@@ -1085,6 +1094,7 @@
                 "config": {
                     "base_url": "https://wiki.earthdata.nasa.gov/",
                     "file_extension": "html",
+                    "scraping_with_proxy": false,
                     "sources": [
                         {
                             "url": "https://wiki.earthdata.nasa.gov/display/CMR/Common+Metadata+Repository+Home",
@@ -1098,6 +1108,7 @@
                 "scraper": "NASANTRSScraper",
                 "config": {
                     "base_url": "https://ntrs.nasa.gov",
+                    "scraping_with_proxy": false,
                     "sources": [
                         {
                             "url": "https://ntrs.nasa.gov/search?subjectCategory=Earth%20Resources%20And%20Remote%20Sensing&page=%7B%22size%22:200,%22from%22:0%7D"
@@ -1110,6 +1121,7 @@
                 "scraper": "NASAEOSScraper",
                 "config": {
                     "base_url": "https://eospso.nasa.gov",
+                    "scraping_with_proxy": false,
                     "sources": [
                         {
                             "landing_page_url": "https://eospso.nasa.gov/publications/59?page={page_number}"
@@ -1123,6 +1135,7 @@
                 "config": {
                     "base_url": "https://www.earthdata.nasa.gov",
                     "file_extension": "html",
+                    "scraping_with_proxy": false,
                     "sources": [
                         {
                             "landing_page_url": "https://www.earthdata.nasa.gov/topics/glossary?%2Ftopics%2Fglossary%2Fall=&page={page_number}",
@@ -1173,6 +1186,7 @@
                 "name": "NASA Crawled Sites",
                 "scraper": "NASACrawlingScraper",
                 "config": {
+                    "scraping_with_proxy": false,
                     "sources": [
                         {
                             "name": "NASA Climate Change",
@@ -1242,6 +1256,7 @@
         "bucket_key": "{main_folder}/uk_met_office",
         "base_url": "https://library.metoffice.gov.uk",
         "cookie_selector": "button.cc-btn.cc-allow",
+        "scraping_with_proxy": false,
         "sources": [
             {
                 "url": "https://library.metoffice.gov.uk/Portal/Default/en-GB/Search/AdvancedSearch?userSearchId=319",
@@ -1274,6 +1289,7 @@
                 "name": "EUMETSAT Crawled Sites",
                 "scraper": "EUMETSATCrawlingScraper",
                 "config": {
+                    "scraping_with_proxy": false,
                     "sources": [
                         {
                             "name": "EOCAT API",
@@ -1301,6 +1317,8 @@
                     "base_url": "https://user.eumetsat.int/",
                     "cookie_selector": "div.cc-compliance.cc-highlight a.cc-btn.cc-allow",
                     "file_extension": "html",
+                    "loading_tag": "#app-loading-indicator",
+                    "scraping_with_proxy": false,
                     "read_more_button": {
                         "selector": "button.btn-primary",
                         "text": "Show more"
@@ -1317,6 +1335,7 @@
                 "name": "EUMETSAT Classroom",
                 "config": {
                     "file_extension": "html",
+                    "scraping_with_proxy": false,
                     "urls": [
                         "https://classroom.eumetsat.int/enrol/index.php?id=504",
                         "https://classroom.eumetsat.int/course/view.php?id=500",

@@ -91,4 +91,5 @@ class BaseMappedSource(BaseModel):
 
 
 class BaseMappedConfig(Config):
+    scraping_with_proxy: bool = False
     sources: List[BaseMappedSource]

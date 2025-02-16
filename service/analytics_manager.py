@@ -3,7 +3,7 @@ from typing import List, Dict
 from helper.logger import setup_logger
 from helper.singleton import singleton
 from model.analytics_models import AnalyticsModel, AnalyticsModelItem
-from model.sql_models import ScraperOutput, ScraperFailure, UploadedResource, ScraperAnalytics
+from model.sql_models import ScraperOutput, UploadedResource, ScraperAnalytics
 from repository.scraper_analytics_repository import ScraperAnalyticsRepository
 from repository.scraper_failure_repository import ScraperFailureRepository
 from repository.scraper_output_repository import ScraperOutputRepository
@@ -52,26 +52,19 @@ class AnalyticsManager:
         Returns:
             AnalyticsModel: The analytics model
         """
-        from helper.utils import extract_lists, build_analytics
+        from helper.utils import build_analytics
 
-        scrape_success: ScraperOutput | None = self._scraper_output_repository.get_one_by({"scraper": scraper})
-        if not scrape_success:
-            raise ValueError(f"Scraper {scraper} not found in the database.")
+        successes: List[UploadedResource] = self._uploaded_resource_repository.get_by(
+            {"scraper": scraper, "content_retrieved": True},
+        )
+        failures: List[UploadedResource] = self._uploaded_resource_repository.get_by(
+            {"scraper": scraper, "content_retrieved": False},
+        )
 
-        scrape_success_as_list = extract_lists(scrape_success.output_json)
-
-        contents_retrieved: List[UploadedResource] = self._uploaded_resource_repository.get_by({"scraper": scraper})
-
-        successes = []
-        failures = []
-        for resource in scrape_success_as_list:
-            for content_retrieved in contents_retrieved:
-                if resource == content_retrieved.source or content_retrieved.success:
-                    successes.append(resource)
-                else:
-                    failures.append(resource)
-
-        return build_analytics(successes, failures)
+        return build_analytics(
+            [success.source for success in successes],
+            [failure.source for failure in failures],
+        )
 
     def _get_uploaded_analytics(self, scraper: str) -> AnalyticsModelItem:
         """
@@ -86,15 +79,19 @@ class AnalyticsManager:
         """
         from helper.utils import build_analytics
 
-        successes: List[UploadedResource] = self._uploaded_resource_repository.get_by({"scraper": scraper, "success": True})
-        failures: List[UploadedResource] = self._uploaded_resource_repository.get_by({"scraper": scraper, "success": False})
+        successes: List[UploadedResource] = self._uploaded_resource_repository.get_by(
+            {"scraper": scraper, "content_retrieved": True, "success": True},
+        )
+        failures: List[UploadedResource] = self._uploaded_resource_repository.get_by(
+            {"scraper": scraper, "content_retrieved": True, "success": False},
+        )
 
         return build_analytics(
             [success.source for success in successes],
             [failure.source for failure in failures],
         )
 
-    def build_and_store_analytics(self, scraper: str) -> int:
+    def build_and_store_analytics(self, scraper: str) -> int | None:
         """
         Store the analytics in the database.
 
@@ -102,7 +99,7 @@ class AnalyticsManager:
             scraper (str): The scraper to analyze.
 
         Returns:
-            int: the ID of the inserted record
+            int: The ID of the stored analytics.
         """
         try:
             analytics = AnalyticsModel(
@@ -114,6 +111,7 @@ class AnalyticsManager:
             return self._scraper_analytics_repository.save_analytics(scraper, analytics)
         except ValueError as e:
             self._logger.error(f"Failed to get analytics for scraper {scraper}. Error: {e}")
+            return None
 
     def find_latest_analytics(self, scraper: str) -> AnalyticsModel | None:
         """

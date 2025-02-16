@@ -10,10 +10,6 @@ from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
 
 
 class UKMetOfficeScraper(BaseUrlPublisherScraper):
-    def __init__(self):
-        super().__init__()
-        self._sb_with_proxy = False
-
     @property
     def config_model_type(self) -> Type[BaseUrlPublisherConfig]:
         """

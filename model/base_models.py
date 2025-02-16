@@ -16,3 +16,5 @@ class BaseConfig(Config, ABC):
     base_url: str | None = None
     cookie_selector: str | None = None
     read_more_button: ReadMoreButton | None = None
+    loading_tag: str | None = None
+    scraping_with_proxy: bool = True
