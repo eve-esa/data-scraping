@@ -26,7 +26,7 @@ from seleniumbase.common.exceptions import TimeoutException
 
 from helper.constants import DEFAULT_UA, DEFAULT_CRAWLING_FOLDER
 from helper.logger import setup_logger, setup_worker_logging
-from model.analytics_models import AnalyticsModelItem, AnalyticsModelItemPercentage
+from model.analytics_models import AnalyticsModelItem, AnalyticsModelItemPercentage, AnalyticsModelItemTotal
 from scraper.base_scraper import BaseScraper, BaseMappedScraper
 
 
@@ -482,16 +482,18 @@ def build_analytics(successes: List[str], failures: List[str]) -> AnalyticsModel
     failures = get_unique(failures)
     total = len(successes) + len(failures)
 
+    totals = AnalyticsModelItemTotal(success=len(successes), failure=len(failures))
     percentages = AnalyticsModelItemPercentage(
         success=len(successes) / total if total > 0 else 0,
         failure=len(failures) / total if total > 0 else 0,
     )
 
     return AnalyticsModelItem(
-            success=successes,
-            failure=failures,
-            percentages=percentages
-        )
+        success=successes,
+        failure=failures,
+        totals=totals,
+        percentages=percentages,
+    )
 
 
 def get_bool_env(key: str, default: str) -> bool:

@@ -228,9 +228,9 @@ class BaseScraper(ABC):
 
         main_folder: Final[str] = os.getenv("AWS_MAIN_FOLDER", "raw_data")
         resource.bucket_key = resource.bucket_key.format(main_folder=main_folder)
-        resource.content_retrieved = bool(resource.content)
+        resource.content_retrieved = True if resource.content else False
 
-        if resource.content_retrieved:
+        if resource.content:
             resource.success = self._s3_client.upload_content(resource)
         else:
             self._logger.warning(f"We were unable to retrieve the content from {resource_name}, skipping upload.")
