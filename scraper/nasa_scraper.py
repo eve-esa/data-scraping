@@ -13,13 +13,13 @@ from model.nasa_models import NASANTRSConfig, NASANTRSScraperOutput
 from scraper.base_crawling_scraper import BaseCrawlingScraper
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
-from scraper.base_scraper import BaseMappedScraper, BaseScraper
+from scraper.base_scraper import BaseMappedSubScraper, BaseScraper
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
 
 
 class NASAScraper(BaseMappedPublisherScraper):
     @property
-    def mapping(self) -> Dict[str, Type[BaseMappedScraper]]:
+    def mapping(self) -> Dict[str, Type[BaseMappedSubScraper]]:
         return {
             "NASAEarthDataWikiScraper": NASAEarthDataWikiScraper,
             "NASANTRSScraper": NASANTRSScraper,
@@ -30,7 +30,7 @@ class NASAScraper(BaseMappedPublisherScraper):
         }
 
 
-class NASAEarthDataWikiScraper(BaseUrlPublisherScraper, BaseMappedScraper):
+class NASAEarthDataWikiScraper(BaseUrlPublisherScraper, BaseMappedSubScraper):
     @property
     def config_model_type(self) -> Type[BaseUrlPublisherConfig]:
         """
@@ -82,7 +82,7 @@ class NASAEarthDataWikiScraper(BaseUrlPublisherScraper, BaseMappedScraper):
         pass
 
 
-class NASANTRSScraper(BaseMappedScraper, BaseScraper):
+class NASANTRSScraper(BaseMappedSubScraper, BaseScraper):
     @property
     def config_model_type(self) -> Type[NASANTRSConfig]:
         return NASANTRSConfig
@@ -141,7 +141,7 @@ class NASANTRSScraper(BaseMappedScraper, BaseScraper):
         )
 
 
-class NASAEOSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
+class NASAEOSScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
     @property
     def config_model_type(self) -> Type[BaseMappedPaginationConfig]:
         return BaseMappedPaginationConfig
@@ -174,7 +174,7 @@ class NASAEOSScraper(BasePaginationPublisherScraper, BaseMappedScraper):
             return None
 
 
-class NASAEarthDataScraper(BasePaginationPublisherScraper, BaseMappedScraper):
+class NASAEarthDataScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
     def __init__(self):
         super().__init__()
         self.__href = None
@@ -251,7 +251,7 @@ class NASAEarthDataPDFScraper(NASAEarthDataScraper):
             return None
 
 
-class NASACrawlingScraper(BaseCrawlingScraper, BaseMappedScraper):
+class NASACrawlingScraper(BaseCrawlingScraper, BaseMappedSubScraper):
     @property
     def config_model_type(self) -> Type[BaseMappedCrawlingConfig]:
         return BaseMappedCrawlingConfig

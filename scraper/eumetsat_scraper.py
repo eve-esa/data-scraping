@@ -5,20 +5,20 @@ from model.base_mapped_models import BaseMappedCrawlingConfig, BaseMappedUrlConf
 from model.base_url_publisher_models import BaseUrlPublisherSource
 from scraper.base_crawling_scraper import BaseCrawlingScraper
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
-from scraper.base_scraper import BaseMappedScraper
+from scraper.base_scraper import BaseMappedSubScraper
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
 
 
 class EUMETSATScraper(BaseMappedPublisherScraper):
     @property
-    def mapping(self) -> Dict[str, Type[BaseMappedScraper]]:
+    def mapping(self) -> Dict[str, Type[BaseMappedSubScraper]]:
         return {
             "EUMETSATCrawlingScraper": EUMETSATCrawlingScraper,
             "EUMETSATCaseStudiesScraper": EUMETSATCaseStudiesScraper,
         }
 
 
-class EUMETSATCrawlingScraper(BaseCrawlingScraper, BaseMappedScraper):
+class EUMETSATCrawlingScraper(BaseCrawlingScraper, BaseMappedSubScraper):
     @property
     def config_model_type(self) -> Type[BaseMappedCrawlingConfig]:
         return BaseMappedCrawlingConfig
@@ -28,7 +28,7 @@ class EUMETSATCrawlingScraper(BaseCrawlingScraper, BaseMappedScraper):
         return "eumetsat"
 
 
-class EUMETSATCaseStudiesScraper(BaseUrlPublisherScraper, BaseMappedScraper):
+class EUMETSATCaseStudiesScraper(BaseUrlPublisherScraper, BaseMappedSubScraper):
     @property
     def config_model_type(self) -> Type[BaseMappedUrlConfig]:
         return BaseMappedUrlConfig

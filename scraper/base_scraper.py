@@ -7,8 +7,7 @@ from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from seleniumbase import SB
-from seleniumbase.common.exceptions import NoSuchElementException
-from seleniumbase.common.exceptions import TimeoutException
+from seleniumbase.common.exceptions import NoSuchElementException, ElementNotVisibleException, TimeoutException
 import time
 
 from helper.logger import setup_logger
@@ -82,7 +81,7 @@ class BaseScraper(ABC):
     def setup_driver(self):
         from helper.utils import get_sb_configuration
 
-        return SB(**get_sb_configuration(self._config_model.scraping_with_proxy))
+        return SB(**get_sb_configuration(with_proxy=self._config_model.scraping_with_proxy))
 
     def _scrape_url(self, url: str, pause_time: int = 2) -> BeautifulSoup:
         """
@@ -166,7 +165,7 @@ class BaseScraper(ABC):
             try:
                 self._driver.assert_element(self._config_model.cookie_selector, timeout=timeout)
                 self._driver.click(self._config_model.cookie_selector, timeout=timeout)
-            except (TimeoutException, NoSuchElementException) as e:
+            except (TimeoutException, NoSuchElementException, ElementNotVisibleException) as e:
                 self._logger.warning(f"Cookie popup not found. {e}")
 
     def _on_page_loaded_event(self):
@@ -276,5 +275,5 @@ class BaseScraper(ABC):
         pass
 
 
-class BaseMappedScraper(ABC):
+class BaseMappedSubScraper(ABC):
     pass

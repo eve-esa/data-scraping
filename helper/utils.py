@@ -9,7 +9,7 @@ import shutil
 from logging.handlers import QueueListener
 from multiprocessing import Queue, Process
 import zipfile
-from typing import Dict, List, Type, Tuple, Any
+from typing import Dict, List, Type, Tuple
 import requests
 import yaml
 from bs4 import Tag
@@ -19,15 +19,13 @@ from fake_useragent import UserAgent, FakeUserAgentError
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.by import By
 import time
-from selenium.webdriver.support.wait import WebDriverWait
 from seleniumbase import SB
-from seleniumbase.common.exceptions import NoSuchElementException
-from seleniumbase.common.exceptions import TimeoutException
+from seleniumbase.common.exceptions import NoSuchElementException, ElementNotVisibleException, TimeoutException
 
 from helper.constants import DEFAULT_UA, DEFAULT_CRAWLING_FOLDER
 from helper.logger import setup_logger, setup_worker_logging
 from model.analytics_models import AnalyticsModelItem, AnalyticsModelItemPercentage, AnalyticsModelItemTotal
-from scraper.base_scraper import BaseScraper, BaseMappedScraper
+from scraper.base_scraper import BaseScraper, BaseMappedSubScraper
 
 
 try:
@@ -100,7 +98,7 @@ def discover_scrapers(log_file: str = "logs/scraping.log") -> Dict[str, Type[Bas
             for name, obj_type in inspect.getmembers(module)
             if inspect.isclass(obj_type)
                and issubclass(obj_type, BaseScraper)
-               and not issubclass(obj_type, BaseMappedScraper)
+               and not issubclass(obj_type, BaseMappedSubScraper)
                and not inspect.isabstract(obj_type)
                and hasattr(obj_type, "scrape")
         }
@@ -396,6 +394,22 @@ def get_resource_from_remote_by_request(source_url: str, request_with_proxy: boo
     return response.content
 
 
+def is_dom_element_not_visible(sb: SB, selector: str, timeout: int | None = 20) -> bool:
+    try:
+        sb.assert_element_not_visible(selector, timeout=timeout)
+        return True
+    except (TimeoutException, NoSuchElementException, ElementNotVisibleException):
+        return False
+
+
+def is_dom_element_visible(sb: SB, selector: str, timeout: int | None = 20) -> bool:
+    try:
+        sb.assert_element(selector, timeout=timeout)
+        return True
+    except (TimeoutException, NoSuchElementException, ElementNotVisibleException):
+        return False
+
+
 def get_resource_from_remote_by_scraping(
     source_url: str,
     loading_tag: str | None = None,
@@ -404,22 +418,20 @@ def get_resource_from_remote_by_scraping(
     timeout: int | None = 20,
 ) -> bytes:
     # return the resource from the scraping if the loading tag is provided
-    with SB(**get_sb_configuration(scraping_with_proxy)) as sb:
+    with SB(**get_sb_configuration(with_proxy=scraping_with_proxy)) as sb:
         sb.get(source_url)
         sb.uc_gui_click_captcha()
-        WebDriverWait(sb, timeout).until(
-            lambda d: d.execute_script("return document.readyState") == "complete"
-                      and (
-                          not d.execute_script(f"return document.querySelector('{loading_tag}')") if loading_tag else True
-                      )
-        )
+
+        # Wait for the page to load
+        if loading_tag:
+            is_dom_element_not_visible(sb, loading_tag, timeout=timeout)
 
         # Handle cookie popup only once, for the first request
         if cookie_selector:
             try:
                 sb.assert_element(cookie_selector, timeout=timeout)
                 sb.click(cookie_selector, timeout=timeout)
-            except (TimeoutException, NoSuchElementException):
+            except (TimeoutException, NoSuchElementException, ElementNotVisibleException):
                 pass
 
         # Sleep for some time to avoid being blocked by the server on the next request

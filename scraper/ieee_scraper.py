@@ -8,7 +8,7 @@ from model.base_mapped_models import BaseMappedPaginationConfig
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
-from scraper.base_scraper import BaseMappedScraper, BaseScraper
+from scraper.base_scraper import BaseMappedSubScraper, BaseScraper
 
 
 class IEEEMixin(BaseScraper, ABC):
@@ -21,14 +21,14 @@ class IEEEMixin(BaseScraper, ABC):
 
 class IEEEScraper(BaseMappedPublisherScraper):
     @property
-    def mapping(self) -> Dict[str, Type[BaseMappedScraper]]:
+    def mapping(self) -> Dict[str, Type[BaseMappedSubScraper]]:
         return {
             "IEEEJournalsScraper": IEEEJournalsScraper,
             "IEEESearchScraper": IEEESearchScraper,
         }
 
 
-class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedScraper, IEEEMixin):
+class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedSubScraper, IEEEMixin):
     @property
     def config_model_type(self) -> Type[BaseMappedPaginationConfig]:
         """
@@ -110,7 +110,7 @@ class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedScraper, IEE
             return None
 
 
-class IEEESearchScraper(BasePaginationPublisherScraper, BaseMappedScraper, IEEEMixin):
+class IEEESearchScraper(BasePaginationPublisherScraper, BaseMappedSubScraper, IEEEMixin):
     @property
     def config_model_type(self) -> Type[BaseMappedPaginationConfig]:
         """

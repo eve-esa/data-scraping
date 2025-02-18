@@ -1,12 +1,12 @@
 from typing import Dict, Type, List
 
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
-from scraper.base_scraper import BaseMappedScraper
+from scraper.base_scraper import BaseMappedSubScraper
 
 
 class DirectLinksScraper(BaseMappedPublisherScraper):
     @property
-    def mapping(self) -> Dict[str, Type[BaseMappedScraper]]:
+    def mapping(self) -> Dict[str, Type[BaseMappedSubScraper]]:
         return {}
 
     def upload_to_s3(self, sources_links: Dict[str, List[str]] | List[str]):
@@ -14,7 +14,7 @@ class DirectLinksScraper(BaseMappedPublisherScraper):
             return super(BaseMappedPublisherScraper, self).upload_to_s3(sources_links)
 
         for source_name, source_links in sources_links.items():
-            current_config_model = self._config_model.copy()
+            current_config_model = self._config_model.model_copy()
             self._config_model.bucket_key = self._bucket_keys[source_name]
             self._config_model.file_extension = self._file_extensions[source_name]
 

@@ -10,19 +10,19 @@ from model.mdpi_models import MDPIConfig, MDPIJournal
 from scraper.base_iterative_publisher_scraper import BaseIterativePublisherScraper
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
-from scraper.base_scraper import BaseMappedScraper
+from scraper.base_scraper import BaseMappedSubScraper
 
 
 class MDPIScraper(BaseMappedPublisherScraper):
     @property
-    def mapping(self) -> Dict[str, Type[BaseMappedScraper]]:
+    def mapping(self) -> Dict[str, Type[BaseMappedSubScraper]]:
         return {
             "MDPIJournalsScraper": MDPIJournalsScraper,
             "MDPIGoogleSearchScraper": MDPIGoogleSearchScraper,
         }
 
 
-class MDPIJournalsScraper(BaseIterativePublisherScraper, BaseMappedScraper):
+class MDPIJournalsScraper(BaseIterativePublisherScraper, BaseMappedSubScraper):
     @property
     def config_model_type(self) -> Type[MDPIConfig]:
         """
@@ -87,11 +87,10 @@ class MDPIJournalsScraper(BaseIterativePublisherScraper, BaseMappedScraper):
         pass
 
 
-class MDPIGoogleSearchScraper(BasePaginationPublisherScraper, BaseMappedScraper):
+class MDPIGoogleSearchScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
     def __init__(self):
         super().__init__()
         self.__page_size = None
-        self.__cookie_selector = None
         self.__forbidden_keywords = ("accounts.google.com", "site:", "translate.google.com")
 
     @property
@@ -100,8 +99,6 @@ class MDPIGoogleSearchScraper(BasePaginationPublisherScraper, BaseMappedScraper)
 
     def scrape(self) -> BasePaginationPublisherScrapeOutput | None:
         pdf_tags = []
-        self.__cookie_selector = self._config_model.cookie_selector
-        self._config_model.cookie_selector = None
         for idx, source in enumerate(self._config_model.sources):
             self.__page_size = source.page_size
             pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
@@ -138,7 +135,6 @@ class MDPIGoogleSearchScraper(BasePaginationPublisherScraper, BaseMappedScraper)
                 ),
             )
 
-            self._config_model.cookie_selector = self.__cookie_selector
             if not (pdf_tag_list := [tag for mdpi_tag in mdpi_tags for tag in get_mdpi_pdf_tags(mdpi_tag)]):
                 self._save_failure(url)
 

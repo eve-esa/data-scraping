@@ -4,17 +4,17 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 from model.base_mapped_models import BaseMappedUrlSource, BaseMappedUrlConfig
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
-from scraper.base_scraper import BaseMappedScraper
+from scraper.base_scraper import BaseMappedSubScraper
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
 
 
 class ESAScraper(BaseMappedPublisherScraper):
     @property
-    def mapping(self) -> Dict[str, Type[BaseMappedScraper]]:
+    def mapping(self) -> Dict[str, Type[BaseMappedSubScraper]]:
         return {"EsaUrlScraper": ESAUrlScraper}
 
 
-class ESAUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
+class ESAUrlScraper(BaseUrlPublisherScraper, BaseMappedSubScraper):
     @property
     def config_model_type(self) -> Type[BaseMappedUrlConfig]:
         """

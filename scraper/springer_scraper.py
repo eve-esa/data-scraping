@@ -7,20 +7,20 @@ from model.base_mapped_models import BaseMappedUrlSource, BaseMappedPaginationCo
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
-from scraper.base_scraper import BaseMappedScraper
+from scraper.base_scraper import BaseMappedSubScraper
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper, SourceType
 
 
 class SpringerScraper(BaseMappedPublisherScraper):
     @property
-    def mapping(self) -> Dict[str, Type[BaseMappedScraper]]:
+    def mapping(self) -> Dict[str, Type[BaseMappedSubScraper]]:
         return {
             "SpringerUrlScraper": SpringerUrlScraper,
             "SpringerSearchEngineScraper": SpringerSearchEngineScraper,
         }
 
 
-class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
+class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedSubScraper):
     @property
     def config_model_type(self) -> Type[BaseMappedUrlConfig]:
         """
@@ -130,7 +130,7 @@ class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedScraper):
             return None
 
 
-class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedScraper):
+class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
     @property
     def config_model_type(self) -> Type[BaseMappedPaginationConfig]:
         """

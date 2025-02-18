@@ -4,7 +4,7 @@ from abc import abstractmethod
 from typing import List, Type, Dict
 
 from model.base_mapped_models import BaseMappedConfig
-from scraper.base_scraper import BaseScraper, BaseMappedScraper
+from scraper.base_scraper import BaseScraper, BaseMappedSubScraper
 from service.adapter import ScrapeAdapter
 
 
@@ -17,12 +17,12 @@ class BaseMappedPublisherScraper(BaseScraper):
 
     @property
     @abstractmethod
-    def mapping(self) -> Dict[str, Type[BaseMappedScraper]]:
+    def mapping(self) -> Dict[str, Type[BaseMappedSubScraper]]:
         """
         Return the mapping of the scraper to the source. This method must be implemented in the derived class.
 
         Returns:
-            Dict[str, Type[BaseMappedScraper]]: The mapping of the scraper to the source
+            Dict[str, Type[BaseMappedSubScraper]]: The mapping of the scraper to the source
         """
         pass
 
