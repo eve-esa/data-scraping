@@ -115,7 +115,8 @@ class MDPIGoogleSearchScraper(BasePaginationPublisherScraper, BaseMappedSubScrap
     def _scrape_page(self, url: str) -> ResultSet | List[Tag] | None:
         def get_mdpi_pdf_tags(mdpi_tag: Tag):
             mdpi_url = mdpi_tag.get("href")
-            self._driver.get(mdpi_url)
+            self._driver.cdp.open(mdpi_url)
+            self._driver.sleep(1)
             tags = self._get_parsed_page_source().find_all(
                 "a",
                 href=True,

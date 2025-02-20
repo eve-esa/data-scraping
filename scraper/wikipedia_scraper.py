@@ -1,6 +1,5 @@
 from typing import List, Type
 from bs4 import ResultSet, Tag
-from selenium.webdriver.common.by import By
 
 from model.base_url_publisher_models import BaseUrlPublisherSource, BaseUrlPublisherConfig
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
@@ -26,7 +25,7 @@ class WikipediaScraper(BaseUrlPublisherScraper):
         try:
             self._scrape_url(source.url)
 
-            html_tag_list = self._driver.find_elements("div.mw-category-generated a", by=By.CSS_SELECTOR)
+            html_tag_list = self._driver.cdp.find_elements("div.mw-category-generated a")
 
             if not (result := [
                 Tag(name="a", attrs={"href": tag.get_attribute("href")})

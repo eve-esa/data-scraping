@@ -1,6 +1,5 @@
 import os
 from typing import Type
-from selenium.webdriver.common.by import By
 
 from helper.utils import get_scraped_url_by_bs_tag, get_link_for_accessible_article
 from model.ams_models import AMSConfig, AMSJournal
@@ -114,9 +113,8 @@ class AMSScraper(BaseIterativePublisherScraper):
             # find all the article links in the issue by keeping only the links to the accessible articles
             article_links = [
                 link
-                for tag in self._driver.find_elements(
-                    f"//a[contains(@class, 'c-Button--link') and contains(@href, '/view/journals/{journal.code}/{volume_num}/{issue_num}/')]",
-                    by=By.XPATH,
+                for tag in self._driver.cdp.find_elements(
+                    f"//a[contains(@class, 'c-Button--link') and contains(@href, '/view/journals/{journal.code}/{volume_num}/{issue_num}/')]"
                 )
                 if (link := get_link_for_accessible_article(
                     tag,

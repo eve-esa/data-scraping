@@ -1,7 +1,5 @@
-from abc import ABC
 from typing import List, Type, Dict
 from bs4 import Tag, ResultSet
-from selenium.webdriver.support.wait import WebDriverWait
 
 from helper.utils import get_scraped_url_by_bs_tag
 from model.base_mapped_models import BaseMappedPaginationConfig
@@ -9,14 +7,6 @@ from model.base_pagination_publisher_models import BasePaginationPublisherScrape
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
 from scraper.base_scraper import BaseMappedSubScraper, BaseScraper
-
-
-class IEEEMixin(BaseScraper, ABC):
-    def _wait_for_page_load(self, timeout: int | None = 20):
-        WebDriverWait(self._driver, timeout).until(
-            lambda d: d.execute_script("return document.readyState") == "complete"
-                      and not d.execute_script("return document.querySelector('i.fa-spinner')")
-        )
 
 
 class IEEEScraper(BaseMappedPublisherScraper):
@@ -28,7 +18,7 @@ class IEEEScraper(BaseMappedPublisherScraper):
         }
 
 
-class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedSubScraper, IEEEMixin):
+class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
     @property
     def config_model_type(self) -> Type[BaseMappedPaginationConfig]:
         """
@@ -71,10 +61,27 @@ class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedSubScraper, 
         self._logger.info(f"Processing Landing Page {landing_page_url}")
 
         try:
-            scraper = self._scrape_url(landing_page_url)
+            self._scrape_url(landing_page_url)
+            self._driver.cdp.wait_for_element_visible("div.issue-details-past-tabs")
+
+            tag_links = self._driver.cdp.find_elements("div.issue-details-past-tabs a")
+
+            tags = []
+            for tag_link in tag_links:
+                href = tag_link.get_attribute("href")  # the link represents a page of the collection
+                if href and "/tocresult" in href and "punumber=" in href:
+                    tags.append(Tag(name="a", attrs={"href": tag_link.get_attribute("href")}))
+                elif href is None:  # the link represents a falsy button to click on, to load the list of various issues
+                    tag_link.click()
+                    self._driver.sleep(0.1)
+                    tags.extend([
+                        Tag(name="a", attrs={"href": href})
+                        for tag in self._driver.cdp.find_elements("div.issue-list a")
+                        if (href := tag.get_attribute("href")) and "/tocresult" in href and "punumber=" in href
+                    ])
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
-            if not (tags := scraper.find_all("a", href=lambda href: href and "/tocresult" in href and "punumber=" in href)):
+            if not tags:
                 self._save_failure(landing_page_url)
 
             return tags
@@ -94,6 +101,7 @@ class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedSubScraper, 
         """
         try:
             scraper = self._scrape_url(url)
+            self._driver.cdp.wait_for_element_visible("#result-list-start")
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             if not (pdf_tag_list := scraper.find_all(
@@ -110,7 +118,7 @@ class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedSubScraper, 
             return None
 
 
-class IEEESearchScraper(BasePaginationPublisherScraper, BaseMappedSubScraper, IEEEMixin):
+class IEEESearchScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
     @property
     def config_model_type(self) -> Type[BaseMappedPaginationConfig]:
         """
@@ -162,6 +170,7 @@ class IEEESearchScraper(BasePaginationPublisherScraper, BaseMappedSubScraper, IE
         """
         try:
             scraper = self._scrape_url(url)
+            self._driver.cdp.wait_for_element_visible("#result-list-start")
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             if not (pdf_tag_list := scraper.find_all(

@@ -63,7 +63,7 @@ class BaseCrawlingScraper(BaseScraper):
             )
             self._upload_resource_to_s3(current_resource, file_path.replace(self._get_crawling_folder_path(), ""))
 
-            # Sleep after each successful download to avoid overwhelming the server
+            # Sleep after each successful upload to avoid overwhelming the server
             time.sleep(random.uniform(2, 5))
 
     def _get_crawling_folder_path(self) -> str:

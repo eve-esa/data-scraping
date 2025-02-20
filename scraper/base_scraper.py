@@ -4,10 +4,7 @@ from abc import ABC, abstractmethod
 import random
 from typing import List, Type, Any, Dict, Final
 from bs4 import BeautifulSoup
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
 from seleniumbase import SB
-from seleniumbase.common.exceptions import NoSuchElementException, ElementNotVisibleException, TimeoutException
 import time
 
 from helper.logger import setup_logger
@@ -46,10 +43,7 @@ class BaseScraper(ABC):
         self.set_config_model(config_model)
         self._scraper_failure_repository.delete_by({"scraper": self._logging_db_scraper})
 
-        with self.setup_driver() as self._driver:
-            scraping_results = self.scrape()
-
-        if scraping_results is None:
+        if (scraping_results := self._run_scraping()) is None:
             return
 
         links = self.post_process(scraping_results)
@@ -78,10 +72,13 @@ class BaseScraper(ABC):
         self._driver = driver
         return self
 
-    def setup_driver(self):
+    def _run_scraping(self) -> Any | None:
         from helper.utils import get_sb_configuration
 
-        return SB(**get_sb_configuration(with_proxy=self._config_model.scraping_with_proxy))
+        with SB(**get_sb_configuration()) as self._driver:
+            self._driver.activate_cdp_mode()
+            self._driver.cdp.maximize()
+            return self.scrape()
 
     def _scrape_url(self, url: str, pause_time: int = 2) -> BeautifulSoup:
         """
@@ -94,94 +91,66 @@ class BaseScraper(ABC):
         Returns:
             BeautifulSoup: the fully rendered HTML of the URL.
         """
-        self._driver.get(url)
+        self._driver.cdp.open(url)
+        self._driver.sleep(1)
         self._driver.uc_gui_click_captcha()
         self._wait_for_page_load()
-        self._wait_for_cookie_popup()
-        self._on_page_loaded_event()
+
+        # Handle cookie popup only once, for the first request
+        if self._config_model.cookie_selector:
+            self._driver.cdp.click_if_visible(self._config_model.cookie_selector)
+
+        # if a modal exists, find the button with the class `btn-close` and click it
+        self._driver.cdp.click_if_visible(
+            "//div[contains(@class, 'modal-content')]//button[contains(@class, 'btn-close')]"
+        )
+        self._driver.sleep(random.uniform(0.5, 1.5))
 
         # Scroll through the page to load all articles
-        last_height = self._driver.execute_script("return document.body.scrollHeight")
-
-        scrollable_js = """
-            function getScrollableElement() {
+        last_height = self._driver.execute_script(f"""
+            function getScrollableElement() {{
                 const elements = document.querySelectorAll('*');
-                for (const element of elements) {
-                    if (element.scrollHeight > element.clientHeight) {
+                for (const element of elements) {{
+                    if (element.scrollHeight > element.clientHeight) {{
                         return element;
-                    }
-                }
+                    }}
+                }}
                 return null;
-            }
+            }}
             const scrollable = getScrollableElement();
-        """
+            return scrollable ? scrollable.scrollHeight : document.body.scrollHeight;
+        """)
 
         while True:
             # Scroll down to the bottom
             self._driver.execute_script(f"""
-                {scrollable_js}
                 if (scrollable) {{
                     scrollable.scrollTop = scrollable.scrollHeight;
                 }} else {{
                     window.scrollTo(0, document.body.scrollHeight);
                 }}
             """)
+            self._driver.sleep(pause_time)
 
             if self._config_model.read_more_button:
-                self._driver.execute_script(f"""
-                    const button = Array.from(document.querySelectorAll('{self._config_model.read_more_button.selector}')).find(btn => 
-                      btn.textContent.trim().toUpperCase() === "{self._config_model.read_more_button.text}".toUpperCase()
-                    );
-                    if (button) {{
-                      button.click();
-                    }}
-                """)
-
-            time.sleep(pause_time)
+                self._driver.cdp.click_if_visible(
+                    f"{self._config_model.read_more_button.selector}:contains('{self._config_model.read_more_button.text}')"
+                )
 
             # Calculate new scroll height and compare with the last height
-            new_height = self._driver.execute_script(f"""
-                {scrollable_js}
-                return scrollable ? scrollable.scrollHeight : document.body.scrollHeight;
-            """)
+            new_height = self._driver.execute_script("return scrollable ? scrollable.scrollHeight : document.body.scrollHeight;")
             if new_height == last_height:
                 break
             last_height = new_height
 
         # Sleep for some time to avoid being blocked by the server on the next request
-        time.sleep(random.uniform(2, 5))
+        self._driver.sleep(random.uniform(2, 5))
 
         # Get the fully rendered HTML
         return self._get_parsed_page_source()
 
     def _wait_for_page_load(self, timeout: int | None = 20):
-        WebDriverWait(self._driver, timeout).until(
-            lambda d: d.execute_script("return document.readyState") == "complete"
-        )
-
-    def _wait_for_cookie_popup(self, timeout: int = 10):
-        # Handle cookie popup only once, for the first request
-        if self._config_model.cookie_selector:
-            try:
-                self._driver.assert_element(self._config_model.cookie_selector, timeout=timeout)
-                self._driver.click(self._config_model.cookie_selector, timeout=timeout)
-            except (TimeoutException, NoSuchElementException, ElementNotVisibleException) as e:
-                self._logger.warning(f"Cookie popup not found. {e}")
-
-    def _on_page_loaded_event(self):
-        """
-        This method is called after the page is loaded. It can be used to handle any event that needs to be done after
-        the page is loaded.
-        """
-        # if a modal exists, find the button with the class `btn-close` and click it
-        try:
-            btn_close = self._driver.find_element(
-                "//div[contains(@class, 'modal-content')]//button[contains(@class, 'btn-close')]", by=By.XPATH
-            )
-            self._driver.execute_script("arguments[0].click();", btn_close)
-            time.sleep(random.uniform(0.5, 1.5))
-        except Exception:
-            pass
+        pass
 
     def _get_parsed_page_source(self) -> BeautifulSoup:
         """
@@ -190,7 +159,7 @@ class BaseScraper(ABC):
         Returns:
             BeautifulSoup: The parsed page source.
         """
-        return BeautifulSoup(self._driver.get_page_source(), "html.parser")
+        return BeautifulSoup(self._driver.cdp.get_page_source(), "html.parser")
 
     def _save_failure(self, source: str, message: str | None = None):
         message = message or "No source link found."
@@ -217,7 +186,7 @@ class BaseScraper(ABC):
             )
             self._upload_resource_to_s3(current_resource, link)
 
-            # Sleep after each successful download to avoid overwhelming the server
+            # Sleep after each successful upload to avoid overwhelming the server
             time.sleep(random.uniform(2, 5))
 
     def _upload_resource_to_s3(self, resource: UploadedResource, resource_name: str) -> int | None:

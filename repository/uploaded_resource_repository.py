@@ -26,8 +26,8 @@ class UploadedResourceRepository(BaseRepository):
         bucket_key = config.bucket_key
         file_extension = config.file_extension
         loading_tag = config.loading_tag
-        scraping_with_proxy = config.scraping_with_proxy
         cookie_selector = config.cookie_selector
+        request_with_proxy = config.request_with_proxy
 
         self._logger.info(f"Retrieving file from {source_url}")
 
@@ -35,9 +35,11 @@ class UploadedResourceRepository(BaseRepository):
             scraper=scraper, bucket_key=os.path.join(bucket_key, f"{uuid4()}.{file_extension}"), source=source_url
         )
         try:
-            content = get_resource_from_remote_by_scraping(
-                source_url, loading_tag, scraping_with_proxy, cookie_selector
-            ) if loading_tag else get_resource_from_remote_by_request(source_url, scraping_with_proxy)
+            content = get_resource_from_remote_by_request(
+                source_url, request_with_proxy
+            ) if file_extension == "pdf" else get_resource_from_remote_by_scraping(
+                source_url, loading_tag, cookie_selector
+            )
 
             # calculate the sha256 of the content
             result.content = content

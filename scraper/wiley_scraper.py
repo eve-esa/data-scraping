@@ -1,6 +1,5 @@
 from typing import Type, List
 from bs4 import ResultSet, Tag
-from selenium.webdriver.common.by import By
 
 from helper.utils import get_scraped_url_by_bs_tag, get_link_for_accessible_article, remove_query_string_from_url
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
@@ -67,9 +66,8 @@ class WileyScraper(BasePaginationPublisherScraper):
             self._scrape_url(url)
 
             # Find all article links in the pagination URL, using the appropriate class or tag (if lambda returns True, it will be included in the list)
-            article_tags = self._driver.find_elements(
-                "//a[contains(@class, 'publication_title') and contains(@class, 'visitable') and contains(@href, '/doi/')]",
-                by=By.XPATH,
+            article_tags = self._driver.cdp.find_elements(
+                "//a[contains(@class, 'publication_title') and contains(@class, 'visitable') and contains(@href, '/doi/')]"
             )
 
             articles_links = [
@@ -119,7 +117,8 @@ class WileyScraper(BasePaginationPublisherScraper):
                 return None
 
             # now, scrape the ePDF page to get the final PDF link, and return this latter tag
-            self._driver.get(get_scraped_url_by_bs_tag(epdf_tag, self.__base_url))
+            self._driver.cdp.open(get_scraped_url_by_bs_tag(epdf_tag, self.__base_url))
+            self._driver.sleep(1)
 
             if not (direct_pdf_tag := self._get_parsed_page_source().find(
                     "a", href=lambda href: href and "/doi/pdfdirect/" in href

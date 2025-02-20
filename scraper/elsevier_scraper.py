@@ -128,9 +128,8 @@ class ElsevierScraper(BaseScraper):
                 return ElsevierScrapeIssueOutput(was_scraped=False, next_issue_url=next_issue_link)
 
             # wait for the page to load and get the element with tag "button", child of "form.js-download-full-issue-form"
-            self._driver.assert_element("form.js-download-full-issue-form button", timeout=10)
             # click on the button to download the issue
-            self._driver.click("form.js-download-full-issue-form button")
+            self._driver.cdp.click("form.js-download-full-issue-form button", timeout=10)
 
             # wait for the download to complete
             download_folder_path = self._driver.get_browser_downloads_folder()
@@ -161,7 +160,7 @@ class ElsevierScraper(BaseScraper):
         download_folder_path = self._driver.get_browser_downloads_folder()
 
         # first of all, wait until the `js-pdf-download-modal-content` element is no more present
-        self._driver.assert_element_absent("div.js-pdf-download-modal-content", timeout=timeout)
+        self._driver.cdp.assert_element_absent("div.js-pdf-download-modal-content", timeout=timeout)
 
         # then, wait until the download is completed
         while time.time() - start_time < timeout:
@@ -190,5 +189,5 @@ class ElsevierScraper(BaseScraper):
             )
             self._upload_resource_to_s3(current_resource, file)
 
-            # Sleep after each successful download to avoid overwhelming the server
+            # Sleep after each successful upload to avoid overwhelming the server
             time.sleep(random.uniform(2, 5))

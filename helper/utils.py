@@ -394,51 +394,35 @@ def get_resource_from_remote_by_request(source_url: str, request_with_proxy: boo
     return response.content
 
 
-def is_dom_element_not_visible(sb: SB, selector: str, timeout: int | None = 20) -> bool:
-    try:
-        sb.assert_element_not_visible(selector, timeout=timeout)
-        return True
-    except (TimeoutException, NoSuchElementException, ElementNotVisibleException):
-        return False
-
-
-def is_dom_element_visible(sb: SB, selector: str, timeout: int | None = 20) -> bool:
-    try:
-        sb.assert_element(selector, timeout=timeout)
-        return True
-    except (TimeoutException, NoSuchElementException, ElementNotVisibleException):
-        return False
-
-
 def get_resource_from_remote_by_scraping(
     source_url: str,
     loading_tag: str | None = None,
-    scraping_with_proxy: bool = False,
     cookie_selector: str | None = None,
     timeout: int | None = 20,
 ) -> bytes:
     # return the resource from the scraping if the loading tag is provided
-    with SB(**get_sb_configuration(with_proxy=scraping_with_proxy)) as sb:
-        sb.get(source_url)
+    with SB(**get_sb_configuration()) as sb:
+        sb.activate_cdp_mode(source_url)
+        sb.maximize()
+        sb.sleep(1)
         sb.uc_gui_click_captcha()
 
         # Wait for the page to load
         if loading_tag:
-            is_dom_element_not_visible(sb, loading_tag, timeout=timeout)
+            sb.cdp.assert_element_absent(loading_tag, timeout=timeout)
 
         # Handle cookie popup only once, for the first request
         if cookie_selector:
             try:
-                sb.assert_element(cookie_selector, timeout=timeout)
-                sb.click(cookie_selector, timeout=timeout)
+                sb.cdp.click(cookie_selector, timeout=timeout)
             except (TimeoutException, NoSuchElementException, ElementNotVisibleException):
                 pass
 
         # Sleep for some time to avoid being blocked by the server on the next request
-        time.sleep(random.uniform(2, 5))
+        sb.sleep(random.uniform(2, 5))
 
         # Get the fully rendered HTML
-        content = sb.get_page_source()
+        content = sb.cdp.get_page_source()
         return content.encode("utf-8")
 
 
@@ -513,21 +497,11 @@ def get_bool_env(key: str, default: str) -> bool:
     return v == "true" or v == "1"
 
 
-def get_sb_configuration(with_proxy: bool | None = True) -> Dict:
-    result = {
-        "browser": "chrome",
+def get_sb_configuration() -> Dict:
+    return {
         "undetectable": True,
         "locale_code": "en",
         "headless2": get_bool_env("HEADLESS_BROWSER", "true"),
         "disable_cookies": False,
-        "window_size": "1920,1080",
-        "window_position": "0,0",
-        "agent": get_user_agent(),
-        "use_auto_ext": True,
         "xvfb": get_bool_env("XVFB_MODE", "false"),
     }
-
-    if with_proxy:
-        result["proxy"] = get_static_proxy_config()
-
-    return result

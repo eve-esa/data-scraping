@@ -1,5 +1,7 @@
 from typing import Any, Type, List, Dict
+from seleniumbase import SB
 
+from helper.utils import get_sb_configuration
 from model.base_mapped_models import BaseMappedSourceConfig
 from scraper.base_scraper import BaseScraper
 
@@ -19,7 +21,9 @@ class ScrapeAdapter:
         scraper = self.__scraper_type()
         scraper.set_config_model(self.__config_model).set_logging_db_scraper(self.__logging_scraper)
 
-        with scraper.setup_driver() as driver:
+        with SB(**get_sb_configuration()) as driver:
+            driver.activate_cdp_mode()
+            driver.cdp.maximize()
             results = scraper.set_driver(driver).scrape()
 
         return results

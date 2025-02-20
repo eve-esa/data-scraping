@@ -1,9 +1,6 @@
 import random
-import time
 from typing import List, Type, Dict
 from bs4 import Tag, ResultSet
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
 
 from helper.utils import get_scraped_url_by_bs_tag
 from model.base_mapped_models import BaseMappedUrlSource, BaseMappedPaginationConfig, BaseMappedCrawlingConfig
@@ -103,9 +100,7 @@ class NASANTRSScraper(BaseMappedSubScraper, BaseScraper):
                 pdf_tags.extend(pdf_tag_list)
 
                 try:
-                    next_page_button = self._driver.find_element(
-                        "button.mat-paginator-navigation-next", by=By.CSS_SELECTOR
-                    )
+                    next_page_button = self._driver.cdp.find_element("button.mat-paginator-navigation-next")
 
                     # if next page button has class `mat-button-disabled`, then break the loop
                     if "mat-button-disabled" in next_page_button.get_attribute("class"):
@@ -113,15 +108,17 @@ class NASANTRSScraper(BaseMappedSubScraper, BaseScraper):
 
                     # otherwise, click on it and wait until the page is loaded
                     self._logger.info("Clicking on Next Page Button")
-
                     self._driver.execute_script("arguments[0].click();", next_page_button)
 
                     # Sleep for some time to avoid being blocked by the server on the next request
-                    time.sleep(random.uniform(2, 5))
+                    self._driver.sleep(random.uniform(2, 5))
 
                     self._driver.uc_gui_click_captcha()
                     self._wait_for_page_load()
-                    self._wait_for_cookie_popup()
+
+                    # Handle cookie popup only once, for the first request
+                    if self._config_model.cookie_selector:
+                        self._driver.cdp.click_if_visible(self._config_model.cookie_selector)
 
                     scraper = self._get_parsed_page_source()
                 except Exception:
@@ -135,10 +132,7 @@ class NASANTRSScraper(BaseMappedSubScraper, BaseScraper):
         return [link for links in scrape_output.values() for link in links]
 
     def _wait_for_page_load(self, timeout: int | None = 20):
-        WebDriverWait(self._driver, timeout).until(
-            lambda d: d.execute_script("return document.readyState") == "complete"
-                      and not d.execute_script("return document.querySelector('div.loading-container')")
-        )
+        self._driver.cdp.assert_element_absent("div.loading-container", timeout=timeout)
 
 
 class NASAEOSScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
@@ -235,7 +229,8 @@ class NASAEarthDataPDFScraper(NASAEarthDataScraper):
             pdf_tag_list = []
             for html_link in html_links:
                 self._logger.info(f"Processing URL {html_link}")
-                self._driver.get(html_link)
+                self._driver.cdp.open(html_link)
+                self._driver.sleep(1)
 
                 pdf_tag_list.extend(self._get_parsed_page_source().find_all(
                     "a", href=lambda href: href and ".pdf" in href, hreflang="en"

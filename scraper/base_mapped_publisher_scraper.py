@@ -1,7 +1,7 @@
 import random
 import time
 from abc import abstractmethod
-from typing import List, Type, Dict
+from typing import List, Type, Dict, Any
 
 from model.base_mapped_models import BaseMappedConfig
 from scraper.base_scraper import BaseScraper, BaseMappedSubScraper
@@ -14,6 +14,9 @@ class BaseMappedPublisherScraper(BaseScraper):
 
         self._bucket_keys = {}
         self._file_extensions = {}
+
+    def _run_scraping(self) -> Any | None:
+        return self.scrape()
 
     @property
     @abstractmethod
@@ -84,5 +87,5 @@ class BaseMappedPublisherScraper(BaseScraper):
                 self._file_extensions[source.name],
             )
 
-            # Sleep after each successful download to avoid overwhelming the server
+            # Sleep after each successful upload to avoid overwhelming the server
             time.sleep(random.uniform(2, 5))

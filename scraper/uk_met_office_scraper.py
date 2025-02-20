@@ -1,9 +1,7 @@
 import random
-import time
 from typing import List, Type
 from bs4 import ResultSet, Tag
 from selenium.common import TimeoutException
-from selenium.webdriver.common.by import By
 
 from model.base_url_publisher_models import BaseUrlPublisherSource, BaseUrlPublisherConfig
 from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
@@ -31,21 +29,21 @@ class UKMetOfficeScraper(BaseUrlPublisherScraper):
 
             pdf_tag_list = []
 
-            page_buttons = self._driver.find_elements("a.role-button.page-link", by=By.CSS_SELECTOR)
+            page_buttons = self._driver.cdp.find_elements("a.role-button.page-link")
             # keep only those buttons having a number as a text, and not repeating the same number
             page_buttons = {page_button.text: page_button for page_button in page_buttons if page_button.text.isdigit()}
 
             for page_button in page_buttons.values():
                 self._driver.execute_script("arguments[0].click();", page_button)
                 try:
-                    self._driver.assert_element_not_visible("#loading-overflow", timeout=10)
+                    self._driver.cdp.assert_element_not_visible("#loading-overflow", timeout=10)
                 except TimeoutException:
                     pass
 
                 scraper = self._get_parsed_page_source()
                 pdf_tag_list.extend(scraper.find_all("a", href=True, class_="card-link-value"))
 
-                time.sleep(random.uniform(2, 5))
+                self._driver.sleep(random.uniform(2, 5))
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
 

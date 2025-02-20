@@ -1,7 +1,6 @@
 import random
 import time
 from typing import Type, List
-from selenium.webdriver.common.by import By
 
 from helper.utils import parse_google_drive_link, get_scraped_url_by_web_element
 from model.eoa_models import EOAConfig
@@ -20,9 +19,8 @@ class EOAScraper(BaseScraper):
                 self._scrape_url(source.url)
 
                 # with Selenium, look for all "a" tags with "drive.google.com" in "href" and containing the "low" within the lowercased text
-                tags = self._driver.find_elements(
-                    "//a[contains(@href, 'drive.google.com') and contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'low')]",
-                    by=By.XPATH,
+                tags = self._driver.cdp.find_elements(
+                    "//a[contains(@href, 'drive.google.com') and contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'low')]"
                 )
 
                 pdf_links.extend([get_scraped_url_by_web_element(tag, self._config_model.base_url) for tag in tags])
@@ -45,7 +43,7 @@ class EOAScraper(BaseScraper):
             except Exception as e:
                 self._logger.error(f"Error while parsing Google Drive link {link}: {e}")
 
-            # Sleep after each successful download to avoid overwhelming the server
+            # Sleep after each successful upload to avoid overwhelming the server
             time.sleep(random.uniform(2, 5))
 
         return super().upload_to_s3(download_urls)

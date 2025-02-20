@@ -67,7 +67,8 @@ class SageScraper(BasePaginationPublisherScraper):
             # Now, visit each article link and find the PDF link
             pdf_tag_list = []
             for article_link in articles_links:
-                self._driver.get(article_link)
+                self._driver.cdp.open(article_link)
+                self._driver.sleep(1)
 
                 if (tag := self._get_parsed_page_source().find(
                         "a",

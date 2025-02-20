@@ -91,5 +91,7 @@ class BaseMappedSource(BaseModel):
 
 
 class BaseMappedConfig(Config):
-    scraping_with_proxy: bool = False
+    cookie_selector: str | None = None
+    loading_tag: str | None = None
+    request_with_proxy: bool = False
     sources: List[BaseMappedSource]
