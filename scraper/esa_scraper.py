@@ -53,4 +53,4 @@ class ESAUrlScraper(BaseUrlPublisherScraper, BaseMappedSubScraper):
         pass
 
     def _wait_for_page_load(self, timeout: int | None = 20):
-        self._driver.cdp.assert_element_absent("div.v-progress-linear.v-progress-linear--visible", timeout=timeout)
+        self._driver.cdp.wait_for_element_absent("div.v-progress-linear.v-progress-linear--visible", timeout=timeout)

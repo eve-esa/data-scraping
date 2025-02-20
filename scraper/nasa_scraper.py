@@ -132,7 +132,7 @@ class NASANTRSScraper(BaseMappedSubScraper, BaseScraper):
         return [link for links in scrape_output.values() for link in links]
 
     def _wait_for_page_load(self, timeout: int | None = 20):
-        self._driver.cdp.assert_element_absent("div.loading-container", timeout=timeout)
+        self._driver.cdp.wait_for_element_absent("div.loading-container", timeout=timeout)
 
 
 class NASAEOSScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):

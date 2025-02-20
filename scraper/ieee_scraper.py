@@ -101,7 +101,7 @@ class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
         """
         try:
             scraper = self._scrape_url(url)
-            self._driver.cdp.wait_for_element_visible("#result-list-start")
+            self._driver.cdp.wait_for_element_visible("div.List-results")
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             if not (pdf_tag_list := scraper.find_all(
@@ -170,7 +170,7 @@ class IEEESearchScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
         """
         try:
             scraper = self._scrape_url(url)
-            self._driver.cdp.wait_for_element_visible("#result-list-start")
+            self._driver.cdp.wait_for_element_visible("div.List-results")
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             if not (pdf_tag_list := scraper.find_all(
