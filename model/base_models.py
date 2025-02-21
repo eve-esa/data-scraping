@@ -17,4 +17,4 @@ class BaseConfig(Config, ABC):
     cookie_selector: str | None = None
     read_more_button: ReadMoreButton | None = None
     loading_tag: str | None = None
-    request_with_proxy: bool = True
+    request_with_proxy: bool = False
