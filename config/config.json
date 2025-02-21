@@ -87,6 +87,7 @@
                 "config": {
                     "base_url": "https://www.mdpi.com",
                     "cookie_selector": "[id='CybotCookiebotDialogBodyButtonAccept']",
+                    "request_with_proxy": false,
                     "journals": [
                         {
                             "url": "https://www.mdpi.com/2072-4292",
@@ -201,6 +202,7 @@
                 "config": {
                     "base_url": "https://www.mdpi.com",
                     "cookie_selector": "[id='CybotCookiebotDialogBodyButtonAccept']",
+                    "request_with_proxy": false,
                     "sources": [
                         {
                             "landing_page_url": "https://www.google.com/search?start={start_index}&q=%28%22earth+observation%22+OR+%22remote+sensing%22+OR+%22earth+monitoring%22+OR+%22environmental+monitoring%22+OR+%22satellite+observation%22+OR+%22synthetic+aperture+radar%22+OR+%22multispectral+imaging%22+OR+%22lidar%22+OR+%22light+detection+and+ranging%22+OR+%22geospatial+monitoring%22+OR+%22atmospheric+observations%22+OR+%22land+use%2Fland+cover%22+OR+%22lulc%22%29+%28site%3Amdpi.com%29",
@@ -585,6 +587,7 @@
         "bucket_key": "{main_folder}/cambridge_university_press",
         "base_url": "https://www.cambridge.org",
         "cookie_selector": "a.cookie-close",
+        "request_with_proxy": false,
         "sources": [
             {
                 "landing_page_url": "https://www.cambridge.org/core/journals/journal-of-glaciology/all-issues"
@@ -675,6 +678,7 @@
         "bucket_key": "{main_folder}/frontiers",
         "base_url": "https://www.frontiersin.org/",
         "cookie_selector": "[id='onetrust-accept-btn-handler']",
+        "request_with_proxy": false,
         "sources": [
             {
                 "url": "https://www.frontiersin.org/journals/remote-sensing/articles?sort=3",
