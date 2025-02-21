@@ -2,7 +2,7 @@ from abc import abstractmethod
 from typing import List
 from bs4 import ResultSet, Tag
 
-from helper.utils import get_scraped_url_by_bs_tag, get_unique
+from helper.utils import get_scraped_url_by_bs_tag
 from model.base_url_publisher_models import BaseUrlPublisherSource, SourceType
 from scraper.base_scraper import BaseScraper
 
@@ -42,7 +42,7 @@ class BaseUrlPublisherScraper(BaseScraper):
         Returns:
             List[str]: A list of strings containing the PDF links
         """
-        return get_unique([get_scraped_url_by_bs_tag(tag, self._config_model.base_url) for tag in scrape_output])
+        return list(set([get_scraped_url_by_bs_tag(tag, self._config_model.base_url) for tag in scrape_output]))
 
     @abstractmethod
     def _scrape_journal(self, source: BaseUrlPublisherSource) -> ResultSet | List[Tag] | None:

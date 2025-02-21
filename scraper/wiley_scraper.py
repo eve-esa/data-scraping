@@ -1,7 +1,12 @@
 from typing import Type, List
 from bs4 import ResultSet, Tag
 
-from helper.utils import get_scraped_url_by_bs_tag, get_link_for_accessible_article, remove_query_string_from_url
+from helper.utils import (
+    get_scraped_url_by_bs_tag,
+    get_scraped_url_by_web_element,
+    remove_query_string_from_url,
+    get_ancestor,
+)
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from model.wiley_models import WileyConfig
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
@@ -65,19 +70,18 @@ class WileyScraper(BasePaginationPublisherScraper):
         try:
             self._scrape_url(url)
 
-            # Find all article links in the pagination URL, using the appropriate class or tag (if lambda returns True, it will be included in the list)
-            article_tags = self._driver.cdp.find_elements(
-                "//a[contains(@class, 'publication_title') and contains(@class, 'visitable') and contains(@href, '/doi/')]"
-            )
+            try:
+                tags = self._driver.cdp.find_all("i.icon-icon-lock_open")
+            except Exception:
+                tags = []
 
             articles_links = [
-                link
-                for article_tag in article_tags
-                if (link := get_link_for_accessible_article(
-                    article_tag,
-                    self.__base_url,
-                    "../../preceding-sibling::div[contains(@class, 'meta__header')]//i[contains(@class, 'icon-icon-lock_open')]"
-                ))
+                get_scraped_url_by_web_element(a_tag, "https://rmets.onlinelibrary.wiley.com")
+                for tag in tags
+                if (ancestor := get_ancestor(tag, "div.item__body"))
+                   and (a_tag := ancestor.query_selector("a.publication_title.visitable"))
+                   and (href := a_tag.get_attribute("href"))
+                   and "/doi/" in href
             ]
 
             # Now, visit each article link and find the PDF link

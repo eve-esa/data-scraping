@@ -6,6 +6,7 @@ import pkgutil
 import queue
 import random
 import shutil
+import time
 from logging.handlers import QueueListener
 from multiprocessing import Queue, Process
 import zipfile
@@ -17,10 +18,9 @@ from pydantic import ValidationError, BaseModel
 from urllib.parse import urlparse, parse_qs
 from fake_useragent import UserAgent, FakeUserAgentError
 from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.common.by import By
-import time
 from seleniumbase import SB
 from seleniumbase.common.exceptions import NoSuchElementException, ElementNotVisibleException, TimeoutException
+from seleniumbase.undetected.cdp_driver.element import Element
 
 from helper.constants import DEFAULT_UA, DEFAULT_CRAWLING_FOLDER
 from helper.logger import setup_logger, setup_worker_logging
@@ -210,69 +210,6 @@ def remove_query_string_from_url(url: str | None = None) -> str | None:
     return f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
 
 
-def get_scraped_url_by_bs_tag(tag: Tag, base_url: str, with_querystring: bool | None = False) -> str:
-    """
-    Get the URL from the Tag.
-
-    Args:
-        tag (Tag): The BeautifulSoup tag.
-        base_url (str): The base URL.
-        with_querystring (bool): Whether to include the query string in the URL.
-
-    Returns:
-        List[str]: A list of URLs of the articles in the issue.
-    """
-    if tag.get("href").startswith("http"):
-        return tag.get("href")
-
-    # Remove trailing/leading slashes except in http(s)://
-    prefix = base_url.rstrip("/")
-    if prefix.endswith(":"):
-        prefix += "//"
-
-    # Join with single slash
-    result = f"{prefix}/{tag.get('href').lstrip('/')}"
-    return result if with_querystring else remove_query_string_from_url(result)
-
-
-def get_scraped_url_by_web_element(we: WebElement, base_url: str, with_querystring: bool | None = False) -> str:
-    """
-    Get the URL from the Tag.
-
-    Args:
-        we (WebElement): The Selenium WebElement.
-        base_url (str): The base URL.
-        with_querystring (bool): Whether to include the query string in the URL.
-
-    Returns:
-        List[str]: A list of URLs of the articles in the issue.
-    """
-    if we.get_attribute("href").startswith("http"):
-        return we.get_attribute("href")
-
-    # Remove trailing/leading slashes except in http(s)://
-    prefix = base_url.rstrip("/")
-    if prefix.endswith(":"):
-        prefix += "//"
-
-    # Join with single slash
-    result = f"{prefix}/{we.get_attribute('href').lstrip('/')}"
-    return result if with_querystring else remove_query_string_from_url(result)
-
-
-def get_unique(pdf_links: List[str]) -> List[str]:
-    """
-    Get the unique PDF links.
-
-    Args:
-        pdf_links (List[str]): A list of PDF links.
-
-    Returns:
-        List[str]: A list of unique PDF links.
-    """
-    return list(set(pdf_links))
-
-
 def unpack_zip_files(directory: str) -> bool:
     """
     Unpack the ZIP files in the directory.
@@ -293,28 +230,6 @@ def unpack_zip_files(directory: str) -> bool:
         # Remove the ZIP file
         os.remove(zip_file_path)
     return True
-
-
-def get_link_for_accessible_article(article_tag: WebElement, base_url: str, xpath: str) -> str | None:
-
-    """
-    Check if the article is accessible (i.e., not behind a paywall) and return the URL. The method checks if the
-    article tag has a lock-open icon, which indicates that the article is not behind a paywall. If the article is
-    accessible, return the URL to the article. Otherwise, return None.
-
-    Args:
-        article_tag (WebElement): The article tag.
-        base_url (str): The base URL of the publisher.
-        xpath (str): The XPath to the element to check.
-
-    Returns:
-        str | None: The URL to the article if it is accessible, otherwise None.
-    """
-    try:
-        article_tag.find_element(By.XPATH, xpath)
-        return get_scraped_url_by_web_element(article_tag, base_url)
-    except NoSuchElementException:
-        return None
 
 
 def get_user_agent(include_mobile: bool = False) -> str:
@@ -377,6 +292,127 @@ def parse_google_drive_link(google_drive_link: str) -> Tuple[str, str]:
     return file_id, download_url
 
 
+def extract_lists(input_data: List | Dict) -> List[str]:
+    """
+    Extracts all lists from an input that can be either a list or a nested dictionary.
+
+    Args:
+        input_data (list or dict): Input to process
+
+    Returns:
+        list: All lists found in the input
+    """
+    # If input is already a list, return it immediately
+    if isinstance(input_data, list):
+        return input_data
+
+    # If input is not a dictionary, return empty list
+    if not isinstance(input_data, dict):
+        return []
+
+    # List to collect all found lists
+    extracted_lists = []
+
+    # Iterate through all dictionary values
+    for value in input_data.values():
+        # If value is a list, add it
+        if isinstance(value, list):
+            extracted_lists.extend(value)
+        # If value is a dictionary, call function recursively
+        elif isinstance(value, dict):
+            extracted_lists.extend(extract_lists(value))
+        # If value is a list of dictionaries, process each dictionary
+        elif isinstance(value, list) and all(isinstance(item, dict) for item in value):
+            for item in value:
+                extracted_lists.extend(extract_lists(item))
+
+    return list(set(extracted_lists))
+
+
+def build_analytics(successes: List[str], failures: List[str]) -> AnalyticsModelItem:
+    """
+    Build an analytics model item from the successes and failures.
+
+    Args:
+        successes (List[str]): A list of successful scrapes.
+        failures (List[str]): A list of failed scrapes.
+
+    Returns:
+        AnalyticsModelItem: The analytics model item.
+    """
+    successes = list(set(successes))
+    failures = list(set(failures))
+    total = len(successes) + len(failures)
+
+    totals = AnalyticsModelItemTotal(success=len(successes), failure=len(failures))
+    percentages = AnalyticsModelItemPercentage(
+        success=len(successes) / total if total > 0 else 0,
+        failure=len(failures) / total if total > 0 else 0,
+    )
+
+    return AnalyticsModelItem(
+        success=successes,
+        failure=failures,
+        totals=totals,
+        percentages=percentages,
+    )
+
+
+def get_bool_env(key: str, default: str) -> bool:
+    v = os.getenv(key, default).lower()
+    return v == "true" or v == "1"
+
+
+def get_scraped_url_by_bs_tag(tag: Tag, base_url: str, with_querystring: bool | None = False) -> str:
+    """
+    Get the URL from the Tag.
+
+    Args:
+        tag (Tag): The BeautifulSoup tag.
+        base_url (str): The base URL.
+        with_querystring (bool): Whether to include the query string in the URL.
+
+    Returns:
+        List[str]: A list of URLs of the articles in the issue.
+    """
+    if tag.get("href").startswith("http"):
+        return tag.get("href")
+
+    # Remove trailing/leading slashes except in http(s)://
+    prefix = base_url.rstrip("/")
+    if prefix.endswith(":"):
+        prefix += "//"
+
+    # Join with single slash
+    result = f"{prefix}/{tag.get('href').lstrip('/')}"
+    return result if with_querystring else remove_query_string_from_url(result)
+
+
+def get_scraped_url_by_web_element(we: WebElement, base_url: str, with_querystring: bool | None = False) -> str:
+    """
+    Get the URL from the Tag.
+
+    Args:
+        we (WebElement): The Selenium WebElement.
+        base_url (str): The base URL.
+        with_querystring (bool): Whether to include the query string in the URL.
+
+    Returns:
+        List[str]: A list of URLs of the articles in the issue.
+    """
+    if we.get_attribute("href").startswith("http"):
+        return we.get_attribute("href")
+
+    # Remove trailing/leading slashes except in http(s)://
+    prefix = base_url.rstrip("/")
+    if prefix.endswith(":"):
+        prefix += "//"
+
+    # Join with single slash
+    result = f"{prefix}/{we.get_attribute('href').lstrip('/')}"
+    return result if with_querystring else remove_query_string_from_url(result)
+
+
 def get_resource_from_remote_by_request(source_url: str, request_with_proxy: bool = False) -> bytes:
     proxy = get_interacting_proxy_config()
     headers = {
@@ -426,77 +462,6 @@ def get_resource_from_remote_by_scraping(
         return content.encode("utf-8")
 
 
-def extract_lists(input_data: List | Dict) -> List[str]:
-    """
-    Extracts all lists from an input that can be either a list or a nested dictionary.
-
-    Args:
-        input_data (list or dict): Input to process
-
-    Returns:
-        list: All lists found in the input
-    """
-    # If input is already a list, return it immediately
-    if isinstance(input_data, list):
-        return input_data
-
-    # If input is not a dictionary, return empty list
-    if not isinstance(input_data, dict):
-        return []
-
-    # List to collect all found lists
-    extracted_lists = []
-
-    # Iterate through all dictionary values
-    for value in input_data.values():
-        # If value is a list, add it
-        if isinstance(value, list):
-            extracted_lists.extend(value)
-        # If value is a dictionary, call function recursively
-        elif isinstance(value, dict):
-            extracted_lists.extend(extract_lists(value))
-        # If value is a list of dictionaries, process each dictionary
-        elif isinstance(value, list) and all(isinstance(item, dict) for item in value):
-            for item in value:
-                extracted_lists.extend(extract_lists(item))
-
-    return get_unique(extracted_lists)
-
-
-def build_analytics(successes: List[str], failures: List[str]) -> AnalyticsModelItem:
-    """
-    Build an analytics model item from the successes and failures.
-
-    Args:
-        successes (List[str]): A list of successful scrapes.
-        failures (List[str]): A list of failed scrapes.
-
-    Returns:
-        AnalyticsModelItem: The analytics model item.
-    """
-    successes = get_unique(successes)
-    failures = get_unique(failures)
-    total = len(successes) + len(failures)
-
-    totals = AnalyticsModelItemTotal(success=len(successes), failure=len(failures))
-    percentages = AnalyticsModelItemPercentage(
-        success=len(successes) / total if total > 0 else 0,
-        failure=len(failures) / total if total > 0 else 0,
-    )
-
-    return AnalyticsModelItem(
-        success=successes,
-        failure=failures,
-        totals=totals,
-        percentages=percentages,
-    )
-
-
-def get_bool_env(key: str, default: str) -> bool:
-    v = os.getenv(key, default).lower()
-    return v == "true" or v == "1"
-
-
 def get_sb_configuration() -> Dict:
     return {
         "undetectable": True,
@@ -505,3 +470,22 @@ def get_sb_configuration() -> Dict:
         "disable_cookies": False,
         "xvfb": get_bool_env("XVFB_MODE", "false"),
     }
+
+
+def get_ancestor(tag: Element, selector: str) -> Element | None:
+    if not tag or not selector:
+        return None
+
+    parts = selector.split(".")
+    tag_name = None if selector.startswith(".") else parts[0]
+    class_names = parts[1:] if "." in selector else []
+    class_names = [class_name for class_name in class_names if class_name]
+
+    condition = all([class_name in tag.class_ for class_name in class_names])
+    if tag_name:
+        condition = tag.tag_name == tag_name and condition
+
+    if condition:
+        return tag
+
+    return get_ancestor(tag.get_parent(), selector) if tag.get_parent() else None

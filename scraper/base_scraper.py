@@ -101,9 +101,7 @@ class BaseScraper(ABC):
             self._driver.cdp.click_if_visible(self._config_model.cookie_selector)
 
         # if a modal exists, find the button with the class `btn-close` and click it
-        self._driver.cdp.click_if_visible(
-            "//div[contains(@class, 'modal-content')]//button[contains(@class, 'btn-close')]"
-        )
+        self._driver.cdp.click_if_visible("div.modal_content button.btn-close")
         self._driver.sleep(random.uniform(0.5, 1.5))
 
         # Scroll through the page to load all articles

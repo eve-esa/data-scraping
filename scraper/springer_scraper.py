@@ -1,7 +1,7 @@
 from typing import List, Dict, Type
 from bs4 import ResultSet, Tag
 
-from helper.utils import get_scraped_url_by_bs_tag, get_scraped_url_by_web_element
+from helper.utils import get_scraped_url_by_bs_tag, get_scraped_url_by_web_element, get_ancestor
 from model.base_mapped_models import BaseMappedUrlSource, BaseMappedPaginationConfig, BaseMappedUrlConfig
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
@@ -183,22 +183,23 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedSubS
             ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
         """
         try:
-            scraper = self._scrape_url(url)
+            self._scrape_url(url)
 
-            article_tag_list = scraper.find_all("a", href=True, class_="app-card-open__link")
-            if not article_tag_list:
-                return None
+            try:
+                tags = self._driver.cdp.find_all("svg.app-entitlement__icon--full-access")
+            except Exception:
+                tags = []
 
-            # by using Selenium's driver, search for all "a" tags, with class "app-card-open__link", href attribute and which parent has the previous sibling:
-            # - with class "app-entitlement"
-            # - containing a svg with class "app-entitlement__icon.app-entitlement__icon--full-access
-            open_access_article_tag_list = self._driver.cdp.find_elements(
-                "//a[contains(@class, 'app-card-open__link')]/parent::h3/preceding-sibling::div[contains(@class, 'app-entitlement') and .//svg[contains(@class, 'app-entitlement__icon--full-access')]]"
-            )
+            articles_links = [
+                get_scraped_url_by_web_element(a_tag, self._config_model.base_url)
+                for tag in tags
+                if (ancestor := get_ancestor(tag, "div.app-card-open__main"))
+                   and (a_tag := ancestor.query_selector("a.app-card-open__link"))
+            ]
 
             pdf_tag_list = []
-            for tag in open_access_article_tag_list:
-                self._driver.cdp.open(get_scraped_url_by_web_element(tag, self._config_model.base_url))
+            for articles_link in articles_links:
+                self._driver.cdp.open(articles_link)
                 self._driver.sleep(1)
 
                 if not (pdf_tag := self._get_parsed_page_source().find(

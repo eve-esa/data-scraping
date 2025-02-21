@@ -1,7 +1,7 @@
 import os
 from typing import Type
 
-from helper.utils import get_scraped_url_by_bs_tag, get_link_for_accessible_article
+from helper.utils import get_scraped_url_by_bs_tag, get_scraped_url_by_web_element
 from model.ams_models import AMSConfig, AMSJournal
 from model.base_iterative_publisher_models import (
     IterativePublisherScrapeJournalOutput,
@@ -111,17 +111,25 @@ class AMSScraper(BaseIterativePublisherScraper):
                 return None
 
             # find all the article links in the issue by keeping only the links to the accessible articles
+            try:
+                tags = self._driver.cdp.find_all("div.ico-access-open")
+            except Exception:
+                tags = []
+            try:
+                tags += self._driver.cdp.find_all("div.ico-access-free")
+            except Exception:
+                pass
+
             article_links = [
-                link
-                for tag in self._driver.cdp.find_elements(
-                    f"//a[contains(@class, 'c-Button--link') and contains(@href, '/view/journals/{journal.code}/{volume_num}/{issue_num}/')]"
-                )
-                if (link := get_link_for_accessible_article(
-                    tag,
-                    self._config_model.base_url,
-                    "../../preceding-sibling::div/div[contains(@class, 'ico-access-open') or contains(@class, 'ico-access-free')]"
-                ))
+                get_scraped_url_by_web_element(a_tag, self._config_model.base_url)
+                for tag in tags
+                if (grandparent := tag.get_parent().get_parent())
+                   and (a_tag := grandparent.query_selector("a.c-Button--link"))
+                   and (href := a_tag.get_attribute("href"))
+                   and f"/view/journals/{journal.code}/{volume_num}/{issue_num}/" in href
             ]
+
+            # Now, visit each article link and find the PDF link
             if not (pdf_links := [pdf_link for link in article_links if (pdf_link := self._scrape_article(link))]):
                 self._save_failure(issue_url)
 

@@ -2,7 +2,6 @@ from abc import abstractmethod
 from typing import List
 from bs4 import ResultSet, Tag
 
-from helper.utils import get_unique
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from scraper.base_scraper import BaseScraper
 
@@ -56,7 +55,7 @@ class BasePaginationPublisherScraper(BaseScraper):
         Returns:
             List[str]: A list of strings containing the PDF links
         """
-        return get_unique([link for links in scrape_output.values() for link in links])
+        return list(set([link for links in scrape_output.values() for link in links]))
 
     def _check_tag_list(self, page_tag_list: List | None) -> bool:
         return page_tag_list is not None and len(page_tag_list) > 0

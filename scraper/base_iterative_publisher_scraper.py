@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from helper.utils import get_unique
 from model.base_iterative_publisher_models import (
     BaseIterativePublisherJournal,
     BaseIterativeWithConstraintPublisherJournal,
@@ -39,13 +38,13 @@ class BaseIterativePublisherScraper(BaseScraper):
         Returns:
             List[str]: A list of strings containing the PDF links
         """
-        return get_unique([
+        return list(set([
             issue_link
             for journal_links in scrape_output.values()
             for volume_links in journal_links.values()
             for issues_links in volume_links.values()
             for issue_link in issues_links
-        ])
+        ]))
 
     def _build_journal_links(self, journal: BaseIterativePublisherJournal) -> IterativePublisherScrapeJournalOutput:
         return {
