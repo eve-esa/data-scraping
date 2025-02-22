@@ -31,7 +31,7 @@ if ! command -v python3.10 &> /dev/null; then
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys F23C5A6CF475977595C89F51BA6932366A755776
 
     apt-get update
-    apt-get install -y python3.10 python3.10-dev python3.10-distutils
+    apt-get install -y python3.10 python3.10-dev python3.10-distutils python3.10-tk python3-dev
 
     # Make Python 3.10 the default
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
