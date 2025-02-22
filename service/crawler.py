@@ -6,7 +6,7 @@ import scrapy
 from urllib.parse import urljoin
 from scrapy.http import Response
 
-from helper.utils import get_user_agent, get_static_proxy_config
+from helper.utils import get_user_agent
 
 
 class CustomUserAgentMiddleware:
@@ -15,14 +15,6 @@ class CustomUserAgentMiddleware:
     """
     def process_request(self, request, spider):
         request.headers["User-Agent"] = get_user_agent()
-
-
-class CustomProxyMiddleware:
-    """
-    Middleware to set a dynamic proxy
-    """
-    def process_request(self, request, spider):
-        request.meta["proxy"] = get_static_proxy_config()
 
 
 class EveSpider(scrapy.Spider):
@@ -34,7 +26,6 @@ class EveSpider(scrapy.Spider):
         "CONCURRENT_REQUESTS_PER_DOMAIN": 4,
         "DOWNLOADER_MIDDLEWARES": {
             "service.crawler.CustomUserAgentMiddleware": 400,
-            # "service.crawler.CustomProxyMiddleware": 410,
             "scrapy.downloadermiddlewares.cookies.CookiesMiddleware": 700,
         },
     }

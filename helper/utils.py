@@ -246,17 +246,6 @@ def get_user_agent(include_mobile: bool = False) -> str:
     return random_ua
 
 
-def get_static_proxy_config() -> str:
-    """
-    This method integrates an external provider of proxy service. It returns a string with the proxy configuration. It
-    returns a string with the configuration to pass to Selenium or Scrapy.
-
-    Returns:
-        str: The proxy configuration.
-    """
-    return f"{os.getenv('STATIC_PROXY_USER')}:{os.getenv('STATIC_PROXY_PASSWORD')}@{os.getenv('STATIC_PROXY_HOST')}:{os.getenv('STATIC_PROXY_PORT')}"
-
-
 def get_interacting_proxy_config() -> str:
     """
     This method integrates an external provider of proxy service able to interact with the browser (no navigation). It
