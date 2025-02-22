@@ -11,6 +11,7 @@ services:
       - .env
     depends_on:
       - minio
+      - mysql
 
   mysql:
     image: mysql:8.0
