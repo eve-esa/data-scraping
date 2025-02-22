@@ -130,6 +130,11 @@ class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedSubScraper):
 
 
 class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
+    def __init__(self):
+        super().__init__()
+        self.__max_consecutive_failures = 5
+        self.__consecutive_failures = 0
+
     @property
     def config_model_type(self) -> Type[BaseMappedPaginationConfig]:
         """
@@ -149,6 +154,7 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedSubS
         """
         pdf_tags = []
         for idx, source in enumerate(self._config_model.sources):
+            self.__consecutive_failures = 0
             pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
 
         return {"Springer": [
@@ -169,8 +175,8 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedSubS
 
         return self._scrape_pagination(landing_page_url, source_number)
 
-    def _check_tag_list(self, page_tag_list):
-        return page_tag_list is not None
+    def _is_valid_tag_list(self, page_tag_list: List | None) -> bool:
+        return page_tag_list is not None and self.__consecutive_failures <= self.__max_consecutive_failures
 
     def _scrape_page(self, url: str) -> List[Tag] | None:
         """
@@ -211,6 +217,7 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedSubS
                 pdf_tag_list.append(pdf_tag)
 
             if not pdf_tag_list:
+                self.__consecutive_failures += 1
                 self._save_failure(url)
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
