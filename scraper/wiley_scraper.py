@@ -122,7 +122,7 @@ class WileyScraper(BasePaginationPublisherScraper):
 
             # now, scrape the ePDF page to get the final PDF link, and return this latter tag
             self._driver.cdp.open(get_scraped_url_by_bs_tag(epdf_tag, self.__base_url))
-            self._driver.sleep(1)
+            self._driver.cdp.sleep(1)
 
             if not (direct_pdf_tag := self._get_parsed_page_source().find(
                     "a", href=lambda href: href and "/doi/pdfdirect/" in href

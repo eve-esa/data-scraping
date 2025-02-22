@@ -111,14 +111,11 @@ class NASANTRSScraper(BaseMappedSubScraper, BaseScraper):
                     self._driver.execute_script("arguments[0].click();", next_page_button)
 
                     # Sleep for some time to avoid being blocked by the server on the next request
-                    self._driver.sleep(random.uniform(2, 5))
+                    self._driver.cdp.sleep(random.uniform(2, 5))
 
                     self._driver.uc_gui_click_captcha()
                     self._wait_for_page_load()
-
-                    # Handle cookie popup only once, for the first request
-                    if self._config_model.cookie_selector:
-                        self._driver.cdp.click_if_visible(self._config_model.cookie_selector)
+                    self._handle_cookie()
 
                     scraper = self._get_parsed_page_source()
                 except Exception:
@@ -227,7 +224,7 @@ class NASAEarthDataPDFScraper(NASAEarthDataScraper):
             for html_link in html_links:
                 self._logger.info(f"Processing URL {html_link}")
                 self._driver.cdp.open(html_link)
-                self._driver.sleep(1)
+                self._driver.cdp.sleep(1)
 
                 pdf_tag_list.extend(self._get_parsed_page_source().find_all(
                     "a", href=lambda href: href and ".pdf" in href, hreflang="en"

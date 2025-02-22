@@ -86,7 +86,7 @@
                 "scraper": "MDPIJournalsScraper",
                 "config": {
                     "base_url": "https://www.mdpi.com",
-                    "cookie_selector": "[id='CybotCookiebotDialogBodyButtonAccept']",
+                    "cookie_selector": "button[id=accept]",
                     "journals": [
                         {
                             "url": "https://www.mdpi.com/2072-4292",
@@ -200,7 +200,7 @@
                 "scraper": "MDPIGoogleSearchScraper",
                 "config": {
                     "base_url": "https://www.mdpi.com",
-                    "cookie_selector": "[id='CybotCookiebotDialogBodyButtonAccept']",
+                    "cookie_selector": "button[id=accept]",
                     "sources": [
                         {
                             "landing_page_url": "https://www.google.com/search?start={start_index}&q=%28%22earth+observation%22+OR+%22remote+sensing%22+OR+%22earth+monitoring%22+OR+%22environmental+monitoring%22+OR+%22satellite+observation%22+OR+%22synthetic+aperture+radar%22+OR+%22multispectral+imaging%22+OR+%22lidar%22+OR+%22light+detection+and+ranging%22+OR+%22geospatial+monitoring%22+OR+%22atmospheric+observations%22+OR+%22land+use%2Fland+cover%22+OR+%22lulc%22%29+%28site%3Amdpi.com%29",
@@ -597,7 +597,7 @@
     "OxfordAcademicScraper": {
         "bucket_key": "{main_folder}/oxford_academic",
         "base_url": "https://academic.oup.com",
-        "cookie_selector": "[id='accept-button']",
+        "cookie_selector": "button[id=accept-button]",
         "journals": [
             {
                 "url": "https://academic.oup.com/oocc",
@@ -649,7 +649,7 @@
     "TaylorAndFrancisScraper": {
         "bucket_key": "{main_folder}/taylor_and_francis",
         "base_url": "https://www.tandfonline.com",
-        "cookie_selector": "[id='onetrust-accept-btn-handler']",
+        "cookie_selector": "button[id=onetrust-accept-btn-handler]",
         "sources": [
             {
                 "url": "https://www.tandfonline.com/journals/tgda21/sections/earth-observations?startPage=0&pageSize=1000",
@@ -676,7 +676,7 @@
     "FrontiersScraper": {
         "bucket_key": "{main_folder}/frontiers",
         "base_url": "https://www.frontiersin.org/",
-        "cookie_selector": "[id='onetrust-accept-btn-handler']",
+        "cookie_selector": "button[id=onetrust-accept-btn-handler]",
         "sources": [
             {
                 "url": "https://www.frontiersin.org/journals/remote-sensing/articles?sort=3",
@@ -687,7 +687,7 @@
     "SageScraper": {
         "bucket_key": "{main_folder}/sage",
         "base_url": "https://journals.sagepub.com",
-        "cookie_selector": "div.qc-cmp2-summary-buttons > button.css-1pdnrb0",
+        "cookie_selector": "button[id=onetrust-accept-btn-handler]",
         "sources": [
             {
                 "landing_page_url": "https://journals.sagepub.com/action/doSearch?AllField=\\\"remote+sensing\\\"&startPage={page_number}&rel=&access=18&pageSize=100"
@@ -1040,7 +1040,7 @@
     "ElsevierScraper": {
         "bucket_key": "{main_folder}/elsevier",
         "base_url": "https://www.sciencedirect.com",
-        "cookie_selector": "[id='onetrust-accept-btn-handler']",
+        "cookie_selector": "button[id=onetrust-accept-btn-handler]",
         "sources":[
             {
                 "url": "https://www.sciencedirect.com/journal/international-journal-of-applied-earth-observation-and-geoinformation/issues",

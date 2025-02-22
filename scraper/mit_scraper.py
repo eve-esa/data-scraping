@@ -29,7 +29,7 @@ class MITScraper(BaseUrlPublisherScraper):
             pdf_tag_list = []
             for tag in scraper.find_all("a", href=lambda href: href and "/courses/" in href and "/resources/earthsurface_" in href):
                 self._driver.cdp.open(get_scraped_url_by_bs_tag(tag, self._config_model.base_url))
-                self._driver.sleep(1)
+                self._driver.cdp.sleep(1)
                 if pdf_tag := self._get_parsed_page_source().find(
                         "a", href=lambda href: href and ".pdf" in href, class_="download-file"
                 ):

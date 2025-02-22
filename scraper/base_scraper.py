@@ -91,17 +91,14 @@ class BaseScraper(ABC):
             BeautifulSoup: the fully rendered HTML of the URL.
         """
         self._driver.cdp.open(url)
-        self._driver.sleep(1)
+        self._driver.cdp.sleep(1)
         self._driver.uc_gui_click_captcha()
         self._wait_for_page_load()
-
-        # Handle cookie popup only once, for the first request
-        if self._config_model.cookie_selector:
-            self._driver.cdp.click_if_visible(self._config_model.cookie_selector)
+        self._handle_cookie()
 
         # if a modal exists, find the button with the class `btn-close` and click it
         self._driver.cdp.click_if_visible("div.modal_content button.btn-close")
-        self._driver.sleep(random.uniform(0.5, 1.5))
+        self._driver.cdp.sleep(random.uniform(0.5, 1.5))
 
         # Scroll through the page to load all articles
         last_height = self._driver.execute_script(f"""
@@ -127,7 +124,7 @@ class BaseScraper(ABC):
                     window.scrollTo(0, document.body.scrollHeight);
                 }}
             """)
-            self._driver.sleep(pause_time)
+            self._driver.cdp.sleep(pause_time)
 
             if self._config_model.read_more_button:
                 self._driver.cdp.click_if_visible(
@@ -141,7 +138,7 @@ class BaseScraper(ABC):
             last_height = new_height
 
         # Sleep for some time to avoid being blocked by the server on the next request
-        self._driver.sleep(random.uniform(2, 5))
+        self._driver.cdp.sleep(random.uniform(2, 5))
 
         # Get the fully rendered HTML
         return self._get_parsed_page_source()
@@ -152,6 +149,13 @@ class BaseScraper(ABC):
 
         if self._config_model.waited_tag:
             self._driver.cdp.wait_for_element_visible(self._config_model.waited_tag, timeout=timeout)
+
+    def _handle_cookie(self, timeout: int | None = 10):
+        if self._config_model.cookie_selector:
+            try:
+                self._driver.cdp.click(self._config_model.cookie_selector, timeout=timeout)
+            except Exception:
+                pass
 
     def _get_parsed_page_source(self) -> BeautifulSoup:
         """

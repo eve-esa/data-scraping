@@ -19,7 +19,6 @@ from urllib.parse import urlparse, parse_qs
 from fake_useragent import UserAgent, FakeUserAgentError
 from selenium.webdriver.remote.webelement import WebElement
 from seleniumbase import SB
-from seleniumbase.common.exceptions import NoSuchElementException, ElementNotVisibleException, TimeoutException
 from seleniumbase.undetected.cdp_driver.element import Element
 
 from helper.constants import DEFAULT_UA, DEFAULT_CRAWLING_FOLDER
@@ -423,28 +422,28 @@ def get_resource_from_remote_by_scraping(
     source_url: str,
     loading_tag: str | None = None,
     cookie_selector: str | None = None,
-    timeout: int | None = 20,
+    timeout: int | None = 10,
 ) -> bytes:
     # return the resource from the scraping if the loading tag is provided
     with SB(**get_sb_configuration()) as sb:
         sb.activate_cdp_mode(source_url)
         sb.maximize()
-        sb.sleep(1)
+        sb.cdp.sleep(1)
         sb.uc_gui_click_captcha()
 
         # Wait for the page to load
         if loading_tag:
             sb.cdp.assert_element_absent(loading_tag, timeout=timeout)
 
-        # Handle cookie popup only once, for the first request
+        # Handle cookie popup
         if cookie_selector:
             try:
                 sb.cdp.click(cookie_selector, timeout=timeout)
-            except (TimeoutException, NoSuchElementException, ElementNotVisibleException):
+            except Exception:
                 pass
 
         # Sleep for some time to avoid being blocked by the server on the next request
-        sb.sleep(random.uniform(2, 5))
+        sb.cdp.sleep(random.uniform(2, 5))
 
         # Get the fully rendered HTML
         content = sb.cdp.get_page_source()

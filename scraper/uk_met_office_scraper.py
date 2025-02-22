@@ -43,7 +43,7 @@ class UKMetOfficeScraper(BaseUrlPublisherScraper):
                 scraper = self._get_parsed_page_source()
                 pdf_tag_list.extend(scraper.find_all("a", href=True, class_="card-link-value"))
 
-                self._driver.sleep(random.uniform(2, 5))
+                self._driver.cdp.sleep(random.uniform(2, 5))
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
 

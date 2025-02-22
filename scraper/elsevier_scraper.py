@@ -150,13 +150,13 @@ class ElsevierScraper(BaseScraper):
             self._log_and_save_failure(source.url, f"Error scraping issue: {e}")
             return ElsevierScrapeIssueOutput(was_scraped=False, next_issue_url=None)
 
-    def __wait_end_download(self, timeout: int | None = 360):
+    def __wait_end_download(self, timeout: int | None = 600):
         """
         Wait for the download to finish. If the download is not completed within the specified timeout, raise an
         exception.
 
         Args:
-            timeout (int): The timeout in seconds. Default is 360 seconds.
+            timeout (int): The timeout in seconds. Default is 600 seconds (10 minutes).
         """
         start_time = time.time()
         download_folder_path = self._driver.get_browser_downloads_folder()
@@ -175,7 +175,7 @@ class ElsevierScraper(BaseScraper):
             break
 
         self._driver.click_if_visible("div.js-react-modal div.modal-content button.modal-close-button", timeout=1)  # close the modal
-        self._driver.sleep(0.1)
+        self._driver.cdp.sleep(0.1)
 
     def upload_to_s3(self, sources_links: List[str]):
         self._logger.debug("Uploading files to S3")

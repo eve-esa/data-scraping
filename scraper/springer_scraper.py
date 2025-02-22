@@ -206,7 +206,7 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedSubS
             pdf_tag_list = []
             for articles_link in articles_links:
                 self._driver.cdp.open(articles_link)
-                self._driver.sleep(1)
+                self._driver.cdp.sleep(1)
 
                 if not (pdf_tag := self._get_parsed_page_source().find(
                     "a",

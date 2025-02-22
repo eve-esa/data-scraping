@@ -74,7 +74,7 @@ class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
                     tags.append(Tag(name="a", attrs={"href": tag_link.get_attribute("href")}))
                 elif href is None:  # the link represents a falsy button to click on, to load the list of various issues
                     tag_link.click()
-                    self._driver.sleep(0.1)
+                    self._driver.cdp.sleep(0.1)
                     tags.extend([
                         Tag(name="a", attrs={"href": href})
                         for tag in self._driver.cdp.find_elements("div.issue-list a")
