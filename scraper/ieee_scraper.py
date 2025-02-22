@@ -59,12 +59,13 @@ class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
             ResultSet | List[Tag]: A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF links. If something went wrong, an empty list.
         """
         self._logger.info(f"Processing Landing Page {landing_page_url}")
+        waited_tag = self._config_model.waited_tag
 
         try:
+            self._config_model.waited_tag = None
             self._scrape_url(landing_page_url)
-            self._driver.cdp.wait_for_element_visible("div.issue-details-past-tabs")
 
-            tag_links = self._driver.cdp.find_elements("div.issue-details-past-tabs a")
+            tag_links = self._driver.cdp.find_elements("div.issue-details-past-tabs a", timeout=20)
 
             tags = []
             for tag_link in tag_links:
@@ -88,6 +89,8 @@ class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
         except Exception as e:
             self._log_and_save_failure(landing_page_url, f"Failed to process URL {landing_page_url}. Error: {e}")
             return []
+        finally:
+            self._config_model.waited_tag = waited_tag
 
     def _scrape_page(self, url: str) -> ResultSet | None:
         """
@@ -101,7 +104,6 @@ class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
         """
         try:
             scraper = self._scrape_url(url)
-            self._driver.cdp.wait_for_element_visible("div.List-results")
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             if not (pdf_tag_list := scraper.find_all(
@@ -170,7 +172,6 @@ class IEEESearchScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
         """
         try:
             scraper = self._scrape_url(url)
-            self._driver.cdp.wait_for_element_visible("div.List-results")
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             if not (pdf_tag_list := scraper.find_all(

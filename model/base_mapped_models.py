@@ -93,5 +93,6 @@ class BaseMappedSource(BaseModel):
 class BaseMappedConfig(Config):
     cookie_selector: str | None = None
     loading_tag: str | None = None
+    waited_tag: str | None = None
     request_with_proxy: bool = False
     sources: List[BaseMappedSource]

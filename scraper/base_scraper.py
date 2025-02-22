@@ -148,7 +148,11 @@ class BaseScraper(ABC):
         return self._get_parsed_page_source()
 
     def _wait_for_page_load(self, timeout: int | None = 20):
-        pass
+        if self._config_model.loading_tag:
+            self._driver.cdp.assert_element_absent(self._config_model.loading_tag, timeout=timeout)
+
+        if self._config_model.waited_tag:
+            self._driver.cdp.wait_for_element_visible(self._config_model.waited_tag, timeout=timeout)
 
     def _get_parsed_page_source(self) -> BeautifulSoup:
         """

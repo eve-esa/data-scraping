@@ -131,9 +131,6 @@ class NASANTRSScraper(BaseMappedSubScraper, BaseScraper):
     def post_process(self, scrape_output: NASANTRSScraperOutput) -> List[str]:
         return [link for links in scrape_output.values() for link in links]
 
-    def _wait_for_page_load(self, timeout: int | None = 20):
-        self._driver.cdp.wait_for_element_absent("div.loading-container", timeout=timeout)
-
 
 class NASAEOSScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
     @property
