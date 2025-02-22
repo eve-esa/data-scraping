@@ -85,12 +85,12 @@ class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
             if not tags:
                 self._save_failure(landing_page_url)
 
+            self._config_model.waited_tag = waited_tag
             return tags
         except Exception as e:
             self._log_and_save_failure(landing_page_url, f"Failed to process URL {landing_page_url}. Error: {e}")
-            return []
-        finally:
             self._config_model.waited_tag = waited_tag
+            return []
 
     def _scrape_page(self, url: str) -> ResultSet | None:
         """
