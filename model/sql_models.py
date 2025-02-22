@@ -42,7 +42,7 @@ class UploadedResource(BaseModel):
     sha256: str | None = None
     content: bytes | None = None
     content_retrieved: bool | None = False
-    success: bool | None = True
+    success: bool | None = False
 
     @classmethod
     def def_types(cls) -> Dict[str, DatabaseFieldDefinition]:

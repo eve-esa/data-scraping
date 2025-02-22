@@ -24,7 +24,7 @@ from seleniumbase.undetected.cdp_driver.element import Element
 
 from helper.constants import DEFAULT_UA, DEFAULT_CRAWLING_FOLDER
 from helper.logger import setup_logger, setup_worker_logging
-from model.analytics_models import AnalyticsModelItem, AnalyticsModelItemPercentage, AnalyticsModelItemTotal
+from model.analytics_models import AnalyticsModelItem, AnalyticsModelItemRatio, AnalyticsModelItemTotal
 from scraper.base_scraper import BaseScraper, BaseMappedSubScraper
 
 
@@ -334,7 +334,7 @@ def build_analytics(successes: List[str], failures: List[str]) -> AnalyticsModel
     total = len(successes) + len(failures)
 
     totals = AnalyticsModelItemTotal(success=len(successes), failure=len(failures))
-    percentages = AnalyticsModelItemPercentage(
+    ratios = AnalyticsModelItemRatio(
         success=len(successes) / total if total > 0 else 0,
         failure=len(failures) / total if total > 0 else 0,
     )
@@ -343,7 +343,7 @@ def build_analytics(successes: List[str], failures: List[str]) -> AnalyticsModel
         success=successes,
         failure=failures,
         totals=totals,
-        percentages=percentages,
+        ratios=ratios,
     )
 
 

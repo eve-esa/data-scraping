@@ -1,5 +1,6 @@
 import os.path
 import random
+import shutil
 import time
 from typing import Type, List
 
@@ -15,6 +16,10 @@ from scraper.base_scraper import BaseScraper
 
 
 class ElsevierScraper(BaseScraper):
+    def __init__(self):
+        super().__init__()
+        self.__download_folder_path = None
+
     @property
     def config_model_type(self) -> Type[ElsevierConfig]:
         return ElsevierConfig
@@ -132,14 +137,11 @@ class ElsevierScraper(BaseScraper):
             self._driver.cdp.click("form.js-download-full-issue-form button", timeout=10)
 
             # wait for the download to complete
-            download_folder_path = self._driver.get_browser_downloads_folder()
-            self._logger.info(f"Downloading PDFs from {source.url} to {download_folder_path}")
+            self._logger.info(f"Downloading PDFs from {source.url} to {self.download_folder_path}")
             self.__wait_end_download()
 
-            self._driver.delete_all_cookies()
-
             # unpack zip files before uploading
-            if not unpack_zip_files(download_folder_path):
+            if not unpack_zip_files(self.download_folder_path):
                 self._logger.warning("No zip files found or timeout reached")
                 return ElsevierScrapeIssueOutput(was_scraped=False, next_issue_url=next_issue_link)
 
@@ -148,39 +150,41 @@ class ElsevierScraper(BaseScraper):
             self._log_and_save_failure(source.url, f"Error scraping issue: {e}")
             return ElsevierScrapeIssueOutput(was_scraped=False, next_issue_url=None)
 
-    def __wait_end_download(self, timeout: int | None = 60):
+    def __wait_end_download(self, timeout: int | None = 360):
         """
         Wait for the download to finish. If the download is not completed within the specified timeout, raise an
         exception.
 
         Args:
-            timeout (int): The timeout in seconds. Default is 60 seconds.
+            timeout (int): The timeout in seconds. Default is 360 seconds.
         """
         start_time = time.time()
         download_folder_path = self._driver.get_browser_downloads_folder()
-
-        # first of all, wait until the `js-pdf-download-modal-content` element is no more present
-        self._driver.cdp.assert_element_absent("div.js-pdf-download-modal-content", timeout=timeout)
 
         # then, wait until the download is completed
         while time.time() - start_time < timeout:
             # check if there are completed zip files temporary files in the directory
             completed_downloads = [f for f in os.listdir(download_folder_path) if f.endswith(".zip")]
-            if completed_downloads:
-                return
+            if not completed_downloads:
+                time.sleep(0.1)
+                continue
 
-            time.sleep(0.1)
+            # move the zip files to the download folder
+            for file in completed_downloads:
+                os.replace(os.path.join(download_folder_path, file), os.path.join(self.download_folder_path, file))
+            break
+
+        self._driver.click_if_visible("div.js-react-modal div.modal-content button.modal-close-button", timeout=1)  # close the modal
+        self._driver.sleep(0.1)
 
     def upload_to_s3(self, sources_links: List[str]):
         self._logger.debug("Uploading files to S3")
 
-        download_folder_path = self._driver.get_browser_downloads_folder()
-
-        for file in os.listdir(download_folder_path):
+        for file in os.listdir(self.download_folder_path):
             if not file.endswith(self._config_model.file_extension):
                 continue
 
-            file_path = self._driver.get_path_of_downloaded_file(file)
+            file_path = os.path.join(self.download_folder_path, file)
             if not os.path.isfile(file_path):
                 continue
 
@@ -191,3 +195,15 @@ class ElsevierScraper(BaseScraper):
 
             # Sleep after each successful upload to avoid overwhelming the server
             time.sleep(random.uniform(2, 5))
+
+        shutil.rmtree(self.download_folder_path)
+
+    @property
+    def download_folder_path(self) -> str:
+        if self.__download_folder_path is None:
+            download_folder_path = os.path.join(self._driver.get_browser_downloads_folder(), "elsevier")
+            os.makedirs(download_folder_path, exist_ok=True)
+
+            self.__download_folder_path = download_folder_path
+
+        return self.__download_folder_path

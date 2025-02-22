@@ -1,8 +1,7 @@
 import json
-import os
 from abc import ABC, abstractmethod
 import random
-from typing import List, Type, Any, Dict, Final
+from typing import List, Type, Any, Dict
 from bs4 import BeautifulSoup
 from seleniumbase import SB
 import time
@@ -195,11 +194,6 @@ class BaseScraper(ABC):
         if resource.id and resource.success:
             self._logger.warning(f"Resource {resource_name} was already successfully uploaded, skipping.")
             return None
-
-        main_folder: Final[str] = os.getenv("AWS_MAIN_FOLDER", "raw_data")
-        resource.bucket_key = resource.bucket_key.format(main_folder=main_folder)
-        resource.content_retrieved = True if resource.content else False
-        resource.success = True if resource.content else False
 
         if resource.content:
             resource.success = self._s3_client.upload_content(resource)

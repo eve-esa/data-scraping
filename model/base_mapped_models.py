@@ -92,7 +92,7 @@ class BaseMappedSource(BaseModel):
 
 class BaseMappedConfig(Config):
     cookie_selector: str | None = None
-    loading_tag: str | None = None
-    waited_tag: str | None = None
+    loading_tag: str | None = None  # The tag that indicates that the page is still loading
+    waited_tag: str | None = None  # The tag that indicates that the page has loaded
     request_with_proxy: bool = False
     sources: List[BaseMappedSource]
