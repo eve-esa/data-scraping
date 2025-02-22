@@ -36,6 +36,7 @@ class UploadedResourceRepository(BaseRepository):
         self._logger.info(f"Retrieving file from {source_url}")
 
         result = UploadedResource(scraper=scraper, bucket_key=bucket_key, source=source_url)
+        message = None
         try:
             content = get_resource_from_remote_by_request(
                 source_url, request_with_proxy
@@ -45,8 +46,9 @@ class UploadedResourceRepository(BaseRepository):
         except Exception as e:
             self._logger.error(f"Failed to retrieve the content from {source_url}. Error: {e}")
             content = None
+            message = str(e)
 
-        return self.__update_resource(result, scraper, content)
+        return self.__update_resource(result, scraper, content=content, message=message)
 
     def get_by_content(self, scraper: str, root_key: str, source_path: str) -> UploadedResource:
         """
@@ -67,18 +69,23 @@ class UploadedResourceRepository(BaseRepository):
         bucket_key = os.path.join(root_key, f"{uuid4()}.{file_extension}")  # Construct S3 key
 
         result = UploadedResource(bucket_key=bucket_key, source=source_path, scraper=scraper)
+        message = None
         try:
             with open(source_path, "rb") as f:
                 content = f.read()
         except Exception as e:
             self._logger.error(f"Failed to retrieve the content from {source_path}. Error: {e}")
             content = None
+            message = str(e)
 
-        return self.__update_resource(result, scraper, content)
+        return self.__update_resource(result, scraper, content=content, message=message)
 
-    def __update_resource(self, resource: UploadedResource, scraper: str, content: bytes | None = None) -> UploadedResource:
+    def __update_resource(
+        self, resource: UploadedResource, scraper: str, content: bytes | None = None, message: str | None = None
+    ) -> UploadedResource:
         if not content:
             resource.content_retrieved = False
+            resource.message = message
             return resource
 
         # calculate the sha256 of the content
