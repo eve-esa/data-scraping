@@ -572,12 +572,12 @@
         "base_url": "https://www.ncbi.nlm.nih.gov",
         "sources": [
             {
-                "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/?term=\\\"earth+observation\\\"",
-                "pagination_url": "https://www.ncbi.nlm.nih.gov/pmc/?term=\\\"earth+observation\\\"&EntrezSystem2.PEntrez.PMC.Pmc_PageController.PreviousPageName=results&EntrezSystem2.PEntrez.PMC.Pmc_ResultsPanel.Pmc_DisplayBar.PageSize=100&EntrezSystem2.PEntrez.PMC.Pmc_ResultsPanel.Entrez_Pager.CurrPage={page_number}&EntrezSystem2.PEntrez.DbConnector.LastQueryKey={source_number}&EntrezSystem2.PEntrez.DbConnector.Cmd=PageChanged"
+                "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/?term=\"earth+observation\"",
+                "pagination_url": "https://www.ncbi.nlm.nih.gov/pmc/?term=\"earth+observation\"&EntrezSystem2.PEntrez.PMC.Pmc_PageController.PreviousPageName=results&EntrezSystem2.PEntrez.PMC.Pmc_ResultsPanel.Pmc_DisplayBar.PageSize=100&EntrezSystem2.PEntrez.PMC.Pmc_ResultsPanel.Entrez_Pager.CurrPage={page_number}&EntrezSystem2.PEntrez.DbConnector.LastQueryKey={source_number}&EntrezSystem2.PEntrez.DbConnector.Cmd=PageChanged"
             },
             {
-                "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/?term=\\\"Remote+Sensing\\\"",
-                "pagination_url": "https://www.ncbi.nlm.nih.gov/pmc/?term=\\\"Remote+Sensing\\\"&EntrezSystem2.PEntrez.PMC.Pmc_PageController.PreviousPageName=results&EntrezSystem2.PEntrez.PMC.Pmc_ResultsPanel.Pmc_DisplayBar.PageSize=100&EntrezSystem2.PEntrez.PMC.Pmc_ResultsPanel.Entrez_Pager.CurrPage={page_number}&EntrezSystem2.PEntrez.DbConnector.LastQueryKey={source_number}&EntrezSystem2.PEntrez.DbConnector.Cmd=PageChanged"
+                "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/?term=\"Remote+Sensing\"",
+                "pagination_url": "https://www.ncbi.nlm.nih.gov/pmc/?term=\"Remote+Sensing\"&EntrezSystem2.PEntrez.PMC.Pmc_PageController.PreviousPageName=results&EntrezSystem2.PEntrez.PMC.Pmc_ResultsPanel.Pmc_DisplayBar.PageSize=100&EntrezSystem2.PEntrez.PMC.Pmc_ResultsPanel.Entrez_Pager.CurrPage={page_number}&EntrezSystem2.PEntrez.DbConnector.LastQueryKey={source_number}&EntrezSystem2.PEntrez.DbConnector.Cmd=PageChanged"
             }
         ]
     },
@@ -598,6 +598,7 @@
         "bucket_key": "{main_folder}/oxford_academic",
         "base_url": "https://academic.oup.com",
         "cookie_selector": "button[id=accept-button]",
+        "request_with_proxy": true,
         "journals": [
             {
                 "url": "https://academic.oup.com/oocc",
@@ -650,6 +651,7 @@
         "bucket_key": "{main_folder}/taylor_and_francis",
         "base_url": "https://www.tandfonline.com",
         "cookie_selector": "button[id=onetrust-accept-btn-handler]",
+        "request_with_proxy": true,
         "sources": [
             {
                 "url": "https://www.tandfonline.com/journals/tgda21/sections/earth-observations?startPage=0&pageSize=1000",
@@ -688,9 +690,10 @@
         "bucket_key": "{main_folder}/sage",
         "base_url": "https://journals.sagepub.com",
         "cookie_selector": "button[id=onetrust-accept-btn-handler]",
+        "request_with_proxy": true,
         "sources": [
             {
-                "landing_page_url": "https://journals.sagepub.com/action/doSearch?AllField=\\\"remote+sensing\\\"&startPage={page_number}&rel=&access=18&pageSize=100"
+                "landing_page_url": "https://journals.sagepub.com/action/doSearch?AllField=\"remote+sensing\"&startPage={page_number}&rel=&access=18&pageSize=100"
             }
         ]
     },
@@ -709,7 +712,7 @@
         "base_url": "https://arxiv.org",
         "sources": [
             {
-                "landing_page_url": "https://arxiv.org/search/?searchtype=all&query=\\\"Earth+Observation\\\"&abstracts=show&size={page_size}&order=-announced_date_first&start={start_index}",
+                "landing_page_url": "https://arxiv.org/search/?searchtype=all&query=\"Earth+Observation\"&abstracts=show&size={page_size}&order=-announced_date_first&start={start_index}",
                 "page_size": 100
             }
         ]
@@ -717,6 +720,7 @@
     "WileyScraper": {
         "bucket_key": "{main_folder}/wiley",
         "cookie_selector": "button.osano-cm-accept-all",
+        "request_with_proxy": true,
         "sources": [
             {
                 "landing_page_url": "https://rmets.onlinelibrary.wiley.com/action/doSearch?SeriesKey=1530261x&sortBy=Earliest&pageSize=100&startPage={page_number}",

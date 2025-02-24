@@ -3,8 +3,9 @@ import random
 import shutil
 import time
 from typing import Type, List
+from seleniumbase import SB
 
-from helper.utils import get_scraped_url_by_bs_tag, unpack_zip_files
+from helper.utils import get_scraped_url_by_bs_tag, get_sb_configuration
 from model.elsevier_models import (
     SourceType,
     ElsevierConfig,
@@ -37,7 +38,7 @@ class ElsevierScraper(BaseScraper):
                 links = self.__scrape_journal(source)
             else:
                 result = self.__scrape_issue(source)
-                links = [source.url] if result.was_scraped else None
+                links = result.pdf_links if result.pdf_links else None
 
             if links is not None:
                 pdf_links[source.name] = links
@@ -81,14 +82,11 @@ class ElsevierScraper(BaseScraper):
                 result = self.__scrape_issue(
                     ElsevierSource(url=issue_url, name=source.name, type=str(SourceType.ISSUE))
                 )
-                if result.was_scraped:
-                    journal_links.append(issue_url)
+                if result.pdf_links:
+                    journal_links.extend(result.pdf_links)
                 issue_url = result.next_issue_url
 
             self._logger.info(f"Journal {source.name} scraped")
-
-            if not journal_links:
-                self._save_failure(source.url)
             return journal_links
         except Exception as e:
             self._log_and_save_failure(source.url, f"Error scraping journal: {e}")
@@ -129,74 +127,92 @@ class ElsevierScraper(BaseScraper):
             )
             # if no PDF tag exists, try with the next issue since no PDF can be downloaded from the current one
             if not pdf_tags:
-                self._log_and_save_failure(source.url, f"No downloadable PDF found at the URL: {source.url}")
-                return ElsevierScrapeIssueOutput(was_scraped=False, next_issue_url=next_issue_link)
+                self._save_failure(source.url)
 
-            # wait for the page to load and get the element with tag "button", child of "form.js-download-full-issue-form"
-            # click on the button to download the issue
-            self._driver.cdp.click("form.js-download-full-issue-form button", timeout=10)
-
-            # wait for the download to complete
-            self._logger.info(f"Downloading PDFs from {source.url} to {self.download_folder_path}")
-            self.__wait_end_download()
-
-            # unpack zip files before uploading
-            if not unpack_zip_files(self.download_folder_path):
-                self._logger.warning("No zip files found or timeout reached")
-                return ElsevierScrapeIssueOutput(was_scraped=False, next_issue_url=next_issue_link)
-
-            return ElsevierScrapeIssueOutput(was_scraped=True, next_issue_url=next_issue_link)
+            self._logger.debug(f"PDF links found: {len(pdf_tags)}")
+            return ElsevierScrapeIssueOutput(
+                pdf_links=[get_scraped_url_by_bs_tag(
+                    tag, self._config_model.base_url, with_querystring=True
+                ) for tag in pdf_tags],
+                next_issue_url=next_issue_link
+            )
         except Exception as e:
             self._log_and_save_failure(source.url, f"Error scraping issue: {e}")
-            return ElsevierScrapeIssueOutput(was_scraped=False, next_issue_url=None)
+            return ElsevierScrapeIssueOutput(next_issue_url=None)
 
-    def __wait_end_download(self, timeout: int | None = 600):
+    def upload_to_s3(self, sources_links: List[str]):
+        def get_pid(link_: str) -> str:
+            # from the `link`, get the `pid` parameter of the querystring
+            try:
+                pid = link_.split("pid=")[1].split("&")[0]
+            except Exception:
+                pid = None
+            return pid
+
+        self._logger.debug("Uploading files to S3")
+
+        sb_configuration = get_sb_configuration()
+        sb_configuration["external_pdf"] = True
+
+        try:
+            with SB(**sb_configuration) as driver:
+                self.set_driver(driver)
+                self._driver.activate_cdp_mode()
+                self._driver.cdp.maximize()
+
+                for link in sources_links:
+                    if not (pid := get_pid(link)):
+                        continue
+
+                    # visit the PDF link
+                    self._scrape_url(link)
+
+                    if (file_path := self.__wait_end_download(pid)) is None:
+                        continue
+
+                    self._logger.info(f"Uploading file {file_path}")
+
+                    current_resource = self._uploaded_resource_repository.get_by_content(
+                        self._logging_db_scraper, self._config_model.bucket_key, file_path
+                    )
+                    self._upload_resource_to_s3(current_resource, pid)
+
+                    # Sleep after each successful upload to avoid overwhelming the server
+                    time.sleep(random.uniform(2, 5))
+        finally:
+            shutil.rmtree(self.download_folder_path)
+
+    def __wait_end_download(self, filename: str, timeout: int | None = 30, interval: float | None = 0.5) -> str | None:
         """
         Wait for the download to finish. If the download is not completed within the specified timeout, raise an
         exception.
 
         Args:
-            timeout (int): The timeout in seconds. Default is 600 seconds (10 minutes).
+            filename (str): The name of the file to wait for.
+            timeout (int): The timeout in seconds. Default is 10 seconds.
+            interval (float): The interval in seconds to check for the file. Default is 0.5 seconds.
         """
         start_time = time.time()
         download_folder_path = self._driver.get_browser_downloads_folder()
 
-        # then, wait until the download is completed
+        # wait until the download is completed
         while time.time() - start_time < timeout:
-            # check if there are completed zip files temporary files in the directory
-            completed_downloads = [f for f in os.listdir(download_folder_path) if f.endswith(".zip")]
-            if not completed_downloads:
-                time.sleep(0.1)
-                continue
-
-            # move the zip files to the download folder
-            for file in completed_downloads:
-                os.replace(os.path.join(download_folder_path, file), os.path.join(self.download_folder_path, file))
-            break
-
-        self._driver.click_if_visible("div.js-react-modal div.modal-content button.modal-close-button", timeout=1)  # close the modal
-        self._driver.cdp.sleep(0.1)
-
-    def upload_to_s3(self, sources_links: List[str]):
-        self._logger.debug("Uploading files to S3")
-
-        for file in os.listdir(self.download_folder_path):
-            if not file.endswith(self._config_model.file_extension):
-                continue
-
-            file_path = os.path.join(self.download_folder_path, file)
-            if not os.path.isfile(file_path):
-                continue
-
-            current_resource = self._uploaded_resource_repository.get_by_content(
-                self._logging_db_scraper, self._config_model.bucket_key, file_path
+            time.sleep(interval)
+            completed_downloads = sorted(
+                [f for f in os.listdir(download_folder_path) if filename in f],
+                key=lambda x: os.path.getmtime(os.path.join(download_folder_path, x)),
+                reverse=True
             )
-            self._upload_resource_to_s3(current_resource, file)
+            if not completed_downloads:
+                continue
 
-            # Sleep after each successful upload to avoid overwhelming the server
-            time.sleep(random.uniform(2, 5))
+            # move the downloaded file to the download folder
+            file = completed_downloads[0]
+            new_path = os.path.join(self.download_folder_path, file)
+            os.replace(os.path.join(download_folder_path, file), new_path)
+            return new_path
 
-        shutil.rmtree(self.download_folder_path)
+        return None
 
     @property
     def download_folder_path(self) -> str:

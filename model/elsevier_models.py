@@ -1,5 +1,5 @@
 from typing import List, TypeAlias, Dict
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, Field
 
 from helper.base_enum import Enum
 from model.base_models import BaseConfig
@@ -34,5 +34,5 @@ ElsevierScraperOutput: TypeAlias = Dict[str, List[str]]
 
 
 class ElsevierScrapeIssueOutput(BaseModel):
-    was_scraped: bool
+    pdf_links: List[str] | None = Field(default_factory=list)
     next_issue_url: str | None
