@@ -203,22 +203,18 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedSubS
                    and (a_tag := ancestor.query_selector("a.app-card-open__link"))
             ]
 
-            pdf_tag_list = []
-            for articles_link in articles_links:
-                self._driver.cdp.open(articles_link)
-                self._driver.cdp.sleep(1)
-
-                if not (pdf_tag := self._get_parsed_page_source().find(
-                    "a",
-                    href=lambda href: href and ".pdf" in href,
-                    class_=lambda class_: class_ and "c-pdf-download__link" in class_
-                )):
-                    continue
-                pdf_tag_list.append(pdf_tag)
-
-            if not pdf_tag_list:
+            if not articles_links:
                 self.__consecutive_failures += 1
                 self._save_failure(url)
+
+            pdf_tag_list = [
+                Tag(name="a", attrs={
+                    "href": link.replace("/article/", "/content/pdf/").replace(
+                        "/chapter/", "/content/pdf/"
+                    ).replace("/book/", "/content/pdf/")
+                })
+                for link in articles_links
+            ]
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list
