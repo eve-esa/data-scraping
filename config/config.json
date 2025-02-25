@@ -693,7 +693,7 @@
         "request_with_proxy": true,
         "sources": [
             {
-                "landing_page_url": "https://journals.sagepub.com/action/doSearch?AllField=\"remote+sensing\"&startPage={page_number}&rel=&access=18&pageSize=100"
+                "landing_page_url": "https://journals.sagepub.com/action/doSearch?AllField=\"remote+sensing\"&startPage={page_number}&rel=&access=18&pageSize=300"
             }
         ]
     },
