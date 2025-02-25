@@ -85,7 +85,7 @@ class UploadedResourceRepository(BaseRepository):
     ) -> UploadedResource:
         if not content:
             resource.content_retrieved = False
-            resource.message = message
+            # resource.message = message
             return resource
 
         # calculate the sha256 of the content

@@ -60,26 +60,15 @@ class SageScraper(BasePaginationPublisherScraper):
             scraper = self._scrape_url(url)
 
             # Find all article links in the pagination URL, using the appropriate class or tag (if lambda returns True, it will be included in the list)
-            articles_links = [get_scraped_url_by_bs_tag(tag, self._config_model.base_url) for tag in scraper.find_all(
-                "a", href=lambda href: href and "/doi/reader" in href, attrs={"data-id": "srp-article-button"}
-            )]
+            articles_links = [
+                get_scraped_url_by_bs_tag(tag, self._config_model.base_url).replace("/doi/reader", "/doi/pdf") + "?download=true"
+                for tag in scraper.find_all("a", href=lambda href: href and "/doi/reader" in href, attrs={"data-id": "srp-article-button"})
+            ]
+            if not articles_links:
+                self._save_failure(url)
 
             # Now, visit each article link and find the PDF link
-            pdf_tag_list = []
-            for article_link in articles_links:
-                self._driver.cdp.open(article_link)
-                self._driver.cdp.sleep(1)
-
-                if (tag := self._get_parsed_page_source().find(
-                        "a",
-                        id="favourite-download",
-                        href=lambda href: href and "/doi/pdf/" in href,
-                        class_=lambda class_: class_ and "download" in class_,
-                )):
-                    pdf_tag_list.append(tag)
-
-            if not pdf_tag_list:
-                self._save_failure(url)
+            pdf_tag_list = [Tag(name="a", attrs={"href": link}) for link in articles_links]
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list

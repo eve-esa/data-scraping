@@ -82,23 +82,25 @@ class ISPRSScraper(BaseScraper):
             self._log_and_save_failure(article_link, f"An error occurred while scraping the article {article_link}: {e}")
             return None
 
-    def __scrape_proceedings(self, proceedings_links: List[str]) -> List[str]:
+    def __scrape_proceedings(self, proceedings_urls: List[str]) -> List[str]:
         result = []
 
-        for link in proceedings_links:
-            self._logger.info(f"Scraping proceedings: {link}")
+        for url in proceedings_urls:
+            self._logger.info(f"Scraping proceedings: {url}")
+            url_last_part = url.split("/")[-1]
+            base_url = url.replace(url_last_part, "") if "." in url_last_part else url
 
             try:
-                scraper = self._scrape_url(link)
+                scraper = self._scrape_url(url)
 
                 result.extend([
-                    get_scraped_url_by_bs_tag(tag, link if link.endswith("/") else link[:link.rfind('/')])
+                    get_scraped_url_by_bs_tag(tag, base_url)
                     for tag in scraper.find_all("a", href=lambda href: href and ".pdf" in href)
                 ])
             except Exception as e:
-                self._log_and_save_failure(link, f"An error occurred while scraping the proceedings {link}: {e}")
+                self._log_and_save_failure(url, f"An error occurred while scraping the proceedings {url}: {e}")
 
-        self._logger.info(f"Scraped {len(result)} articles from {len(proceedings_links)} proceedings")
+        self._logger.info(f"Scraped {len(result)} articles from {len(proceedings_urls)} proceedings")
         return result
 
     def post_process(self, scrape_output: List[str]) -> List[str]:

@@ -92,7 +92,7 @@ class BaseScraper(ABC):
             BeautifulSoup: the fully rendered HTML of the URL.
         """
         self._driver.cdp.open(url)
-        self._driver.cdp.sleep(1)
+        self._driver.cdp.sleep(random.uniform(1.5, 2.5))
         self._driver.uc_gui_click_captcha()
         self._wait_for_page_load()
         self._handle_cookie()
