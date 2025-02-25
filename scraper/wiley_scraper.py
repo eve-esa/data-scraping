@@ -1,12 +1,7 @@
 from typing import Type, List
 from bs4 import ResultSet, Tag
 
-from helper.utils import (
-    get_scraped_url_by_bs_tag,
-    get_scraped_url_by_web_element,
-    remove_query_string_from_url,
-    get_ancestor,
-)
+from helper.utils import get_scraped_url_by_bs_tag, get_scraped_url_by_web_element, get_ancestor
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from model.wiley_models import WileyConfig
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
@@ -75,62 +70,18 @@ class WileyScraper(BasePaginationPublisherScraper):
             except Exception:
                 tags = []
 
-            articles_links = [
-                get_scraped_url_by_web_element(a_tag, "https://rmets.onlinelibrary.wiley.com")
+            if not (articles_links := [
+                get_scraped_url_by_web_element(a_tag, self.__base_url).replace("/doi/", "/doi/pdfdirect/")
                 for tag in tags
                 if (ancestor := get_ancestor(tag, "div.item__body"))
                    and (a_tag := ancestor.query_selector("a.publication_title.visitable"))
                    and (href := a_tag.get_attribute("href"))
                    and "/doi/" in href
-            ]
-
-            # Now, visit each article link and find the PDF link
-            if not (pdf_tag_list := [
-                tag for article_link in articles_links if (tag := self.__scrape_article(article_link))
             ]):
                 self._save_failure(url)
 
-            self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
-            return pdf_tag_list
-        except Exception as e:
-            self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
-            return None
-
-    def __scrape_article(self, url: str) -> Tag | None:
-        """
-        Scrape the article page of the collection for the PDF link.
-
-        Args:
-            url (str): The URL to scrape.
-
-        Returns:
-            Tag | None: A Tag object containing the tag to the PDF link. If something went wrong, return None.
-        """
-        self._logger.info(f"Processing Article {url}")
-
-        try:
-            scraper = self._scrape_url(url)
-
-            # look for the ePDF link in the article page
-            epdf_tag = scraper.find(
-                "a",
-                href=lambda href: href and "/doi/epdf/" in href,
-                class_=lambda class_: class_ and "pdf-download" in class_,
-            )
-            if not epdf_tag:
-                return None
-
-            # now, scrape the ePDF page to get the final PDF link, and return this latter tag
-            self._driver.cdp.open(get_scraped_url_by_bs_tag(epdf_tag, self.__base_url))
-            self._driver.cdp.sleep(1)
-
-            if not (direct_pdf_tag := self._get_parsed_page_source().find(
-                    "a", href=lambda href: href and "/doi/pdfdirect/" in href
-            )):
-                self._save_failure(url)
-                return None
-
-            return Tag(name="a", attrs={"href": remove_query_string_from_url(direct_pdf_tag.get("href"))})
+            self._logger.debug(f"PDF links found: {len(articles_links)}")
+            return [Tag(name="a", attrs={"href": link}) for link in articles_links]
         except Exception as e:
             self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None
