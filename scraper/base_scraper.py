@@ -187,13 +187,19 @@ class BaseScraper(ABC):
         self._logger.debug("Uploading files to S3")
 
         for link in sources_links:
+            if self._uploaded_resource_repository.get_one_by(
+                {"scraper": self._logging_db_scraper, "source": link, "success": True}
+            ):
+                self._logger.warning(f"Resource {link} was already successfully uploaded, skipping.")
+                continue
+
             current_resource = self._uploaded_resource_repository.get_by_url(
                 self._logging_db_scraper, link, self._config_model
             )
             self._upload_resource_to_s3(current_resource, link)
 
             # Sleep after each successful upload to avoid overwhelming the server
-            time.sleep(random.uniform(2, 5))
+            self._wait_after_upload_to_s3()
 
     def _upload_resource_to_s3(self, resource: UploadedResource, resource_name: str) -> int | None:
         if resource.id and resource.success:
@@ -210,6 +216,9 @@ class BaseScraper(ABC):
         return self._uploaded_resource_repository.upsert(
             resource, {"scraper": resource.scraper, "source": resource.source}, keys_to_purge=["content"]
         )
+
+    def _wait_after_upload_to_s3(self):
+        time.sleep(random.uniform(2, 5))
 
     @abstractmethod
     def scrape(self) -> Any | None:
