@@ -51,8 +51,10 @@ class BaseScraper(ABC):
             output=json.dumps(scraping_results if is_json_serializable(scraping_results) else links)
         )
         self._scraper_output_repository.upsert(output, {"scraper": output.scraper}, {"output": output.output})
+        del output, scraping_results
 
         self.upload_to_s3(links)
+        del links
         self._analytics_manager.build_and_store_analytics(self._logging_db_scraper)
 
         self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")
