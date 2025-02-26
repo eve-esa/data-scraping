@@ -78,11 +78,11 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             articles_links = [
-                get_scraped_url_by_bs_tag(tag, self._config_model.base_url).replace("/doi/epdf/", "/doi/pdf/")
+                get_scraped_url_by_bs_tag(tag, self._config_model.base_url).replace("/doi/full/", "/doi/pdf/")
                 for tag in scraper.find_all(
                     "a",
-                    href=lambda href: href and "/doi/epdf/" in href,
-                    class_=lambda class_: class_ and "ref" in class_ and "nowrap" in class_ and "pdf" in class_,
+                    href=lambda href: href and "/doi/full/" in href,
+                    class_=lambda class_: class_ and "ref" in class_ and "nowrap" in class_,
                 )
             ]
             if not articles_links:
