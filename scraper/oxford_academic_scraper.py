@@ -1,7 +1,7 @@
 import os
 from typing import Type
 
-from helper.utils import get_scraped_url_by_bs_tag
+from helper.utils import get_scraped_url_by_bs_tag, get_scraped_url_by_web_element, get_ancestor
 from model.base_iterative_publisher_models import IterativePublisherScrapeIssueOutput
 from model.oxford_academic_models import OxfordAcademicConfig, OxfordAcademicJournal
 from scraper.base_iterative_publisher_scraper import BaseIterativePublisherScraper
@@ -48,17 +48,25 @@ class OxfordAcademicScraper(BaseIterativePublisherScraper):
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
         try:
-            scraper = self._scrape_url(issue_url)
+            self._scrape_url(issue_url)
 
-            # find all the URLs to the articles where I can grab the PDF links (one per article URL, if lambda returns
-            # True, it will be included in the list)
-            tags = scraper.find_all("a", class_="at-articleLink", href=lambda href: href and "/article/" in href)
+            try:
+                tags = self._driver.cdp.find_all("i.icon-availability_open")
+            except Exception:
+                tags = []
+
+            # find all the URLs to the articles where I can grab the PDF links
+            articles_links = [
+                get_scraped_url_by_web_element(a_tag, self._config_model.base_url)
+                for tag in tags
+                if (ancestor := get_ancestor(tag, "h5.customLink.item-title"))
+                   and (a_tag := ancestor.query_selector("a.at-articleLink"))
+                   and (href := a_tag.get_attribute("href"))
+                   and "/article/" in href
+            ]
 
             if not (pdf_links := [
-                pdf_link
-                for pdf_link in
-                map(lambda tag: self._scrape_article(get_scraped_url_by_bs_tag(tag, self._config_model.base_url)), tags)
-                if pdf_link
+                pdf_link for pdf_link in map(lambda link: self._scrape_article(link), articles_links) if pdf_link
             ]):
                 self._save_failure(issue_url)
 

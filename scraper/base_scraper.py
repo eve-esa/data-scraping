@@ -208,11 +208,8 @@ class BaseScraper(ABC):
 
         if resource.content:
             resource.success = self._s3_client.upload_content(resource)
-            return self._uploaded_resource_repository.upsert(
-                resource, {"sha256": resource.sha256}, keys_to_purge=["content"]
-            )
-
-        self._logger.warning(f"We were unable to retrieve the content from {resource_name}, skipping upload.")
+        else:
+            self._logger.warning(f"We were unable to retrieve the content from {resource_name}, skipping upload.")
         return self._uploaded_resource_repository.upsert(
             resource, {"scraper": resource.scraper, "source": resource.source}, keys_to_purge=["content"]
         )

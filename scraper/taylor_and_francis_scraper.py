@@ -32,31 +32,25 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
         try:
             self._scrape_url(source.url)
 
-            # Click all the volume links to load all the issues
-            self._driver.execute_script("""
-                async function clickButtons() {
-                    const buttons = document.querySelectorAll('button.volume_link');
-                    for (const button of buttons) {
-                        button.click();
-                        await new Promise(resolve => setTimeout(resolve, 1000));
-                    }
-                }
-                return clickButtons();
-            """)
+            buttons = self._driver.cdp.find_elements("li.vol_li > button.volume_link")
 
-            # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
-            issues_tag_list = self._get_parsed_page_source().find_all("a", href=True, class_="issue-link")
+            issues_links = []
+            for button in buttons:
+                button.click()
+                self._driver.cdp.sleep(2)
+                issues_links.extend([
+                    get_scraped_url_by_bs_tag(x, self._config_model.base_url)
+                    for x in self._get_parsed_page_source().find_all("a", href=True, class_="issue-link")
+                ])
+            issues_links = list(set(issues_links))
 
             # For each tag of issues previously collected, scrape the issue as a collection of articles
             if not (pdf_tag_list := [
                 tag
-                for x in issues_tag_list
-                if (
-                    tags := self._scrape_issue_or_collection(BaseUrlPublisherSource(
-                        url=get_scraped_url_by_bs_tag(x, self._config_model.base_url),
-                        type=str(SourceType.ISSUE_OR_COLLECTION)
-                    ))
-                )
+                for link in issues_links
+                if (tags := self._scrape_issue_or_collection(
+                    BaseUrlPublisherSource(url=link, type=str(SourceType.ISSUE_OR_COLLECTION))
+                ))
                 for tag in tags
             ]):
                 self._save_failure(source.url)
@@ -83,23 +77,18 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
             scraper = self._scrape_url(source.url)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
-            article_tag_list = scraper.find_all(
-                "a",
-                href=lambda href: href and "/doi/full/" in href,
-                class_=lambda class_: class_ and "ref nowrap" in class_,
-            )
-
-            # For each tag of articles previously collected, scrape the article
-            if not (pdf_tag_list := [
-                tag
-                for x in article_tag_list
-                if (
-                    tag := self._scrape_article(BaseUrlPublisherSource(
-                        url=get_scraped_url_by_bs_tag(x, self._config_model.base_url), type=str(SourceType.ARTICLE)
-                    ))
+            articles_links = [
+                get_scraped_url_by_bs_tag(tag, self._config_model.base_url).replace("/doi/epdf/", "/doi/pdf/")
+                for tag in scraper.find_all(
+                    "a",
+                    href=lambda href: href and "/doi/epdf/" in href,
+                    class_=lambda class_: class_ and "ref" in class_ and "nowrap" in class_ and "pdf" in class_,
                 )
-            ]):
+            ]
+            if not articles_links:
                 self._save_failure(source.url)
+
+            pdf_tag_list = [Tag(name="a", attrs={"href": link}) for link in articles_links]
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list

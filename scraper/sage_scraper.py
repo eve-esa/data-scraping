@@ -64,7 +64,9 @@ class SageScraper(BasePaginationPublisherScraper):
             # Find all article links in the pagination URL, using the appropriate class or tag (if lambda returns True, it will be included in the list)
             articles_links = [
                 get_scraped_url_by_bs_tag(tag, self._config_model.base_url).replace("/doi/reader", "/doi/pdf")
-                for tag in scraper.find_all("a", href=lambda href: href and "/doi/reader" in href, attrs={"data-id": "srp-article-button"})
+                for tag in scraper.find_all(
+                    "a", href=lambda href: href and "/doi/reader" in href, attrs={"data-id": "srp-article-button"}
+                )
             ]
             if not articles_links:
                 self._save_failure(url)
