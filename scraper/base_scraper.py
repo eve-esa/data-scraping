@@ -206,7 +206,7 @@ class BaseScraper(ABC):
             self._upload_resource_to_s3(current_resource, link)
 
             # Sleep after each successful upload to avoid overwhelming the server
-            time.sleep(random.uniform(2,5))
+            time.sleep(random.uniform(2, 5))
 
     def _upload_resource_to_s3(self, resource: UploadedResource, resource_name: str) -> int | None:
         if resource.id and resource.success:
