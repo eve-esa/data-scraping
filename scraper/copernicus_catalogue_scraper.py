@@ -37,7 +37,7 @@ class CopernicusCatalogueScraper(BasePaginationPublisherScraper):
     def _scrape_page(self, url: str) -> List[Tag] | None:
         try:
             self._scrape_url(url)
-            if not (article_tags := self._driver.cdp.find_elements("div.service-catalogue-articles a")):
+            if not (article_tags := self._driver.cdp.find_elements("div.service-catalogue-item a")):
                 self._save_failure(url)
 
             html_tag_list = []
