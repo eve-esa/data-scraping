@@ -65,13 +65,11 @@ class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
         waited_tag = self._config_model.waited_tag
 
         try:
-            self._config_model.waited_tag = None
+            self._config_model.waited_tag = "div.issue-details-past-tabs"
             self._scrape_url(landing_page_url)
 
-            tag_links = self._driver.cdp.find_elements("div.issue-details-past-tabs a", timeout=30)
-
             tags = []
-            for tag_link in tag_links:
+            for tag_link in self._waited_tag.query_selector_all("a"):
                 href = tag_link.get_attribute("href")  # the link represents a page of the collection
                 if href and "/tocresult" in href and "punumber=" in href:
                     tags.append(Tag(name="a", attrs={"href": tag_link.get_attribute("href")}))

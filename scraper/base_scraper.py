@@ -19,6 +19,7 @@ from repository.uploaded_resource_repository import UploadedResourceRepository
 class BaseScraper(ABC):
     def __init__(self) -> None:
         self._driver: SB = None
+        self._waited_tag = None
         self._config_model = None
         self._logging_db_scraper = self.__class__.__name__
 
@@ -155,7 +156,7 @@ class BaseScraper(ABC):
             self._driver.cdp.assert_element_absent(self._config_model.loading_tag, timeout=timeout)
 
         if self._config_model.waited_tag:
-            self._driver.cdp.wait_for_element_visible(self._config_model.waited_tag, timeout=timeout)
+            self._waited_tag = self._driver.cdp.wait_for_element_visible(self._config_model.waited_tag, timeout=timeout)
 
     def _handle_cookie(self, timeout: int | None = 10):
         if self._config_model.cookie_selector:
