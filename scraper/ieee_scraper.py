@@ -68,7 +68,7 @@ class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
             self._config_model.waited_tag = None
             self._scrape_url(landing_page_url)
 
-            tag_links = self._driver.cdp.find_elements("div.issue-details-past-tabs a", timeout=20)
+            tag_links = self._driver.cdp.find_elements("div.issue-details-past-tabs a", timeout=30)
 
             tags = []
             for tag_link in tag_links:

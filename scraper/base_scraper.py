@@ -150,7 +150,7 @@ class BaseScraper(ABC):
         # Get the fully rendered HTML
         return self._get_parsed_page_source()
 
-    def _wait_for_page_load(self, timeout: int | None = 20):
+    def _wait_for_page_load(self, timeout: int | None = 30):
         if self._config_model.loading_tag:
             self._driver.cdp.assert_element_absent(self._config_model.loading_tag, timeout=timeout)
 
