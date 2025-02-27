@@ -422,8 +422,9 @@ def get_scraped_url_by_bs_tag(tag: Tag, base_url: str, with_querystring: bool | 
     Returns:
         List[str]: A list of URLs of the articles in the issue.
     """
-    if tag.get("href").startswith("http"):
-        return tag.get("href").strip()
+    href = tag.get("href", getattr(tag, "href"))
+    if href.startswith("http"):
+        return href.strip()
 
     # Remove trailing/leading slashes except in http(s)://
     prefix = base_url.rstrip("/")
@@ -431,7 +432,7 @@ def get_scraped_url_by_bs_tag(tag: Tag, base_url: str, with_querystring: bool | 
         prefix += "//"
 
     # Join with single slash
-    result = f"{prefix}/{tag.get('href').lstrip('/').strip()}"
+    result = f"{prefix}/{href.lstrip('/').strip()}"
     return result if with_querystring else remove_query_string_from_url(result)
 
 
@@ -447,8 +448,9 @@ def get_scraped_url_by_web_element(we: WebElement, base_url: str, with_querystri
     Returns:
         List[str]: A list of URLs of the articles in the issue.
     """
-    if we.get_attribute("href").startswith("http"):
-        return we.get_attribute("href").strip()
+    href = we.get_attribute("href") or getattr(we, "href")
+    if href.startswith("http"):
+        return href.strip()
 
     # Remove trailing/leading slashes except in http(s)://
     prefix = base_url.rstrip("/")
@@ -456,7 +458,7 @@ def get_scraped_url_by_web_element(we: WebElement, base_url: str, with_querystri
         prefix += "//"
 
     # Join with single slash
-    result = f"{prefix}/{we.get_attribute('href').lstrip('/').strip()}"
+    result = f"{prefix}/{href.lstrip('/').strip()}"
     return result if with_querystring else remove_query_string_from_url(result)
 
 

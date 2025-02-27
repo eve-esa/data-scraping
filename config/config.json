@@ -371,166 +371,188 @@
     },
     "CopernicusScraper": {
         "bucket_key": "{main_folder}/copernicus",
-        "journals": [
+        "sources": [
             {
-                "url": "https://acp.copernicus.org",
-                "name": "Atmospheric Chemistry and Physics",
-                "start_volume": 1,
-                "end_volume": 30,
-                "start_issue": 1,
-                "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
-                "consecutive_missing_issues_threshold": 3
+                "name": "Copernicus EGUP",
+                "scraper": "CopernicusEgupScraper",
+                "config": {
+                    "journals": [
+                        {
+                            "url": "https://acp.copernicus.org",
+                            "name": "Atmospheric Chemistry and Physics",
+                            "start_volume": 1,
+                            "end_volume": 30,
+                            "start_issue": 1,
+                            "end_issue": 30,
+                            "consecutive_missing_volumes_threshold": 3,
+                            "consecutive_missing_issues_threshold": 3
+                        },
+                        {
+                            "url": "https://amt.copernicus.org",
+                            "name": "Atmospheric Measurement Techniques",
+                            "start_volume": 1,
+                            "end_volume": 30,
+                            "start_issue": 1,
+                            "end_issue": 30,
+                            "consecutive_missing_volumes_threshold": 3,
+                            "consecutive_missing_issues_threshold": 3
+                        },
+                        {
+                            "url": "https://bg.copernicus.org",
+                            "name": "Biogeosciences",
+                            "start_volume": 1,
+                            "end_volume": 30,
+                            "start_issue": 1,
+                            "end_issue": 30,
+                            "consecutive_missing_volumes_threshold": 3,
+                            "consecutive_missing_issues_threshold": 3
+                        },
+                        {
+                            "url": "https://cp.copernicus.org",
+                            "name": "Climate of the Past",
+                            "start_volume": 1,
+                            "end_volume": 30,
+                            "start_issue": 1,
+                            "end_issue": 30,
+                            "consecutive_missing_volumes_threshold": 3,
+                            "consecutive_missing_issues_threshold": 3
+                        },
+                        {
+                            "url": "https://esurf.copernicus.org",
+                            "name": "Earth Surface Dynamics",
+                            "start_volume": 1,
+                            "end_volume": 30,
+                            "start_issue": 1,
+                            "end_issue": 30,
+                            "consecutive_missing_volumes_threshold": 3,
+                            "consecutive_missing_issues_threshold": 3
+                        },
+                        {
+                            "url": "https://esd.copernicus.org",
+                            "name": "Earth System Dynamics",
+                            "start_volume": 1,
+                            "end_volume": 30,
+                            "start_issue": 1,
+                            "end_issue": 30,
+                            "consecutive_missing_volumes_threshold": 3,
+                            "consecutive_missing_issues_threshold": 3
+                        },
+                        {
+                            "url": "https://egusphere.copernicus.org",
+                            "name": "EGU Sphere",
+                            "start_volume": 1,
+                            "end_volume": 30,
+                            "start_issue": 1,
+                            "end_issue": 30,
+                            "consecutive_missing_volumes_threshold": 3,
+                            "consecutive_missing_issues_threshold": 3
+                        },
+                        {
+                            "url": "https://gmd.copernicus.org",
+                            "name": "Geoscientific Model Development",
+                            "start_volume": 1,
+                            "end_volume": 30,
+                            "start_issue": 1,
+                            "end_issue": 30,
+                            "consecutive_missing_volumes_threshold": 3,
+                            "consecutive_missing_issues_threshold": 3
+                        },
+                        {
+                            "url": "https://hess.copernicus.org",
+                            "name": "Hydrology and Earth System Sciences",
+                            "start_volume": 1,
+                            "end_volume": 30,
+                            "start_issue": 1,
+                            "end_issue": 30,
+                            "consecutive_missing_volumes_threshold": 3,
+                            "consecutive_missing_issues_threshold": 3
+                        },
+                        {
+                            "url": "https://nhess.copernicus.org",
+                            "name": "Natural Hazards and Earth System Sciences",
+                            "start_volume": 1,
+                            "end_volume": 30,
+                            "start_issue": 1,
+                            "end_issue": 30,
+                            "consecutive_missing_volumes_threshold": 3,
+                            "consecutive_missing_issues_threshold": 3
+                        },
+                        {
+                            "url": "https://npg.copernicus.org",
+                            "name": "Nonlinear Processes in Geophysics",
+                            "start_volume": 1,
+                            "end_volume": 30,
+                            "start_issue": 1,
+                            "end_issue": 30,
+                            "consecutive_missing_volumes_threshold": 3,
+                            "consecutive_missing_issues_threshold": 3
+                        },
+                        {
+                            "url": "https://soil.copernicus.org",
+                            "name": "Soil",
+                            "start_volume": 1,
+                            "end_volume": 30,
+                            "start_issue": 1,
+                            "end_issue": 30,
+                            "consecutive_missing_volumes_threshold": 3,
+                            "consecutive_missing_issues_threshold": 3
+                        },
+                        {
+                            "url": "https://tc.copernicus.org",
+                            "name": "The Cryosphere",
+                            "start_volume": 1,
+                            "end_volume": 30,
+                            "start_issue": 1,
+                            "end_issue": 30,
+                            "consecutive_missing_volumes_threshold": 3,
+                            "consecutive_missing_issues_threshold": 3
+                        },
+                        {
+                            "url": "https://wcd.copernicus.org",
+                            "name": "Weather and Climate Dynamics",
+                            "start_volume": 1,
+                            "end_volume": 30,
+                            "start_issue": 1,
+                            "end_issue": 30,
+                            "consecutive_missing_volumes_threshold": 3,
+                            "consecutive_missing_issues_threshold": 3
+                        },
+                        {
+                            "url": "https://gi.copernicus.org",
+                            "name": "Geoscientific Instrumentation, Methods and Data Systems",
+                            "start_volume": 1,
+                            "end_volume": 30,
+                            "start_issue": 1,
+                            "end_issue": 30,
+                            "consecutive_missing_volumes_threshold": 3,
+                            "consecutive_missing_issues_threshold": 3
+                        },
+                        {
+                            "url": "https://ar.copernicus.org",
+                            "name": "Aerosol Research Journal",
+                            "start_volume": 1,
+                            "end_volume": 30,
+                            "start_issue": 1,
+                            "end_issue": 30,
+                            "consecutive_missing_volumes_threshold": 3,
+                            "consecutive_missing_issues_threshold": 3
+                        }
+                    ]
+                }
             },
             {
-                "url": "https://amt.copernicus.org",
-                "name": "Atmospheric Measurement Techniques",
-                "start_volume": 1,
-                "end_volume": 30,
-                "start_issue": 1,
-                "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
-                "consecutive_missing_issues_threshold": 3
-            },
-            {
-                "url": "https://bg.copernicus.org",
-                "name": "Biogeosciences",
-                "start_volume": 1,
-                "end_volume": 30,
-                "start_issue": 1,
-                "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
-                "consecutive_missing_issues_threshold": 3
-            },
-            {
-                "url": "https://cp.copernicus.org",
-                "name": "Climate of the Past",
-                "start_volume": 1,
-                "end_volume": 30,
-                "start_issue": 1,
-                "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
-                "consecutive_missing_issues_threshold": 3
-            },
-            {
-                "url": "https://esurf.copernicus.org",
-                "name": "Earth Surface Dynamics",
-                "start_volume": 1,
-                "end_volume": 30,
-                "start_issue": 1,
-                "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
-                "consecutive_missing_issues_threshold": 3
-            },
-            {
-                "url": "https://esd.copernicus.org",
-                "name": "Earth System Dynamics",
-                "start_volume": 1,
-                "end_volume": 30,
-                "start_issue": 1,
-                "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
-                "consecutive_missing_issues_threshold": 3
-            },
-            {
-                "url": "https://egusphere.copernicus.org",
-                "name": "EGU Sphere",
-                "start_volume": 1,
-                "end_volume": 30,
-                "start_issue": 1,
-                "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
-                "consecutive_missing_issues_threshold": 3
-            },
-            {
-                "url": "https://gmd.copernicus.org",
-                "name": "Geoscientific Model Development",
-                "start_volume": 1,
-                "end_volume": 30,
-                "start_issue": 1,
-                "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
-                "consecutive_missing_issues_threshold": 3
-            },
-            {
-                "url": "https://hess.copernicus.org",
-                "name": "Hydrology and Earth System Sciences",
-                "start_volume": 1,
-                "end_volume": 30,
-                "start_issue": 1,
-                "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
-                "consecutive_missing_issues_threshold": 3
-            },
-            {
-                "url": "https://nhess.copernicus.org",
-                "name": "Natural Hazards and Earth System Sciences",
-                "start_volume": 1,
-                "end_volume": 30,
-                "start_issue": 1,
-                "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
-                "consecutive_missing_issues_threshold": 3
-            },
-            {
-                "url": "https://npg.copernicus.org",
-                "name": "Nonlinear Processes in Geophysics",
-                "start_volume": 1,
-                "end_volume": 30,
-                "start_issue": 1,
-                "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
-                "consecutive_missing_issues_threshold": 3
-            },
-            {
-                "url": "https://soil.copernicus.org",
-                "name": "Soil",
-                "start_volume": 1,
-                "end_volume": 30,
-                "start_issue": 1,
-                "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
-                "consecutive_missing_issues_threshold": 3
-            },
-            {
-                "url": "https://tc.copernicus.org",
-                "name": "The Cryosphere",
-                "start_volume": 1,
-                "end_volume": 30,
-                "start_issue": 1,
-                "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
-                "consecutive_missing_issues_threshold": 3
-            },
-            {
-                "url": "https://wcd.copernicus.org",
-                "name": "Weather and Climate Dynamics",
-                "start_volume": 1,
-                "end_volume": 30,
-                "start_issue": 1,
-                "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
-                "consecutive_missing_issues_threshold": 3
-            },
-            {
-                "url": "https://gi.copernicus.org",
-                "name": "Geoscientific Instrumentation, Methods and Data Systems",
-                "start_volume": 1,
-                "end_volume": 30,
-                "start_issue": 1,
-                "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
-                "consecutive_missing_issues_threshold": 3
-            },
-            {
-                "url": "https://ar.copernicus.org",
-                "name": "Aerosol Research Journal",
-                "start_volume": 1,
-                "end_volume": 30,
-                "start_issue": 1,
-                "end_issue": 30,
-                "consecutive_missing_volumes_threshold": 3,
-                "consecutive_missing_issues_threshold": 3
+                "name": "Copernicus Service Catalogue",
+                "scraper": "CopernicusServiceCatalogueScraper",
+                "config": {
+                    "base_url": "https://www.copernicus.eu/",
+                    "file_extension": "html",
+                    "cookie_selector": "button.agree-button.eu-cookie-compliance-default-button",
+                    "sources": [
+                        {
+                            "landing_page_url": "https://www.copernicus.eu/en/accessing-data-where-and-how/copernicus-services-catalogue?page={page_number}"
+                        }
+                    ]
+                }
             }
         ]
     },

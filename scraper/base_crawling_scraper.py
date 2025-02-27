@@ -61,7 +61,7 @@ class BaseCrawlingScraper(BaseScraper):
             current_resource = self._uploaded_resource_repository.get_by_content(
                 self._logging_db_scraper, self._config_model.bucket_key, file_path
             )
-            self._upload_resource_to_s3(current_resource, file_path.replace(self._get_crawling_folder_path(), ""))
+            self._upload_resource_to_s3(current_resource, file_path.replace(crawling_folder, ""))
 
             # Sleep after each successful upload to avoid overwhelming the server
             time.sleep(random.uniform(2, 5))

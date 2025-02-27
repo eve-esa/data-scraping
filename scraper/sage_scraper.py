@@ -1,5 +1,3 @@
-import random
-import time
 from typing import Type, List
 from bs4 import Tag
 
@@ -86,6 +84,3 @@ class SageScraper(BasePaginationPublisherScraper):
         except Exception as e:
             self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None
-
-    def _wait_after_upload_to_s3(self):
-        time.sleep(random.uniform(4, 10))

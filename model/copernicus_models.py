@@ -1,10 +1,7 @@
 from typing import List
 
-from model.base_iterative_publisher_models import (
-    BaseIterativePublisherConfig,
-    BaseIterativeWithConstraintPublisherJournal,
-)
+from model.base_mapped_models import BaseMappedIterativeWithConstraintJournal, BaseMappedIterativeWithConstraintConfig
 
 
-class CopernicusConfig(BaseIterativePublisherConfig):
-    journals: List[BaseIterativeWithConstraintPublisherJournal]
+class CopernicusConfig(BaseMappedIterativeWithConstraintConfig):
+    journals: List[BaseMappedIterativeWithConstraintJournal]
