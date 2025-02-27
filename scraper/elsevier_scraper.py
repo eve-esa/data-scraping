@@ -170,14 +170,13 @@ class ElsevierScraper(BaseScraper):
                     if (file_path := self.__wait_end_download(pid)) is None:
                         continue
 
-                    self._logger.info(f"Uploading file {file_path}")
-
                     current_resource = self._uploaded_resource_repository.get_by_content(
                         self._logging_db_scraper, self._config_model.bucket_key, file_path
                     )
                     self._upload_resource_to_s3(current_resource, pid)
 
-                    # Sleep after each successful upload to avoid overwhelming the server
+                    # remove the file and sleep after each successful upload to avoid overwhelming the server
+                    os.remove(file_path)
                     time.sleep(random.uniform(2, 5))
         finally:
             shutil.rmtree(self.download_folder_path)
