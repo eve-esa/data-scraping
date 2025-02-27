@@ -124,6 +124,10 @@ class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
 
 
 class IEEESearchScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
+    def __init__(self):
+        super().__init__()
+        self.__source = None
+
     @property
     def config_model_type(self) -> Type[BaseMappedPaginationConfig]:
         """
@@ -141,11 +145,13 @@ class IEEESearchScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
         Returns:
             BasePaginationPublisherScrapeOutput | None: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.
         """
-        pdf_links = [
-            get_scraped_url_by_bs_tag(pdf_tag, self._config_model.base_url)
-            for idx, source in enumerate(self._config_model.sources)
-            for pdf_tag in self._scrape_landing_page(source.landing_page_url, idx + 1)
-        ]
+        pdf_links = []
+        for idx, source in enumerate(self._config_model.sources):
+            self.__source = source
+            pdf_links.extend([
+                get_scraped_url_by_bs_tag(pdf_tag, self._config_model.base_url)
+                for pdf_tag in self._scrape_landing_page(source.landing_page_url, idx + 1)
+            ])
 
         return {"IEEE": pdf_links} if pdf_links else None
 
@@ -161,7 +167,7 @@ class IEEESearchScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
         """
         self._logger.info(f"Processing Landing Page {landing_page_url}")
 
-        return self._scrape_pagination(landing_page_url, source_number)
+        return self._scrape_pagination(landing_page_url, source_number, page_size=self.__source.page_size)
 
     def _scrape_page(self, url: str) -> ResultSet | None:
         """
