@@ -10,7 +10,7 @@ from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScr
 class WileyScraper(BasePaginationPublisherScraper):
     def __init__(self):
         super().__init__()
-        self.__base_url = None
+        self.__source = None
 
     @property
     def config_model_type(self) -> Type[WileyConfig]:
@@ -31,10 +31,10 @@ class WileyScraper(BasePaginationPublisherScraper):
         """
         pdf_tags = {}
         for idx, source in enumerate(self._config_model.sources):
-            self.__base_url = source.base_url
+            self.__source = source
             pdf_tags_journal = self._scrape_landing_page(source.landing_page_url, idx + 1)
             if pdf_tags_journal:
-                pdf_tags[source.name] = [get_scraped_url_by_bs_tag(tag, self.__base_url) for tag in pdf_tags_journal]
+                pdf_tags[source.name] = [get_scraped_url_by_bs_tag(tag, source.base_url) for tag in pdf_tags_journal]
 
         return pdf_tags if pdf_tags else None
 
@@ -50,7 +50,7 @@ class WileyScraper(BasePaginationPublisherScraper):
         """
         self._logger.info(f"Processing Landing Page {landing_page_url}")
 
-        return self._scrape_pagination(landing_page_url, source_number, base_zero=True)
+        return self._scrape_pagination(landing_page_url, source_number, base_zero=True, page_size=self.__source.page_size)
 
     def _scrape_page(self, url: str) -> List[Tag] | None:
         """
@@ -71,7 +71,7 @@ class WileyScraper(BasePaginationPublisherScraper):
                 tags = []
 
             if not (articles_links := [
-                get_scraped_url_by_web_element(a_tag, self.__base_url).replace("/doi/", "/doi/pdfdirect/")
+                get_scraped_url_by_web_element(a_tag, self.__source.base_url).replace("/doi/", "/doi/pdfdirect/")
                 for tag in tags
                 if (ancestor := get_ancestor(tag, "div.item__body"))
                    and (a_tag := ancestor.query_selector("a.publication_title.visitable"))

@@ -14,6 +14,7 @@ class BasePaginationPublisherSource(BaseModel):
     """
     landing_page_url: str
     page_size: int | None = None
+    max_allowed_papers: int | None = None
 
 
 class BasePaginationPublisherConfig(BaseConfig):

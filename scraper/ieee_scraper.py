@@ -1,3 +1,4 @@
+import random
 from typing import List, Type, Dict
 from bs4 import Tag, ResultSet
 
@@ -6,7 +7,7 @@ from model.base_mapped_models import BaseMappedPaginationConfig
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
-from scraper.base_scraper import BaseMappedSubScraper, BaseScraper
+from scraper.base_scraper import BaseMappedSubScraper
 
 
 class IEEEScraper(BaseMappedPublisherScraper):
@@ -41,8 +42,10 @@ class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
             for idx, source in enumerate(self._config_model.sources)
             for tag in self._scrape_landing_page(source.landing_page_url, idx + 1)
             for pdf_tag in self._scrape_pagination(
-                f"{get_scraped_url_by_bs_tag(tag, self._config_model.base_url, with_querystring=True)}&sortType=vol-only-seq&rowsPerPage=100&pageNumber={{page_number}}",
-                idx + 1
+                f"{get_scraped_url_by_bs_tag(tag, self._config_model.base_url, with_querystring=True)}&sortType=vol-only-seq&rowsPerPage={{page_size}}&pageNumber={{page_number}}",
+                idx + 1,
+                page_size=source.page_size,
+                max_allowed_papers=source.max_allowed_papers,
             )
         ]
 
@@ -74,10 +77,10 @@ class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
                     tags.append(Tag(name="a", attrs={"href": tag_link.get_attribute("href")}))
                 elif href is None:  # the link represents a falsy button to click on, to load the list of various issues
                     tag_link.click()
-                    self._driver.cdp.sleep(0.1)
+                    self._driver.cdp.sleep(random.uniform(0.5, 1.5))
                     tags.extend([
                         Tag(name="a", attrs={"href": href})
-                        for tag in self._driver.cdp.find_elements("div.issue-list a")
+                        for tag in self._driver.cdp.find_elements("div.issue-details a")
                         if (href := tag.get_attribute("href")) and "/tocresult" in href and "punumber=" in href
                     ])
 

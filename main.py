@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 from helper.constants import CONFIG_PATH
 from helper.database import init_db
-from helper.utils import read_json_file, discover_scrapers, run_scrapers
+from helper.utils import read_json_file, discover_scrapers, run_scrapers, resume_upload_scrapers
 
 from service.analytics_manager import AnalyticsManager
 
@@ -21,6 +21,10 @@ def main(args):
     if args.scrapers:
         scrapers = {name: scrapers[name] for name in args.scrapers if name in scrapers}
 
+    if not scrapers:
+        print("No scraper found.")
+        return
+
     if parse_bool_arg(args.analytics_only):
         analytics_manager = AnalyticsManager()
         print(json.dumps(
@@ -34,6 +38,11 @@ def main(args):
     with open("logs/scraping.log", "w") as f:
         f.write("")
     scraper_config = read_json_file(CONFIG_PATH)
+
+    if parse_bool_arg(args.resume_upload):
+        resume_upload_scrapers(scrapers, scraper_config)
+        return
+
     run_scrapers(scrapers, scraper_config, force=parse_bool_arg(args.force))
 
 
@@ -64,6 +73,14 @@ if __name__ == "__main__":
         default=False,
         nargs="?",
         help="Only show analytics without running scrapers",
+    )
+
+    parser.add_argument(
+        "-r",
+        "--resume-upload",
+        default=False,
+        nargs="?",
+        help="Resume uploading the data to the remote storage",
     )
 
     args = parser.parse_args()

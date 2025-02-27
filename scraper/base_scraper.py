@@ -31,15 +31,18 @@ class BaseScraper(ABC):
 
         self._analytics_manager = AnalyticsManager()
 
-    def __call__(self, config_model: BaseConfig, force: bool = False):
+    def __call__(self, force: bool = False):
         from helper.utils import is_json_serializable
+
+        if not self._config_model:
+            self._logger.error("No configuration model set, aborting.")
+            return
 
         if not force and self._scraper_output_repository.get_one_by({"scraper": self._logging_db_scraper}):
             self._logger.warning(f"Scraper {self.__class__.__name__} already done")
             return
 
         self._logger.info(f"Running scraper {self.__class__.__name__}")
-        self.set_config_model(config_model)
         self._scraper_failure_repository.delete_by({"scraper": self._logging_db_scraper})
 
         if (scraping_results := self._run_scraping()) is None:
@@ -63,6 +66,9 @@ class BaseScraper(ABC):
     def set_config_model(self, config_model: BaseConfig):
         self._config_model = config_model
         return self
+
+    def set_config_model_from_dict(self, config_dict: Dict[str, Any]):
+        return self.set_config_model(self.config_model_type(**config_dict))
 
     def set_logging_db_scraper(self, scraper: str):
         self._logging_db_scraper = scraper

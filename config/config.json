@@ -623,10 +623,14 @@
                     "waited_tag": "div.List-results",
                     "sources": [
                         {
-                            "landing_page_url": "https://ieeexplore.ieee.org/xpl/issues?punumber=4609443&isnumber=10766875"
+                            "landing_page_url": "https://ieeexplore.ieee.org/xpl/issues?punumber=4609443&isnumber=10766875",
+                            "page_size": 100,
+                            "max_allowed_papers": 10000
                         },
                         {
-                            "landing_page_url": "https://ieeexplore.ieee.org/xpl/issues?punumber=6287639&isnumber=10380310"
+                            "landing_page_url": "https://ieeexplore.ieee.org/xpl/issues?punumber=6287639&isnumber=10380310",
+                            "page_size": 100,
+                            "max_allowed_papers": 10000
                         }
                     ]
                 }
@@ -640,7 +644,9 @@
                     "waited_tag": "div.List-results",
                     "sources": [
                         {
-                            "landing_page_url": "https://ieeexplore.ieee.org/search/searchresult.jsp?queryText=(%22earth%20observation%22%20OR%20%22remote%20sensing%22%20OR%20%22earth%20monitoring%22%20OR%20%22environmental%20monitoring%22%20OR%20%22satellite%20observation%22%20OR%20%22synthetic%20aperture%20radar%22%20OR%20%22multispectral%20imaging%22%20OR%20%22lidar%22%20OR%20%22light%20detection%20and%20ranging%22%20OR%20%22geospatial%20monitoring%22%20OR%20%22atmospheric%20observations%22%20OR%20%22land%20use%2Fland%20cover%22%20OR%20%22lulc%22)&highlight=true&returnFacets=ALL&returnType=SEARCH&matchPubs=true&openAccess=true&rowsPerPage=100&pageNumber={page_number}"
+                            "landing_page_url": "https://ieeexplore.ieee.org/search/searchresult.jsp?queryText=(%22earth%20observation%22%20OR%20%22remote%20sensing%22%20OR%20%22earth%20monitoring%22%20OR%20%22environmental%20monitoring%22%20OR%20%22satellite%20observation%22%20OR%20%22synthetic%20aperture%20radar%22%20OR%20%22multispectral%20imaging%22%20OR%20%22lidar%22%20OR%20%22light%20detection%20and%20ranging%22%20OR%20%22geospatial%20monitoring%22%20OR%20%22atmospheric%20observations%22%20OR%20%22land%20use%2Fland%20cover%22%20OR%20%22lulc%22)&highlight=true&returnFacets=ALL&returnType=SEARCH&matchPubs=true&openAccess=true&rowsPerPage={page_size}&pageNumber={page_number}",
+                            "page_size": 100,
+                            "max_allowed_papers": 10000
                         }
                     ]
                 }
@@ -693,7 +699,8 @@
         "request_with_proxy": true,
         "sources": [
             {
-                "landing_page_url": "https://journals.sagepub.com/action/doSearch?AllField=\"remote+sensing\"&startPage={page_number}&rel=&access=18&pageSize=300"
+                "landing_page_url": "https://journals.sagepub.com/action/doSearch?AllField=\"remote+sensing\"&startPage={page_number}&rel=&access=18&pageSize={page_size}",
+                "page_size": 300
             }
         ]
     },
@@ -723,144 +730,172 @@
         "request_with_proxy": true,
         "sources": [
             {
-                "landing_page_url": "https://rmets.onlinelibrary.wiley.com/action/doSearch?SeriesKey=1530261x&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://rmets.onlinelibrary.wiley.com/action/doSearch?SeriesKey=1530261x&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Atmospheric Science Letters",
-                "base_url": "https://rmets.onlinelibrary.wiley.com"
+                "base_url": "https://rmets.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
                 "landing_page_url": "https://zslpublications.onlinelibrary.wiley.com/action/doSearch?SeriesKey=20563485&sortBy=Earliest&pageSize=100&startPage={page_number}",
                 "name": "Remote Sensing in Ecology and Conservation",
-                "base_url": "https://zslpublications.onlinelibrary.wiley.com"
+                "base_url": "https://zslpublications.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=2576604x&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=2576604x&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "AGU Advances",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://onlinelibrary.wiley.com/action/doSearch?SeriesKey=26929430&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://onlinelibrary.wiley.com/action/doSearch?SeriesKey=26929430&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Community Science",
-                "base_url": "https://onlinelibrary.wiley.com"
+                "base_url": "https://onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=23284277&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=23284277&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Earth's Future",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=23335084&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=23335084&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Earth and Space Science",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=15252027&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=15252027&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Geochemistry, Geophysics, Geosystems",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=24711403&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=24711403&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "GeoHealth",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=19448007&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=19448007&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Geophysical Research Letters",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=19422466&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=19422466&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Journal of Advances in Modeling Earth Systems",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=26376989&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=26376989&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Perspectives of Earth and Space Scientists",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=15427390&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=15427390&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Space Weather",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=19447973&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=19447973&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Water Resources Research",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=29935210&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=29935210&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Journal of Geophysical Research: Machine Learning and Computation",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=23249250&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=23249250&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Eos, Transactions American Geophysical Union",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=19449224&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=19449224&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Global Biogeochemical Cycles",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=25724525&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=25724525&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Paleoceanography and Paleoclimatology",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=1944799x&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=1944799x&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Radio Science",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=19449208&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=19449208&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Reviews of Geophysics",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=23254432&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=23254432&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Space Weather Quarterly",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=19449194&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=19449194&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Tectonics",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=21698996&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=21698996&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Journal of Geophysical Research: Atmospheres",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=21698961&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=21698961&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Journal of Geophysical Research: Biogeosciences",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=21699011&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=21699011&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Journal of Geophysical Research: Earth Surface",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=21699291&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=21699291&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Journal of Geophysical Research: Oceans",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=21699100&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=21699100&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Journal of Geophysical Research: Planets",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=21699356&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=21699356&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Journal of Geophysical Research: Solid Earth",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             },
             {
-                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=21699402&sortBy=Earliest&pageSize=100&startPage={page_number}",
+                "landing_page_url": "https://agupubs.onlinelibrary.wiley.com/action/doSearch?SeriesKey=21699402&sortBy=Earliest&pageSize={page_size}&startPage={page_number}",
                 "name": "Journal of Geophysical Research: Space Physics",
-                "base_url": "https://agupubs.onlinelibrary.wiley.com"
+                "base_url": "https://agupubs.onlinelibrary.wiley.com",
+                "page_size": 100
             }
         ]
     },

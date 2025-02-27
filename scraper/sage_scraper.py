@@ -9,6 +9,10 @@ from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScr
 
 
 class SageScraper(BasePaginationPublisherScraper):
+    def __init__(self):
+        super().__init__()
+        self.__source = None
+
     @property
     def config_model_type(self) -> Type[BasePaginationPublisherConfig]:
         """
@@ -28,6 +32,7 @@ class SageScraper(BasePaginationPublisherScraper):
         """
         pdf_tags = []
         for idx, source in enumerate(self._config_model.sources):
+            self.__source = source
             pdf_tags.extend(self._scrape_landing_page(source.landing_page_url, idx + 1))
 
         return {"Sage": [
@@ -46,7 +51,9 @@ class SageScraper(BasePaginationPublisherScraper):
         """
         self._logger.info(f"Processing Landing Page {landing_page_url}")
 
-        return self._scrape_pagination(landing_page_url, source_number, base_zero=True)
+        return self._scrape_pagination(
+            landing_page_url, source_number, base_zero=True, page_size=self.__source.page_size
+        )
 
     def _scrape_page(self, url: str) -> List[Tag] | None:
         """

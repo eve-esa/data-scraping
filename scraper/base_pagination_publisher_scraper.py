@@ -22,10 +22,14 @@ class BasePaginationPublisherScraper(BaseScraper):
             List[Tag]: A list of Tag objects containing the tags to the PDF links.
         """
         page_number = 0 if base_zero else 1
+        page_size = kwargs.get("page_size", 50)
+        max_allowed_papers = kwargs.get("max_allowed_papers")
 
         pdf_tag_list = []
         while True:
-            start_index = (page_number if base_zero else page_number - 1) * kwargs.get("page_size", 50)
+            start_index = (page_number if base_zero else page_number - 1) * page_size
+            if max_allowed_papers is not None and start_index >= max_allowed_papers:
+                break
 
             # parse the query with parameters
             # they are enclosed in curly braces, must be replaced with the actual values
