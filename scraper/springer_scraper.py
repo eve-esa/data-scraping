@@ -161,7 +161,7 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedSubS
             get_scraped_url_by_bs_tag(tag, self._config_model.base_url) for tag in pdf_tags
         ]} if pdf_tags else None
 
-    def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> ResultSet | List[Tag]:
+    def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> List[Tag]:
         """
         Scrape the landing page.
 

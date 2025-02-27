@@ -51,7 +51,7 @@ class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
 
         return {"IEEE": pdf_links} if pdf_links else None
 
-    def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> ResultSet | List[Tag]:
+    def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> List[Tag]:
         """
         Scrape the landing page.
 
@@ -59,7 +59,7 @@ class IEEEJournalsScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
             landing_page_url (str): The landing page to scrape.
 
         Returns:
-            ResultSet | List[Tag]: A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF links. If something went wrong, an empty list.
+            List[Tag]: A list of Tag objects containing the tags to the PDF links. If something went wrong, an empty list.
         """
         self._logger.info(f"Processing Landing Page {landing_page_url}")
         waited_tag = self._config_model.waited_tag
@@ -153,7 +153,7 @@ class IEEESearchScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
 
         return {"IEEE": pdf_links} if pdf_links else None
 
-    def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> ResultSet | List[Tag]:
+    def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> List[Tag]:
         """
         Scrape the landing page.
 
@@ -161,7 +161,7 @@ class IEEESearchScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
             landing_page_url (str): The landing page to scrape.
 
         Returns:
-            ResultSet | List[Tag]: A ResultSet (i.e., a list) or a list of Tag objects containing the tags to the PDF links. If something went wrong, an empty list.
+            List[Tag]: A list of Tag objects containing the tags to the PDF links. If something went wrong, an empty list.
         """
         self._logger.info(f"Processing Landing Page {landing_page_url}")
 

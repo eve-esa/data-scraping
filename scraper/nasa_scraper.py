@@ -143,7 +143,7 @@ class NASAEOSScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
             get_scraped_url_by_bs_tag(tag, self._config_model.base_url) for tag in pdf_tags
         ]} if pdf_tags else None
 
-    def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> ResultSet | List[Tag] | None:
+    def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> List[Tag]:
         self._logger.info(f"Processing Landing Page {landing_page_url}")
 
         return self._scrape_pagination(landing_page_url, source_number, base_zero=True)

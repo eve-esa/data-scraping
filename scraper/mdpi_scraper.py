@@ -1,6 +1,6 @@
 import os
 from typing import Type, Dict, List
-from bs4 import ResultSet, Tag
+from bs4 import Tag
 
 from helper.utils import get_scraped_url_by_bs_tag
 from model.base_iterative_publisher_models import IterativePublisherScrapeIssueOutput
@@ -107,12 +107,12 @@ class MDPIGoogleSearchScraper(BasePaginationPublisherScraper, BaseMappedSubScrap
             get_scraped_url_by_bs_tag(tag, self._config_model.base_url) for tag in pdf_tags
         ]} if pdf_tags else None
 
-    def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> ResultSet | List[Tag] | None:
+    def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> List[Tag]:
         self._logger.info(f"Processing Landing Page {landing_page_url}")
 
         return self._scrape_pagination(landing_page_url, source_number, base_zero=True, page_size=self.__page_size)
 
-    def _scrape_page(self, url: str) -> ResultSet | List[Tag] | None:
+    def _scrape_page(self, url: str) -> List[Tag] | None:
         def get_mdpi_pdf_tags(mdpi_tag: Tag):
             mdpi_url = mdpi_tag.get("href")
             self._driver.cdp.open(mdpi_url)
