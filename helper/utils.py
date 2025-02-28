@@ -462,7 +462,9 @@ def get_scraped_url_by_web_element(we: WebElement, base_url: str, with_querystri
     return result if with_querystring else remove_query_string_from_url(result)
 
 
-def get_resource_from_remote_by_request(source_url: str, request_with_proxy: bool = False) -> bytes:
+def get_resource_from_remote_by_request(
+    source_url: str, request_with_proxy: bool = False, max_retries: int | None = 5
+) -> bytes:
     proxy = get_interacting_proxy_config()
     headers = {
         "User-Agent": get_user_agent(),
@@ -471,12 +473,24 @@ def get_resource_from_remote_by_request(source_url: str, request_with_proxy: boo
         "Referer": "https://www.google.com",
     }
 
-    response = requests.get(
-        source_url, headers=headers, proxies={"http": proxy, "https": proxy}, verify=False
-    ) if request_with_proxy else requests.get(source_url, headers=headers)
+    retry_count = 0
+    while retry_count <= max_retries:
+        if retry_count > 0:
+            headers["Accept-Encoding"] = "identity"
+        try:
+            response = requests.get(
+                source_url, headers=headers, proxies={"http": proxy, "https": proxy}, verify=False
+            ) if request_with_proxy else requests.get(source_url, headers=headers)
 
-    response.raise_for_status()  # Check for request errors
-    return response.content
+            response.raise_for_status()  # Check for request errors
+
+            return response.content
+        except Exception as e:
+            retry_count += 1
+            if retry_count <= max_retries:
+                time.sleep(2 * retry_count)
+            else:
+                raise e
 
 
 def get_resource_from_remote_by_scraping(
