@@ -626,7 +626,7 @@
         "bucket_key": "{main_folder}/ieee",
         "base_url": "https://ieeexplore.ieee.org",
         "cookie_selector": "button.osano-cm-accept-all",
-        "waited_tag": "div.List-results",
+        "waited_tag": "div.List-results-items",
         "sources": [
             {
                 "landing_page_url": "https://ieeexplore.ieee.org/search/searchresult.jsp?queryText=(%22earth%20observation%22%20OR%20%22remote%20sensing%22%20OR%20%22earth%20monitoring%22%20OR%20%22environmental%20monitoring%22%20OR%20%22satellite%20observation%22%20OR%20%22synthetic%20aperture%20radar%22%20OR%20%22multispectral%20imaging%22%20OR%20%22lidar%22%20OR%20%22light%20detection%20and%20ranging%22%20OR%20%22geospatial%20monitoring%22%20OR%20%22atmospheric%20observations%22%20OR%20%22land%20use%2Fland%20cover%22%20OR%20%22lulc%22)&highlight=true&returnFacets=ALL&returnType=SEARCH&matchPubs=true&openAccess=true&rowsPerPage={page_size}&pageNumber={page_number}",

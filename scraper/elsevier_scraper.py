@@ -1,11 +1,6 @@
-import os.path
-import random
-import shutil
-import time
 from typing import Type, List
-from seleniumbase import SB
 
-from helper.utils import get_scraped_url_by_bs_tag, get_sb_configuration
+from helper.utils import get_scraped_url_by_bs_tag
 from model.elsevier_models import (
     SourceType,
     ElsevierConfig,
@@ -13,14 +8,10 @@ from model.elsevier_models import (
     ElsevierSource,
     ElsevierScrapeIssueOutput,
 )
-from scraper.base_scraper import BaseScraper
+from scraper.base_source_download_scraper import BaseSourceDownloadScraper
 
 
-class ElsevierScraper(BaseScraper):
-    def __init__(self):
-        super().__init__()
-        self.__download_folder_path = None
-
+class ElsevierScraper(BaseSourceDownloadScraper):
     @property
     def config_model_type(self) -> Type[ElsevierConfig]:
         return ElsevierConfig
@@ -140,85 +131,18 @@ class ElsevierScraper(BaseScraper):
             self._log_and_save_failure(source.url, f"Error scraping issue: {e}")
             return ElsevierScrapeIssueOutput(next_issue_url=None)
 
-    def upload_to_s3(self, sources_links: List[str]):
-        def get_pid(link_: str) -> str:
-            # from the `link`, get the `pid` parameter of the querystring
-            try:
-                pid = link_.split("pid=")[1].split("&")[0]
-            except Exception:
-                pid = None
-            return pid
-
-        self._logger.debug("Uploading files to S3")
-
-        sb_configuration = get_sb_configuration()
-        sb_configuration["external_pdf"] = True
-
+    def _get_file_path_from_link(self, link: str) -> str | None:
         try:
-            with SB(**sb_configuration) as driver:
-                self.set_driver(driver)
-                self._driver.activate_cdp_mode()
-                self._driver.cdp.maximize()
+            pid = link.split("pid=")[1].split("&")[0]
+        except Exception:
+            return None
 
-                for link in sources_links:
-                    if not (pid := get_pid(link)):
-                        continue
-
-                    # visit the PDF link
-                    self._scrape_url(link)
-
-                    if (file_path := self.__wait_end_download(pid)) is None:
-                        continue
-
-                    current_resource = self._uploaded_resource_repository.get_by_content(
-                        self._logging_db_scraper, self._config_model.bucket_key, file_path
-                    )
-                    self._upload_resource_to_s3(current_resource, pid)
-
-                    # remove the file and sleep after each successful upload to avoid overwhelming the server
-                    os.remove(file_path)
-                    time.sleep(random.uniform(2, 5))
+        file_path = None
+        try:
+            # visit the PDF link
+            self._driver.cdp.open(link)
+            file_path = self._wait_end_download(pid)
+        except Exception as e:
+            self._logger.error(f"Error uploading to S3: {e}")
         finally:
-            shutil.rmtree(self.download_folder_path)
-
-    def __wait_end_download(self, filename: str, timeout: int | None = 30, interval: float | None = 0.5) -> str | None:
-        """
-        Wait for the download to finish. If the download is not completed within the specified timeout, raise an
-        exception.
-
-        Args:
-            filename (str): The name of the file to wait for.
-            timeout (int): The timeout in seconds. Default is 10 seconds.
-            interval (float): The interval in seconds to check for the file. Default is 0.5 seconds.
-        """
-        start_time = time.time()
-        download_folder_path = self._driver.get_browser_downloads_folder()
-
-        # wait until the download is completed
-        while time.time() - start_time < timeout:
-            time.sleep(interval)
-            completed_downloads = sorted(
-                [f for f in os.listdir(download_folder_path) if filename in f],
-                key=lambda x: os.path.getmtime(os.path.join(download_folder_path, x)),
-                reverse=True
-            )
-            if not completed_downloads:
-                continue
-
-            # move the downloaded file to the download folder
-            file = completed_downloads[0]
-            new_path = os.path.join(self.download_folder_path, file)
-            os.replace(os.path.join(download_folder_path, file), new_path)
-            return new_path
-
-        return None
-
-    @property
-    def download_folder_path(self) -> str:
-        if self.__download_folder_path is None:
-            download_folder_path = os.path.join(self._driver.get_browser_downloads_folder(), "elsevier")
-            os.makedirs(download_folder_path, exist_ok=True)
-
-            self.__download_folder_path = download_folder_path
-
-        return self.__download_folder_path
+            return file_path

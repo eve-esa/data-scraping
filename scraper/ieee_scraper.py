@@ -4,9 +4,10 @@ from bs4 import Tag, ResultSet
 from helper.utils import get_scraped_url_by_bs_tag
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput, BasePaginationPublisherConfig
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
+from scraper.base_source_download_scraper import BaseSourceDownloadScraper
 
 
-class IEEEScraper(BasePaginationPublisherScraper):
+class IEEEScraper(BasePaginationPublisherScraper, BaseSourceDownloadScraper):
     def __init__(self):
         super().__init__()
         self.__source = None
@@ -32,7 +33,7 @@ class IEEEScraper(BasePaginationPublisherScraper):
         for idx, source in enumerate(self._config_model.sources):
             self.__source = source
             pdf_links.extend([
-                get_scraped_url_by_bs_tag(pdf_tag, self._config_model.base_url)
+                get_scraped_url_by_bs_tag(pdf_tag, self._config_model.base_url, with_querystring=True)
                 for pdf_tag in self._scrape_landing_page(source.landing_page_url, idx + 1)
             ])
 
@@ -50,7 +51,12 @@ class IEEEScraper(BasePaginationPublisherScraper):
         """
         self._logger.info(f"Processing Landing Page {landing_page_url}")
 
-        return self._scrape_pagination(landing_page_url, source_number, page_size=self.__source.page_size)
+        return self._scrape_pagination(
+            landing_page_url,
+            source_number,
+            page_size=self.__source.page_size,
+            max_allowed_papers=self.__source.max_allowed_papers
+        )
 
     def _scrape_page(self, url: str) -> ResultSet | None:
         """
@@ -78,3 +84,20 @@ class IEEEScraper(BasePaginationPublisherScraper):
         except Exception as e:
             self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None
+
+    def _get_file_path_from_link(self, link: str) -> str | None:
+        file_path = None
+        try:
+            # visit the PDF link
+            self._driver.cdp.open(link)
+
+            # get the iframe source, which is the real PDF link to download
+            scraper = self._get_parsed_page_source()
+            pdf_url = scraper.find("iframe", src=True, sandbox=False).get("src")
+            self._driver.cdp.open(pdf_url)
+
+            file_path = self._wait_end_download(".pdf")
+        except Exception as e:
+            self._logger.error(f"Error uploading to S3: {e}")
+        finally:
+            return file_path
