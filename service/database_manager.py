@@ -1,6 +1,9 @@
+from contextlib import contextmanager
 import os
+import time
 from typing import List, Dict, Any
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, inspect
+from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import or_
 
@@ -25,8 +28,62 @@ class DatabaseManager:
 
         db_url = f"mysql+pymysql://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
 
-        self.engine = create_engine(db_url)
-        self.metadata = MetaData()
+        self.engine = create_engine(
+            db_url,
+            pool_recycle=3600,
+            pool_timeout=30,
+            pool_pre_ping=True,
+            connect_args={
+                "connect_timeout": 10,
+                "read_timeout": 30,
+                "write_timeout": 30,
+            }
+        )
+
+    def execute_with_retry(self, operation: callable, max_retries: int | None = 3, retry_delay: float | None = 1):
+        """
+        Execute a database operation with retry logic
+
+        Args:
+            operation: Function that performs the database operation
+            max_retries: Maximum number of retry attempts
+            retry_delay: Delay between retries in seconds
+
+        Returns:
+            Result of the operation
+        """
+        retries = 0
+        last_error = None
+
+        while retries < max_retries:
+            try:
+                return operation()
+            except OperationalError as e:
+                if "2013" in str(e) or "Lost connection" in str(e):
+                    retries += 1
+                    last_error = e
+                    time.sleep(retry_delay * retries)
+                    continue
+                raise
+            except SQLAlchemyError as e:
+                raise
+
+        raise last_error
+
+    @contextmanager
+    def session_scope(self):
+        """
+        Provide a transactional scope around a series of operations.
+        """
+        session = sessionmaker(bind=self.engine, expire_on_commit=True)()
+        try:
+            yield session
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
     def create_table(self, table_name: str, columns: Dict[str, DatabaseFieldDefinition]) -> None:
         """
@@ -45,8 +102,9 @@ class DatabaseManager:
                 Column(name=col_name, type_=col_def.type, default=col_def.default, nullable=col_def.nullable)
             )
 
-        Table(table_name, self.metadata, *table_columns)
-        self.metadata.create_all(self.engine)
+        metadata = MetaData()
+        Table(table_name, metadata, *table_columns)
+        metadata.create_all(self.engine)
 
     def get_table_info(self, table_name: str) -> List[Dict[str, str]]:
         """
@@ -84,11 +142,8 @@ class DatabaseManager:
         """
         return [col["name"] for col in self.get_table_info(table_name)]
 
-    def get_session(self):
-        return sessionmaker(bind=self.engine, expire_on_commit=True)()
-
     def get_table(self, table_name: str):
-        return Table(table_name, self.metadata, autoload_with=self.engine)
+        return Table(table_name, MetaData(), autoload_with=self.engine)
 
     def get_record(self, table_name: str, record_id: int) -> Dict[str, Any] | None:
         """
@@ -101,15 +156,12 @@ class DatabaseManager:
         Returns:
             Dictionary with the record data, or None if the record was not found
         """
-        session = self.get_session()
+        def operation():
+            with self.session_scope() as session:
+                result = session.query(self.get_table(table_name)).filter_by(id=record_id).first()
+                return dict(result._mapping) if result else None
 
-        result = session.query(self.get_table(table_name)).filter_by(id=record_id).first()
-
-        session.close()
-
-        if result:
-            return dict(result._mapping)
-        return None
+        return self.execute_with_retry(operation)
 
     def insert_record(self, table_name: str, data: Dict[str, Any]) -> int:
         """
@@ -122,13 +174,12 @@ class DatabaseManager:
         Returns:
             ID of the inserted record
         """
-        session = self.get_session()
+        def operation():
+            with self.session_scope() as session:
+                result = session.execute(self.get_table(table_name).insert().values(**data))
+                return result.inserted_primary_key[0]
 
-        result = session.execute(self.get_table(table_name).insert().values(**data))
-        session.commit()
-        session.close()
-
-        return result.inserted_primary_key[0]
+        return self.execute_with_retry(operation)
 
     def update_record(self, table_name: str, record_id: int, data: Dict[str, Any]) -> bool:
         """
@@ -142,17 +193,17 @@ class DatabaseManager:
         Returns:
             True if the update was successful
         """
-        session = self.get_session()
+        def operation():
+            with self.session_scope() as session:
+                table = self.get_table(table_name)
+                result = session.execute(
+                    table.update()
+                    .where(table.c.id == record_id)
+                    .values(**data)
+                )
+                return result.rowcount > 0
 
-        table = self.get_table(table_name)
-        result = session.execute(
-            table.update()
-            .where(table.c.id == record_id)
-            .values(**data)
-        )
-        session.commit()
-        session.close()
-        return result.rowcount > 0
+        return self.execute_with_retry(operation)
 
     def delete_record(self, table_name: str, record_id: int) -> bool:
         """
@@ -165,16 +216,15 @@ class DatabaseManager:
         Returns:
             True if the deletion was successful
         """
-        session = self.get_session()
+        def operation():
+            with self.session_scope() as session:
+                table = self.get_table(table_name)
+                result = session.execute(
+                    table.delete().where(table.c.id == record_id)
+                )
+                return result.rowcount > 0
 
-        table = self.get_table(table_name)
-        result = session.execute(
-            table.delete().where(table.c.id == record_id)
-        )
-        session.commit()
-        session.close()
-
-        return result.rowcount > 0
+        return self.execute_with_retry(operation)
 
     def delete_records_by(self, table_name: str, conditions: Dict[str, Any], operator: str = "AND") -> bool:
         """
@@ -188,23 +238,20 @@ class DatabaseManager:
         Returns:
             True if the deletion was successful
         """
-        session = self.get_session()
+        def operation():
+            with self.session_scope() as session:
+                table = self.get_table(table_name)
+                query = session.query(table)
+                # Build filter conditions
+                if operator.upper() == "AND":
+                    query = query.filter_by(**conditions)
+                else:  # OR
+                    or_conditions = [getattr(table.c, k) == v for k, v in conditions.items()]
+                    query = query.filter(or_(*or_conditions))
+                result = query.delete()
+                return result > 0
 
-        table = self.get_table(table_name)
-        query = session.query(table)
-
-        # Build filter conditions
-        if operator.upper() == "AND":
-            query = query.filter_by(**conditions)
-        else:  # OR
-            or_conditions = [getattr(table.c, k) == v for k, v in conditions.items()]
-            query = query.filter(or_(*or_conditions))
-
-        result = query.delete()
-        session.commit()
-        session.close()
-
-        return result > 0
+        return self.execute_with_retry(operation)
 
     def delete_all_records(self, table_name: str) -> bool:
         """
@@ -216,13 +263,12 @@ class DatabaseManager:
         Returns:
             True if the deletion was successful
         """
-        session = self.get_session()
+        def operation():
+            with self.session_scope() as session:
+                result = session.query(self.get_table(table_name)).delete()
+                return result > 0
 
-        result = session.query(self.get_table(table_name)).delete()
-        session.commit()
-        session.close()
-
-        return result > 0
+        return self.execute_with_retry(operation)
 
     def get_all_records(self, table_name: str) -> List[Dict[str, Any]]:
         """
@@ -234,12 +280,12 @@ class DatabaseManager:
         Returns:
             List of dictionaries, each representing a record
         """
-        session = self.get_session()
+        def operation():
+            with self.session_scope() as session:
+                result = session.query(self.get_table(table_name)).all()
+                return [dict(row._mapping) for row in result]
 
-        result = session.query(self.get_table(table_name)).all()
-        session.close()
-
-        return [dict(row._mapping) for row in result]
+        return self.execute_with_retry(operation)
 
     def search_records(
         self,
@@ -266,33 +312,28 @@ class DatabaseManager:
         Returns:
             List of dictionaries, each representing a record
         """
-        session = self.get_session()
+        def operation():
+            with self.session_scope() as session:
+                table = self.get_table(table_name)
+                query = session.query(table)
+                # Build filter conditions
+                if operator.upper() == "AND":
+                    query = query.filter_by(**conditions)
+                else:  # OR
+                    from sqlalchemy import or_
+                    or_conditions = [getattr(table.c, k) == v for k, v in conditions.items()]
+                    query = query.filter(or_(*or_conditions))
+                # Apply ordering
+                if order_by:
+                    column = getattr(table.c, order_by)
+                    query = query.order_by(column.desc() if desc else column.asc())
+                if group_by:
+                    column = getattr(table.c, group_by)
+                    query = query.group_by(column)
+                # Apply limit
+                if limit:
+                    query = query.limit(limit)
+                result = query.all()
+                return [dict(row._mapping) for row in result]
 
-        table = self.get_table(table_name)
-        query = session.query(table)
-
-        # Build filter conditions
-        if operator.upper() == "AND":
-            query = query.filter_by(**conditions)
-        else:  # OR
-            from sqlalchemy import or_
-            or_conditions = [getattr(table.c, k) == v for k, v in conditions.items()]
-            query = query.filter(or_(*or_conditions))
-
-        # Apply ordering
-        if order_by:
-            column = getattr(table.c, order_by)
-            query = query.order_by(column.desc() if desc else column.asc())
-
-        if group_by:
-            column = getattr(table.c, group_by)
-            query = query.group_by(column)
-
-        # Apply limit
-        if limit:
-            query = query.limit(limit)
-
-        result = query.all()
-        session.close()
-
-        return [dict(row._mapping) for row in result]
+        return self.execute_with_retry(operation)
