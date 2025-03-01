@@ -43,7 +43,7 @@ class UploadedResource(BaseModel):
     content: bytes | None = None
     content_retrieved: bool | None = False
     success: bool | None = False
-    # message: str | None = None
+    message: str | None = None
 
     @classmethod
     def def_types(cls) -> Dict[str, DatabaseFieldDefinition]:
@@ -54,7 +54,7 @@ class UploadedResource(BaseModel):
             "sha256": DatabaseFieldDefinition(type=String(length=255), default=None),
             "success": DatabaseFieldDefinition(type=Boolean, nullable=False, default=False),
             "content_retrieved": DatabaseFieldDefinition(type=Boolean, nullable=False, default=False),
-            # "message": DatabaseFieldDefinition(type=Text, default=None),
+            "message": DatabaseFieldDefinition(type=Text, default=None),
             "last_access_at": DatabaseFieldDefinition(type=String(length=255), nullable=False),
         }
 
