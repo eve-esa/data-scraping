@@ -7,7 +7,7 @@ to a new location with a UUID name while keeping the original extension.
 import os
 import json
 import uuid
-import argparse
+from argparse import ArgumentParser
 import logging
 import boto3
 from dotenv import load_dotenv
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description="Copy unique files with UUID names.")
+    parser = ArgumentParser(description="Copy unique files with UUID names.")
     parser.add_argument("--input", required=True, help="SHA256 Groups JSON File")
     parser.add_argument("--bucket", required=True, help="S3 Bucket name")
     parser.add_argument(
@@ -57,10 +57,10 @@ def copy_file_with_uuid(args):
             Key=dest_key
         )
 
-        logger.info(f"Copiato {source_key} -> {dest_key}")
+        logger.info(f"Copied {source_key} -> {dest_key}")
         return source_key, dest_key, True
     except ClientError as e:
-        logger.error(f"Errore nella copia di {source_key}: {e}")
+        logger.error(f"Error while copying {source_key}: {e}")
         return source_key, None, False
 
 

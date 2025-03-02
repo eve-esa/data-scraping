@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Script that recursively explores an S3 directory and groups files based on their SHA256 hash.
 S3 connection parameters are loaded from a .env file
@@ -9,7 +8,7 @@ import hashlib
 import boto3
 from botocore.exceptions import ClientError
 from collections import defaultdict
-import argparse
+from argparse import ArgumentParser
 import json
 from concurrent.futures import ThreadPoolExecutor
 import logging
@@ -21,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description="Group file S3 per hash SHA256.")
+    parser = ArgumentParser(description="Group file S3 per hash SHA256.")
     parser.add_argument("--bucket", required=True, help="S3 Bucket name")
     parser.add_argument("--prefix", required=True, help="Prefix of the folder to inspect (e.g. raw_data/egup/)")
     parser.add_argument(
