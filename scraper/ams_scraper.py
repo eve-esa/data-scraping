@@ -105,10 +105,7 @@ class AMSScraper(BaseIterativePublisherScraper):
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
         try:
-            scraper = self._scrape_url(issue_url)
-            if any(keyword in scraper.text.lower() for keyword in ["not found", "maintenance"]):
-                self._log_and_save_failure(issue_url, f"Issue {issue_num} in Volume {volume_num} not found or under maintenance.")
-                return None
+            self._scrape_url(issue_url)
 
             # find all the article links in the issue by keeping only the links to the accessible articles
             try:
@@ -127,11 +124,17 @@ class AMSScraper(BaseIterativePublisherScraper):
                    and (a_tag := grandparent.query_selector("a.c-Button--link"))
                    and (href := a_tag.get_attribute("href"))
                    and f"/view/journals/{journal.code}/{volume_num}/{issue_num}/" in href
+                   and ".xml" in href
             ]
 
             # Now, visit each article link and find the PDF link
-            if not (pdf_links := [pdf_link for link in article_links if (pdf_link := self._scrape_article(link))]):
+            if not article_links:
                 self._save_failure(issue_url)
+
+            pdf_links = [
+                link.replace("/view/journals/", "/downloadpdf/view/journals/").replace(".xml", ".pdf")
+                for link in article_links
+            ]
 
             self._logger.debug(f"PDF links found: {len(pdf_links)}")
             return pdf_links
@@ -149,15 +152,4 @@ class AMSScraper(BaseIterativePublisherScraper):
         Returns:
             str | None: The string containing the PDF link, or None if no link was found or something went wrong.
         """
-        self._logger.info(f"Processing Article URL: {article_url}")
-
-        try:
-            scraper = self._scrape_url(article_url)
-            if pdf_tag := scraper.find("a", href=True, class_="pdf-download"):
-                return get_scraped_url_by_bs_tag(pdf_tag, self._config_model.base_url)
-
-            self._save_failure(article_url)
-            return None
-        except Exception as e:
-            self._log_and_save_failure(article_url, f"Failed to process Article {article_url}. Error: {e}")
-            return None
+        pass

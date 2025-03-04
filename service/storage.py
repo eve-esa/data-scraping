@@ -58,3 +58,57 @@ class S3Storage:
         except Exception as e:
             self.logger.error(f"Failed to upload content from {resource.source} to {resource.bucket_key}. Error: {e}")
             return False
+
+    def move(self, source: str, destination: str) -> bool:
+        """
+        Move an object from one location to another in the same bucket.
+
+        Args:
+            source (str): The key of the object to move.
+            destination (str): The key of the destination object.
+
+        Returns:
+            bool: True if the object was moved successfully, False otherwise.
+        """
+        try:
+            self.client.copy_object(
+                Bucket=self.bucket_name,
+                CopySource={"Bucket": self.bucket_name, "Key": source},
+                Key=destination
+            )
+            self.client.delete_object(Bucket=self.bucket_name, Key=source)
+            self.logger.info(f"Moved {source} to {destination}")
+            return True
+        except Exception as e:
+            self.logger.error(f"Failed to move {source} to {destination}. Error: {e}")
+            return False
+
+    def move_folder(self, source_prefix: str, destination_prefix: str) -> bool:
+        """
+        Move all objects in a folder from one location to another in the same bucket.
+
+        Args:
+            source_prefix (str): The prefix of the objects to move.
+            destination_prefix (str): The prefix of the destination objects.
+
+        Returns:
+            bool: True if the objects were moved successfully, False otherwise.
+        """
+        try:
+            paginator = self.client.get_paginator("list_objects_v2")
+            pages = paginator.paginate(Bucket=self.bucket_name, Prefix=source_prefix)
+
+            for page in pages:
+                if "Contents" not in page:
+                    continue
+
+                for obj in page["Contents"]:
+                    source_key = obj["Key"]
+                    destination_key = source_key.replace(source_prefix, destination_prefix, 1)
+
+                    self.move(source_key, destination_key)
+
+            return True
+        except Exception as e:
+            self.logger.error(f"Failed to move folder {source_prefix} to {destination_prefix}. Error: {e}")
+            return False
