@@ -117,8 +117,10 @@ class AMSScraper(BaseIterativePublisherScraper):
             except Exception:
                 pass
 
-            article_links = [
-                get_scraped_url_by_web_element(a_tag, self._config_model.base_url)
+            pdf_links = [
+                get_scraped_url_by_web_element(
+                    a_tag, self._config_model.base_url
+                ).replace("/view/journals/", "/downloadpdf/view/journals/").replace(".xml", ".pdf")
                 for tag in tags
                 if (grandparent := tag.get_parent().get_parent())
                    and (a_tag := grandparent.query_selector("a.c-Button--link"))
@@ -128,13 +130,8 @@ class AMSScraper(BaseIterativePublisherScraper):
             ]
 
             # Now, visit each article link and find the PDF link
-            if not article_links:
+            if not pdf_links:
                 self._save_failure(issue_url)
-
-            pdf_links = [
-                link.replace("/view/journals/", "/downloadpdf/view/journals/").replace(".xml", ".pdf")
-                for link in article_links
-            ]
 
             self._logger.debug(f"PDF links found: {len(pdf_links)}")
             return pdf_links
