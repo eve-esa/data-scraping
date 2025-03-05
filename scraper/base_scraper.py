@@ -19,11 +19,15 @@ from repository.uploaded_resource_repository import UploadedResourceRepository
 class BaseScraper(ABC):
     def __init__(self) -> None:
         self._driver: SB = None
-        self._waited_tag = None
-        self._config_model = None
-        self._logging_db_scraper = self.__class__.__name__
 
+        self._cookie_handled = False
+
+        self._config_model = None
+        self._waited_tag = None
+
+        self._logging_db_scraper = self.__class__.__name__
         self._logger = setup_logger(self.__class__.__name__)
+
         self._s3_client = S3Storage()
 
         self._scraper_failure_repository = ScraperFailureRepository()
@@ -106,7 +110,7 @@ class BaseScraper(ABC):
 
         # if a modal exists, find the button with the class `btn-close` and click it
         self._driver.cdp.click_if_visible("div.modal_content button.btn-close")
-        self._driver.cdp.sleep(random.uniform(0.5, 1.5))
+        self._driver.cdp.sleep(0.5)
 
         # Scroll through the page to load all articles
         last_height = self._driver.execute_script(f"""
@@ -146,7 +150,7 @@ class BaseScraper(ABC):
             last_height = new_height
 
         # Sleep for some time to avoid being blocked by the server on the next request
-        self._driver.cdp.sleep(random.uniform(2, 5))
+        self._driver.cdp.sleep(random.uniform(2, 4))
 
         # Get the fully rendered HTML
         return self._get_parsed_page_source()
@@ -159,9 +163,10 @@ class BaseScraper(ABC):
             self._waited_tag = self._driver.cdp.wait_for_element_visible(self._config_model.waited_tag, timeout=timeout)
 
     def _handle_cookie(self, timeout: int | None = 10):
-        if self._config_model.cookie_selector:
+        if not self._cookie_handled and self._config_model.cookie_selector:
             try:
                 self._driver.cdp.click(self._config_model.cookie_selector, timeout=timeout)
+                self._cookie_handled = True
             except Exception:
                 pass
 
