@@ -105,7 +105,9 @@ class AMSScraper(BaseIterativePublisherScraper):
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
         try:
-            self._scrape_url(issue_url)
+            scraper = self._scrape_url(issue_url)
+            if "we could not find the page that you are looking for" in scraper.text:
+                raise Exception(f"Failed to load {issue_url}: page not found")
 
             # find all the article links in the issue by keeping only the links to the accessible articles
             try:
