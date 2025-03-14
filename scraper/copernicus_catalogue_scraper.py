@@ -97,8 +97,7 @@ class CopernicusCatalogueScraper(BasePaginationPublisherScraper):
         file_paths = [
             os.path.join(download_folder, file)
             for file in os.listdir(download_folder)
-            if file.endswith(self._config_model.file_extension)
-               and os.path.isfile(os.path.join(download_folder, file))
+            if os.path.isfile(os.path.join(download_folder, file))
         ]
         if not file_paths:
             for source_link in sources_links:

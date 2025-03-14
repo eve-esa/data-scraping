@@ -16,7 +16,7 @@ class DirectLinksScraper(BaseMappedPublisherScraper):
         for source_name, source_links in sources_links.items():
             current_config_model = self._config_model.model_copy()
             self._config_model.bucket_key = self._bucket_keys[source_name]
-            self._config_model.file_extension = self._file_extensions[source_name]
+            self._config_model.files_by_request = self._files_by_request[source_name]
 
             super(BaseMappedPublisherScraper, self).upload_to_s3(source_links)
             self.set_config_model(current_config_model)

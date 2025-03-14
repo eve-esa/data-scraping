@@ -113,7 +113,7 @@ class MDPIGoogleSearchScraper(BasePaginationPublisherScraper, BaseMappedSubScrap
         return self._scrape_pagination(landing_page_url, source_number, base_zero=True, page_size=self.__page_size)
 
     def _scrape_page(self, url: str) -> List[Tag] | None:
-        def get_mdpi_pdf_tags(mdpi_tag: Tag):
+        def get_pdf_tags(mdpi_tag: Tag):
             mdpi_url = mdpi_tag.get("href")
             self._driver.cdp.open(mdpi_url)
             self._driver.cdp.sleep(1)
@@ -131,12 +131,12 @@ class MDPIGoogleSearchScraper(BasePaginationPublisherScraper, BaseMappedSubScrap
 
             mdpi_tags = scraper.find_all(
                 "a",
-                href=lambda href: href and "www.mdpi.com" in href and not any(
+                href=lambda href: href and self._config_model.base_url in href and not any(
                     x in href for x in self.__forbidden_keywords
                 ),
             )
 
-            if not (pdf_tag_list := [tag for mdpi_tag in mdpi_tags for tag in get_mdpi_pdf_tags(mdpi_tag)]):
+            if not (pdf_tag_list := [tag for mdpi_tag in mdpi_tags for tag in get_pdf_tags(mdpi_tag)]):
                 self._save_failure(url)
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")

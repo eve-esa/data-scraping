@@ -20,6 +20,9 @@ from fake_useragent import UserAgent, FakeUserAgentError
 from selenium.webdriver.remote.webelement import WebElement
 from seleniumbase import SB
 from seleniumbase.undetected.cdp_driver.element import Element
+import filetype
+import magic
+import mimetypes
 
 from helper.constants import DEFAULT_UA, DEFAULT_CRAWLING_FOLDER
 from helper.logger import setup_logger, setup_worker_logging
@@ -61,6 +64,25 @@ def write_json_file(file_path: str, data: Dict | List):
 
     with open(file_path, "w") as file:
         json.dump(data, file, indent=4)
+
+
+def get_file_extension_from_file_content(content: bytes) -> str | None:
+    """
+    Get the file extension from the content.
+
+    Args:
+        content (bytes): The content of the file.
+
+    Returns:
+        str: The file extension, or None if the extension cannot be determined.
+    """
+    kind = filetype.guess(content)
+    if kind is None:
+        mime = magic.Magic(mime=True)
+        mime_type = mime.from_buffer(content)
+        return (mimetypes.guess_extension(mime_type) or "").lstrip(".")
+
+    return kind.extension
 
 
 def is_json_serializable(data) -> bool:
@@ -496,6 +518,8 @@ def get_resource_from_remote_by_request(
                 time.sleep(2 * retry_count)
             else:
                 raise e
+
+    raise Exception(f"Failed to retrieve the content from {source_url}")
 
 
 def get_resource_from_remote_by_scraping(

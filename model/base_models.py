@@ -9,7 +9,7 @@ class ReadMoreButton(BaseModel):
 
 class Config(ABC, BaseModel):
     bucket_key: str
-    file_extension: str | None = "pdf"
+    files_by_request: bool | None = True
 
 
 class BaseConfig(Config, ABC):

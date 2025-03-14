@@ -2,8 +2,10 @@ beautifulsoup4==4.13.3
 boto3==1.35.90
 colorlog==6.9.0
 fake-useragent==2.0.3
+filetype==1.2.0
 pydantic==2.10.4
 PyMySQL==1.1.1
+python-magic==0.4.27
 PyYAML==6.0.2
 scrapy==2.12.0
 seleniumbase==4.35.4

@@ -117,7 +117,7 @@ keys:
    - `bucket_key`: the key of the bucket where the data will be stored
    - `base_url`: the key returning the base URL of the website to be scraped (optional)
    - `cookie_selector`: the key containing the CSS selector of the cookie banner to be clicked, if any, or an empty string if the website does not have a cookie banner (optional)
-   - `file_extension`: the key returning the expected extension of the files to be downloaded / uploaded to the storage (optional, default ".pdf")
+   - `files_by_request`: whether the files should be retrieved by either usual HTTP request or by scraping (default `True`)
 
 ## Analytics: HowTo
 At the end of each Scraper, the pipeline will store some statistics in the `scraper_analytics` table of the database.

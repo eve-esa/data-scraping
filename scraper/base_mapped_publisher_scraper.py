@@ -13,7 +13,7 @@ class BaseMappedPublisherScraper(BaseScraper):
         super().__init__()
 
         self._bucket_keys = {}
-        self._file_extensions = {}
+        self._files_by_request = {}
 
     def _run_scraping(self) -> Any | None:
         return self.scrape()
@@ -54,7 +54,7 @@ class BaseMappedPublisherScraper(BaseScraper):
             if results is not None:
                 links[source.name] = results
                 self._bucket_keys[source.name] = f"{self._config_model.bucket_key}/{source.config.bucket_key or ''}".rstrip("/")
-                self._file_extensions[source.name] = source.config.file_extension or self._config_model.file_extension
+                self._files_by_request[source.name] = source.config.files_by_request or self._config_model.files_by_request
 
         return links if links else None
 
@@ -84,7 +84,7 @@ class BaseMappedPublisherScraper(BaseScraper):
             ScrapeAdapter(source.config, self.__class__.__name__, self.mapping.get(source.scraper)).upload_to_s3(
                 sources_links[source.name],
                 self._bucket_keys[source.name],
-                self._file_extensions[source.name],
+                self._files_by_request[source.name],
             )
 
             # Sleep after each successful upload to avoid overwhelming the server

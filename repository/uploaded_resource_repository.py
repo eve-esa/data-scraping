@@ -21,34 +21,41 @@ class UploadedResourceRepository(BaseRepository):
         Returns:
             UploadedResource | None: The resource if found, or None otherwise
         """
-        from helper.utils import get_resource_from_remote_by_request, get_resource_from_remote_by_scraping
-
-        file_extension = config.file_extension
-
-        main_folder = os.getenv("AWS_MAIN_FOLDER", "raw_data")
-        root_key = config.bucket_key.format(main_folder=main_folder)
-        bucket_key = os.path.join(root_key, f"{uuid4()}.{file_extension}")  # Construct S3 key
-
-        loading_tag = config.loading_tag
-        cookie_selector = config.cookie_selector
-        request_with_proxy = config.request_with_proxy
+        from helper.utils import (
+            get_resource_from_remote_by_request,
+            get_resource_from_remote_by_scraping,
+            get_file_extension_from_file_content,
+        )
 
         self._logger.info(f"Retrieving file from {source_url}")
 
+        bucket_key = os.path.join(
+            config.bucket_key.format(main_folder=os.getenv("AWS_MAIN_FOLDER", "raw_data")),
+            f"{uuid4()}",
+        )  # Construct S3 key
         result = UploadedResource(scraper=scraper, bucket_key=bucket_key, source=source_url)
-        message = None
         try:
+            files_by_request = config.files_by_request
+            loading_tag = config.loading_tag
+            cookie_selector = config.cookie_selector
+            request_with_proxy = config.request_with_proxy
+
             content = get_resource_from_remote_by_request(
                 source_url, request_with_proxy
-            ) if file_extension == "pdf" else get_resource_from_remote_by_scraping(
+            ) if files_by_request else get_resource_from_remote_by_scraping(
                 source_url, loading_tag, cookie_selector
             )
+
+            message = None
+            file_extension = get_file_extension_from_file_content(content)
         except Exception as e:
             self._logger.error(f"Failed to retrieve the content from {source_url}. Error: {e}")
+
             content = None
             message = str(e)
+            file_extension = None
 
-        return self.__update_resource(result, scraper, content=content, message=message)
+        return self.__update_resource(result, scraper, content=content, message=message, file_extension=file_extension)
 
     def get_by_content(self, scraper: str, root_key: str, source_path: str) -> UploadedResource:
         """
@@ -64,9 +71,10 @@ class UploadedResourceRepository(BaseRepository):
         """
         file_extension = os.path.basename(source_path).split(".")[-1]
 
-        main_folder = os.getenv("AWS_MAIN_FOLDER", "raw_data")
-        root_key = root_key.format(main_folder=main_folder)
-        bucket_key = os.path.join(root_key, f"{uuid4()}.{file_extension}")  # Construct S3 key
+        bucket_key = os.path.join(
+            root_key.format(main_folder=os.getenv("AWS_MAIN_FOLDER", "raw_data")),
+            f"{uuid4()}",
+        )  # Construct S3 key
 
         result = UploadedResource(bucket_key=bucket_key, source=source_path, scraper=scraper)
         message = None
@@ -78,11 +86,19 @@ class UploadedResourceRepository(BaseRepository):
             content = None
             message = str(e)
 
-        return self.__update_resource(result, scraper, content=content, message=message)
+        return self.__update_resource(result, scraper, content=content, message=message, file_extension=file_extension)
 
     def __update_resource(
-        self, resource: UploadedResource, scraper: str, content: bytes | None = None, message: str | None = None
+        self,
+        resource: UploadedResource,
+        scraper: str,
+        content: bytes | None = None,
+        message: str | None = None,
+        file_extension: str | None = None
     ) -> UploadedResource:
+        if file_extension:
+            resource.bucket_key = f"{resource.bucket_key}.{file_extension}"
+
         if not content:
             resource.content_retrieved = False
             resource.message = message

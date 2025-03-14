@@ -537,7 +537,7 @@
     "CopernicusCatalogueScraper": {
         "bucket_key": "{main_folder}/copernicus",
         "base_url": "https://www.copernicus.eu/",
-        "file_extension": "html",
+        "files_by_request": false,
         "cookie_selector": "button.agree-button.eu-cookie-compliance-default-button",
         "sources": [
             {
@@ -548,7 +548,7 @@
     "SeosScraper": {
         "bucket_key": "{main_folder}/seos",
         "base_url": "https://seos-project.eu",
-        "file_extension": "html",
+        "files_by_request": false,
         "sources": [
             {
                 "url": "https://seos-project.eu/remotesensing/remotesensing-c00-p02.html",
@@ -942,7 +942,7 @@
                 "config": {
                     "base_url": "https://earth.esa.int/",
                     "cookie_selector": "div#__next > div.fixed.bottom-0.left-0.right-0.bg-brand-bg-darker.text-white.font-esa > div.mx-auto.p-8.flex.flex-col > div.pt-4.flex.flex-col.gap-8.items-center.justify-center > button.p-1.uppercase.border.transition-colors",
-                    "file_extension": "html",
+                    "files_by_request": false,
                     "read_more_button": {
                         "selector": "button",
                         "text": "READ MORE"
@@ -960,7 +960,7 @@
             {
                 "name": "ESA Newcomers Earth Observation Guide",
                 "config": {
-                    "file_extension": "html",
+                    "files_by_request": false,
                     "urls": [
                         "https://business.esa.int/newcomers-earth-observation-guide"
                     ]
@@ -972,7 +972,7 @@
                 "config": {
                     "base_url": "https://www.eoportal.org/",
                     "cookie_selector": "div#__next > main > div.cy-page-content > div.cy-cookie-popup.css-1pa6g3f > div.css-1r4dq04 > button.chakra-button.css-122lbyf",
-                    "file_extension": "html",
+                    "files_by_request": false,
                     "sources": [
                         {
                             "url": "https://www.eoportal.org/satellite-missions?Mission+type=EO",
@@ -1017,7 +1017,7 @@
                 "scraper": "EsaUrlScraper",
                 "config": {
                     "base_url": "https://database.eohandbook.com/database/",
-                    "file_extension": "html",
+                    "files_by_request": false,
                     "sources": [
                         {
                             "url": "https://database.eohandbook.com/database/instrumentindex.aspx",
@@ -1037,7 +1037,7 @@
                 "scraper": "EsaUrlScraper",
                 "config": {
                     "base_url": "https://opensciencedata.esa.int/",
-                    "file_extension": "html",
+                    "files_by_request": false,
                     "loading_tag": "div.v-progress-linear.v-progress-linear--visible",
                     "sources": [
                         {
@@ -1108,7 +1108,7 @@
                 "scraper": "NASAEarthDataWikiScraper",
                 "config": {
                     "base_url": "https://wiki.earthdata.nasa.gov/",
-                    "file_extension": "html",
+                    "files_by_request": false,
                     "sources": [
                         {
                             "url": "https://wiki.earthdata.nasa.gov/display/CMR/Common+Metadata+Repository+Home",
@@ -1147,7 +1147,7 @@
                 "scraper": "NASAEarthDataScraper",
                 "config": {
                     "base_url": "https://www.earthdata.nasa.gov",
-                    "file_extension": "html",
+                    "files_by_request": false,
                     "sources": [
                         {
                             "landing_page_url": "https://www.earthdata.nasa.gov/topics/glossary?%2Ftopics%2Fglossary%2Fall=&page={page_number}",
@@ -1188,7 +1188,7 @@
             {
                 "name": "NASA EO Glossary",
                 "config": {
-                    "file_extension": "html",
+                    "files_by_request": false,
                     "urls": [
                         "https://earthobservatory.nasa.gov/glossary/all"
                     ]
@@ -1215,7 +1215,7 @@
     "OpenNightLightsScraper": {
         "bucket_key": "{main_folder}/open_night_lights_scraper",
         "base_url": "https://worldbank.github.io/OpenNightLights/",
-        "file_extension": "html",
+        "files_by_request": false,
         "sources": [
             {
                 "url": "https://worldbank.github.io/OpenNightLights/welcome.html",
@@ -1226,7 +1226,7 @@
     "WikipediaScraper": {
         "bucket_key": "{main_folder}/wikipedia",
         "base_url": "https://en.wikipedia.org/",
-        "file_extension": "html",
+        "files_by_request": false,
         "sources": [
             {
                 "url": "https://en.wikipedia.org/wiki/Category:Earth_observation_satellites",
@@ -1255,7 +1255,7 @@
     "JAXAScraper": {
         "bucket_key": "{main_folder}/jaxa",
         "base_url": "https://earth.jaxa.jp/en/eo-knowledge",
-        "file_extension": "html",
+        "files_by_request": false,
         "sources": [
             {
                 "url": "https://earth.jaxa.jp/en/eo-knowledge/index.html",
@@ -1325,7 +1325,7 @@
                 "config": {
                     "base_url": "https://user.eumetsat.int/",
                     "cookie_selector": "div.cc-compliance.cc-highlight a.cc-btn.cc-allow",
-                    "file_extension": "html",
+                    "files_by_request": false,
                     "loading_tag": "#app-loading-indicator",
                     "read_more_button": {
                         "selector": "button.btn-primary",
@@ -1342,7 +1342,7 @@
             {
                 "name": "EUMETSAT Classroom",
                 "config": {
-                    "file_extension": "html",
+                    "files_by_request": false,
                     "urls": [
                         "https://classroom.eumetsat.int/enrol/index.php?id=504",
                         "https://classroom.eumetsat.int/course/view.php?id=500",
@@ -1356,7 +1356,7 @@
     "EarthDataScienceScraper": {
         "bucket_key": "{main_folder}/earth_data_science",
         "base_url": "https://www.earthdatascience.org/",
-        "file_extension": "html",
+        "files_by_request": false,
         "sources": [
             {
                 "url": "https://www.earthdatascience.org/tags/remote-sensing/",
@@ -1455,6 +1455,44 @@
                         "https://drive.google.com/uc?id=1vLwMXtIAlOPPq6mU6t9K0poK5k4FXnlD"
                     ]
                 }
+            }
+        ]
+    },
+    "IntechOpenScraper": {
+        "base_url": "https://www.intechopen.com/",
+        "bucket_key": "intech_open",
+        "sources": [
+            {
+                "landing_page_url": "https://www.google.com/search?start={start_index}&q=site%3Aintechopen.com+%22remote+sensing%22&sca_esv=61eddb219bf0e5e6&rlz=1C1YTUH_en-GBGB1086GB1086&biw=1920&bih=911&sxsrf=AHTn8zrZUppEw2vp7VhGzqCDs4vCmuCsaw%3A1741693796117&ei=ZCPQZ_bwBry2hbIPpb_GgQ0&ved=0ahUKEwj2spmA-4GMAxU8W0EAHaWfMdA4jgIQ4dUDCBA&uact=5&oq=site%3Aintechopen.com+%22remote+sensing%22&gs_lp=Egxnd3Mtd2l6LXNlcnAiJHNpdGU6aW50ZWNob3Blbi5jb20gInJlbW90ZSBzZW5zaW5nIkj-A1AAWABwAXgAkAEAmAEAoAEAqgEAuAEDyAEAmAIAoAIAmAMAiAYBkgcAoAcA&sclient=gws-wiz-serp",
+                "page_size": 10
+            },
+            {
+                "landing_page_url": "https://www.google.com/search?start={start_index}&q=site%3Aintechopen.com+%22earth+observation%22&sca_esv=61eddb219bf0e5e6&rlz=1C1YTUH_en-GBGB1086GB1086&biw=1920&bih=911&sxsrf=AHTn8zpzh3NnwKuKuqpBOwOsveAOCufI0w%3A1741694255142&ei=LyXQZ4y7CJm7hbIP4Imh6Qk&ved=0ahUKEwjMjorb_IGMAxWZXUEAHeBEKJ04-gEQ4dUDCBA&uact=5&oq=site%3Aintechopen.com+%22earth+observation%22&gs_lp=Egxnd3Mtd2l6LXNlcnAiJ3NpdGU6aW50ZWNob3Blbi5jb20gImVhcnRoIG9ic2VydmF0aW9uIkiKBFAAWABwAXgAkAEAmAEAoAEAqgEAuAEDyAEAmAIAoAIAmAMAiAYBkgcAoAcA&sclient=gws-wiz-serp",
+                "page_size": 10
+            },
+            {
+                "landing_page_url": "https://www.google.com/search?start={start_index}&q=site%3Aintechopen.com+%22satellite+observation%22&sca_esv=61eddb219bf0e5e6&rlz=1C1YTUH_en-GBGB1086GB1086&biw=1920&bih=911&sxsrf=AHTn8zqHnJ2VKKy7cVaVkG21Dzk9CwIdFQ%3A1741694361718&ei=mSXQZ-fAK5rjhbIPoNKCsQU&ved=0ahUKEwin8fKN_YGMAxWacUEAHSCpIFYQ4dUDCBA&uact=5&oq=site%3Aintechopen.com+%22satellite+observation%22&gs_lp=Egxnd3Mtd2l6LXNlcnAiK3NpdGU6aW50ZWNob3Blbi5jb20gInNhdGVsbGl0ZSBvYnNlcnZhdGlvbiJIsxxQ1wVY1BtwAXgAkAEAmAFNoAGPCKoBAjIxuAEDyAEA-AEBmAIAoAIAmAMAiAYBkgcAoAexBw&sclient=gws-wiz-serp",
+                "page_size": 10
+            },
+            {
+                "landing_page_url": "https://www.google.com/search?start={start_index}&q=site%3Aintechopen.com+%22Synthetic+aperture+radar%22&sca_esv=f39c2e4a14fedcf4&rlz=1C1YTUH_en-GBGB1086GB1086&sxsrf=AHTn8zp6qvxIU_Z0soFmUxoV_BzvOpmm9A%3A1741884172342&ei=DAvTZ6zOFIeChbIPhubo2A8&ved=0ahUKEwishNSawIeMAxUHQUEAHQYzGvsQ4dUDCBA&uact=5&oq=site%3Aintechopen.com+%22Synthetic+aperture+radar%22&gs_lp=Egxnd3Mtd2l6LXNlcnAiLnNpdGU6aW50ZWNob3Blbi5jb20gIlN5bnRoZXRpYyBhcGVydHVyZSByYWRhciJI7AdQbVhtcAF4AJABAJgBM6ABY6oBATK4AQPIAQD4AQL4AQGYAgCgAgCYAwCIBgGSBwCgB1o&sclient=gws-wiz-serp",
+                "page_size": 10
+            },
+            {
+                "landing_page_url": "https://www.google.com/search?start={start_index}&q=site%3Aintechopen.com+%22Multispectral+Imaging%22&sca_esv=f39c2e4a14fedcf4&rlz=1C1YTUH_en-GBGB1086GB1086&biw=1920&bih=911&sxsrf=AHTn8zr8t8ZLgOI1t5Xc2COJGiZ2FwdXsQ%3A1741884293740&ei=hQvTZ5j2LJWLhbIP0MvYiQE&ved=0ahUKEwjYzMXUwIeMAxWVRUEAHdAlNhE4hAIQ4dUDCBA&uact=5&oq=site%3Aintechopen.com+%22Multispectral+Imaging%22&gs_lp=Egxnd3Mtd2l6LXNlcnAiK3NpdGU6aW50ZWNob3Blbi5jb20gIk11bHRpc3BlY3RyYWwgSW1hZ2luZyJI7wZQV1hXcAF4AJABAJgBpgGgAaYBqgEDMC4xuAEDyAEA-AEC-AEBmAIAoAIAmAMAiAYBkgcAoAct&sclient=gws-wiz-serp",
+                "page_size": 10
+            },
+            {
+                "landing_page_url": "https://www.google.com/search?start={start_index}&q=site%3Aintechopen.com+%22monitoring+air+quality%22&sca_esv=f39c2e4a14fedcf4&rlz=1C1YTUH_en-GBGB1086GB1086&biw=1920&bih=911&sxsrf=AHTn8zoEqW9JsHhutf06QTE4wP0Q45uoeg%3A1741884624882&ei=0AzTZ-q8NaW0hbIPjKuV4Ao&ved=0ahUKEwjq5LjywYeMAxUlWkEAHYxVBawQ4dUDCBA&uact=5&oq=site%3Aintechopen.com+%22monitoring+air+quality%22&gs_lp=Egxnd3Mtd2l6LXNlcnAiLHNpdGU6aW50ZWNob3Blbi5jb20gIm1vbml0b3JpbmcgYWlyIHF1YWxpdHkiSLIQUPAFWLsPcAF4AJABAJgBL6ABwwOqAQIxMbgBA8gBAPgBAZgCAKACAJgDAIgGAZIHAKAH7wM&sclient=gws-wiz-serp",
+                "page_size": 10
+            },
+            {
+                "landing_page_url": "https://www.google.com/search?start={start_index}&q=site%3Aintechopen.com+%22land+use%2Fland+cover%22&sca_esv=f39c2e4a14fedcf4&rlz=1C1YTUH_en-GBGB1086GB1086&biw=1920&bih=911&sxsrf=AHTn8zqXngTocgulW3w6KLpo7tSw17ukpA%3A1741884783056&ei=bw3TZ6WTA7uYhbIPurffkQU&ved=0ahUKEwjlhu-9woeMAxU7TEEAHbrbN1I4hAIQ4dUDCBA&uact=5&oq=site%3Aintechopen.com+%22land+use%2Fland+cover%22&gs_lp=Egxnd3Mtd2l6LXNlcnAiKXNpdGU6aW50ZWNob3Blbi5jb20gImxhbmQgdXNlL2xhbmQgY292ZXIiSNkEUABYAHABeACQAQCYAQCgAQCqAQC4AQPIAQCYAgCgAgCYAwCIBgGSBwCgBwA&sclient=gws-wiz-serp",
+                "page_size": 10
+            },
+            {
+                "landing_page_url": "https://www.google.com/search?start={start_index}&q=site%3Aintechopen.com+%22light+detection+and+ranging%22&sca_esv=f39c2e4a14fedcf4&rlz=1C1YTUH_en-GBGB1086GB1086&biw=1920&bih=911&sxsrf=AHTn8zphDoUgpdXiF_9V2r0Olz8LXBBvFg%3A1741884749836&ei=TQ3TZ7rTMoeuhbIP3rPo0QU&ved=0ahUKEwj6rYOuwoeMAxUHV0EAHd4ZOloQ4dUDCBA&uact=5&oq=site%3Aintechopen.com+%22light+detection+and+ranging%22&gs_lp=Egxnd3Mtd2l6LXNlcnAiMXNpdGU6aW50ZWNob3Blbi5jb20gImxpZ2h0IGRldGVjdGlvbiBhbmQgcmFuZ2luZyJIwgdQfFh8cAF4AJABAJgBLaABLaoBATG4AQPIAQD4AQL4AQGYAgCgAgCYAwCIBgGSBwCgBy0&sclient=gws-wiz-serp",
+                "page_size": 10
             }
         ]
     }

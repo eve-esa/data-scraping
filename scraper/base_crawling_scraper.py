@@ -50,8 +50,7 @@ class BaseCrawlingScraper(BaseScraper):
         file_paths = [
             os.path.join(crawling_folder, file)
             for file in os.listdir(crawling_folder)
-            if file.endswith(self._config_model.file_extension)
-            and os.path.isfile(os.path.join(crawling_folder, file))
+            if os.path.isfile(os.path.join(crawling_folder, file))
         ]
         if not file_paths:
             for source_link in sources_links:
