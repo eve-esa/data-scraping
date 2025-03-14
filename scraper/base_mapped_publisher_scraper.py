@@ -89,3 +89,6 @@ class BaseMappedPublisherScraper(BaseScraper):
 
             # Sleep after each successful upload to avoid overwhelming the server
             time.sleep(random.uniform(2, 5))
+
+    def raw_upload_to_s3(self, sources_links: List[str]):
+        super().upload_to_s3(sources_links)

@@ -193,10 +193,15 @@ def resume_upload_scrapers(
         log_file (str): Path to the log file.
     """
     def run_resume_upload_process():
+        from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
+
         setup_worker_logging(log_queue, logger_name)
         scraper_obj.set_config_model_from_dict(config_scraper)
         links = extract_lists(output.output_json)
-        scraper_obj.upload_to_s3(links)
+        if isinstance(scraper_obj, BaseMappedPublisherScraper):
+            scraper_obj.raw_upload_to_s3(links)
+        else:
+            scraper_obj.upload_to_s3(links)
         analytics_manager = AnalyticsManager()
         analytics_manager.build_and_store_analytics(name_scraper)
 
