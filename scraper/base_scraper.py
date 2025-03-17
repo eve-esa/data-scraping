@@ -66,7 +66,6 @@ class BaseScraper(ABC):
         self._analytics_manager.build_and_store_analytics(self._logging_db_scraper)
 
         self._logger.info(f"Scraper {self.__class__.__name__} successfully completed.")
-        return
 
     def set_config_model(self, config_model: BaseConfig):
         self._config_model = config_model
@@ -150,7 +149,7 @@ class BaseScraper(ABC):
             last_height = new_height
 
         # Sleep for some time to avoid being blocked by the server on the next request
-        self._driver.cdp.sleep(random.uniform(2, 4))
+        self._driver.cdp.sleep(random.uniform(2, 5))
 
         # Get the fully rendered HTML
         return self._get_parsed_page_source()
@@ -213,6 +212,9 @@ class BaseScraper(ABC):
             # Sleep after each successful upload to avoid overwhelming the server
             time.sleep(random.uniform(2, 5))
 
+    def raw_upload_to_s3(self, sources_links: List[str]):
+        self.upload_to_s3(sources_links)
+
     def _upload_resource_to_s3(self, resource: UploadedResource, resource_name: str) -> int | None:
         if resource.id and resource.success:
             self._logger.warning(f"Resource {resource_name} was already successfully uploaded, skipping.")
@@ -225,6 +227,25 @@ class BaseScraper(ABC):
         return self._uploaded_resource_repository.upsert(
             resource, {"scraper": resource.scraper, "source": resource.source}, keys_to_purge=["content"]
         )
+
+    def resume_uploads(self):
+        """
+        Resume the uploads of the resources that failed to upload.
+        """
+        from helper.utils import extract_lists
+
+        output = self._scraper_output_repository.get_one_by({"scraper": self._logging_db_scraper})
+        if not output:
+            self._logger.error(f"Output not found for scraper {self._logging_db_scraper}")
+            return
+
+        links = extract_lists(output.output_json)
+        if isinstance(self, BaseScraper):
+            self.upload_to_s3(links)
+        else:
+            self.raw_upload_to_s3(links)
+
+        self._analytics_manager.build_and_store_analytics(self._logging_db_scraper)
 
     @abstractmethod
     def scrape(self) -> Any | None:

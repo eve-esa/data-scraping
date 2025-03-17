@@ -3,18 +3,14 @@ import inspect
 import json
 import os
 import pkgutil
-import queue
 import random
-import shutil
 import time
-from logging.handlers import QueueListener
-from multiprocessing import Queue, Process
+from multiprocessing import Queue
 import zipfile
 from typing import Dict, List, Type, Tuple
 import requests
 import yaml
 from bs4 import Tag
-from pydantic import ValidationError
 from urllib.parse import urlparse, parse_qs
 from fake_useragent import UserAgent, FakeUserAgentError
 from selenium.webdriver.remote.webelement import WebElement
@@ -24,12 +20,11 @@ import filetype
 import magic
 import mimetypes
 
-from helper.constants import DEFAULT_UA, DEFAULT_CRAWLING_FOLDER
-from helper.logger import setup_logger, setup_worker_logging
+from helper.constants import DEFAULT_UA
+from helper.logger import setup_logger
+from helper.worker import setup_worker_logging, setup_workers
 from model.analytics_models import AnalyticsModelItem, AnalyticsModelItemRatio, AnalyticsModelItemTotal
-from repository.scraper_output_repository import ScraperOutputRepository
 from scraper.base_scraper import BaseScraper, BaseMappedSubScraper
-from service.analytics_manager import AnalyticsManager
 
 try:
     _ua = UserAgent()
@@ -145,59 +140,14 @@ def run_scrapers(
         log_file (str): Path to the log file.
         force (bool): Whether to force scraping of all resources.
     """
-    def run_scraper_process():
+    def run_scraper_process(log_queue: Queue, class_type_scraper: Type[BaseScraper], config_scraper: Dict):
         setup_worker_logging(log_queue, logger_name)
+        scraper_obj = class_type_scraper()
         scraper_obj.set_config_model_from_dict(config_scraper)
         scraper_obj(force=force)
 
     logger_name = __name__
-
-    # Create logging queue
-    log_queue = Queue()
-
-    # Setup main process logger
-    logger = setup_logger(logger_name, log_file)
-
-    # Create and start listener
-    listener = QueueListener(log_queue, *logger.handlers, respect_handler_level=True)
-    listener.start()
-
-    try:
-        processes = []
-        for name_scraper, class_type_scraper in discovered_scrapers.items():
-            config_scraper = config.get(name_scraper)
-            if config_scraper is None:
-                logger.error(f"Scraper {name_scraper} not found in configured scrapers")
-                continue
-
-            scraper_obj = class_type_scraper()
-            try:
-                process = Process(target=run_scraper_process, name=name_scraper)
-                process.start()
-                time.sleep(0.5)
-                processes.append(process)
-            except ValidationError as e:
-                logger.error(f"Error running scraper {name_scraper}: {e}")
-
-        # Wait for all processes to complete
-        for process in processes:
-            process.join()
-    finally:
-        # Ensure the queue is empty before stopping
-        while not log_queue.empty():
-            try:
-                record = log_queue.get_nowait()
-                logger.handle(record)
-            except queue.Empty:
-                break
-
-        listener.stop()
-        # Small delay to ensure all logs are processed
-        time.sleep(0.1)
-
-        # remove the entire crawling folder, if it exists
-        if os.path.exists(DEFAULT_CRAWLING_FOLDER):
-            shutil.rmtree(DEFAULT_CRAWLING_FOLDER)
+    setup_workers(discovered_scrapers, config, run_scraper_process, logger_name, log_file)
 
 
 def resume_upload_scrapers(
@@ -214,68 +164,14 @@ def resume_upload_scrapers(
         config (Dict[str, Dict]): A dictionary of scraper names and their configurations.
         log_file (str): Path to the log file.
     """
-    def run_resume_upload_process():
-        from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
-
+    def run_resume_upload_process(log_queue: Queue, class_type_scraper: Type[BaseScraper], config_scraper: Dict):
         setup_worker_logging(log_queue, logger_name)
+        scraper_obj = class_type_scraper()
         scraper_obj.set_config_model_from_dict(config_scraper)
-        links = extract_lists(output.output_json)
-        if isinstance(scraper_obj, BaseMappedPublisherScraper):
-            scraper_obj.raw_upload_to_s3(links)
-        else:
-            scraper_obj.upload_to_s3(links)
-        analytics_manager = AnalyticsManager()
-        analytics_manager.build_and_store_analytics(name_scraper)
+        scraper_obj.resume_uploads()
 
     logger_name = __name__
-
-    # Create logging queue
-    log_queue = Queue()
-
-    # Setup main process logger
-    logger = setup_logger(logger_name, log_file)
-
-    # Create and start listener
-    listener = QueueListener(log_queue, *logger.handlers, respect_handler_level=True)
-    listener.start()
-
-    try:
-        processes = []
-        for name_scraper, class_type_scraper in discovered_scrapers.items():
-            config_scraper = config.get(name_scraper)
-            if config_scraper is None:
-                logger.error(f"Scraper {name_scraper} not found in configured scrapers")
-                continue
-
-            output = ScraperOutputRepository().get_one_by({"scraper": name_scraper})
-            if not output:
-                logger.error(f"Output not found for scraper {name_scraper}")
-                continue
-
-            scraper_obj = class_type_scraper()
-            try:
-                process = Process(target=run_resume_upload_process, name=name_scraper)
-                process.start()
-                time.sleep(0.5)
-                processes.append(process)
-            except ValidationError as e:
-                logger.error(f"Error resuming scraper {name_scraper}: {e}")
-
-        # Wait for all processes to complete
-        for process in processes:
-            process.join()
-    finally:
-        # Ensure the queue is empty before stopping
-        while not log_queue.empty():
-            try:
-                record = log_queue.get_nowait()
-                logger.handle(record)
-            except queue.Empty:
-                break
-
-        listener.stop()
-        # Small delay to ensure all logs are processed
-        time.sleep(0.1)
+    setup_workers(discovered_scrapers, config, run_resume_upload_process, logger_name, log_file)
 
 
 def remove_query_string_from_url(url: str | None = None) -> str | None:

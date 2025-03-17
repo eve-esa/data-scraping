@@ -1,8 +1,7 @@
 import logging
 import os
 import sys
-from multiprocessing import Queue
-from logging.handlers import QueueHandler, RotatingFileHandler
+from logging.handlers import RotatingFileHandler
 import colorlog
 
 # Dictionary to store loggers
@@ -63,24 +62,3 @@ def setup_logger(name: str, log_file: str = "logs/scraping.log") -> logging.Logg
     # Store logger for reuse
     _loggers[name] = logger
     return logger
-
-
-def setup_worker_logging(queue: Queue, name: str):
-    """
-    Configure logging for worker processes to send logs to queue.
-
-    Args:
-        queue (Queue): Multiprocessing queue for logs
-        name (str): Logger name to maintain consistency with main process
-    """
-    logger = logging.getLogger(name)
-
-    # Clear any existing handlers
-    if logger.handlers:
-        logger.handlers.clear()
-
-    # Set up the queue handler
-    queue_handler = QueueHandler(queue)
-    logger.addHandler(queue_handler)
-    logger.setLevel(logging.DEBUG)
-    logger.propagate = False
