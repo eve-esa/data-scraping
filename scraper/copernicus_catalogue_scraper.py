@@ -79,7 +79,7 @@ class CopernicusCatalogueScraper(BasePaginationPublisherScraper):
                         f.write(self._driver.get_page_source())
 
                     html_tag_list.append(Tag(name="a", attrs={"href": external_url}))
-                except Exception:
+                except:
                     pass
 
                 html_tag_list.append(Tag(name="a", attrs={"href": article_url}))

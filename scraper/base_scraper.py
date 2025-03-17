@@ -166,7 +166,7 @@ class BaseScraper(ABC):
             try:
                 self._driver.cdp.click(self._config_model.cookie_selector, timeout=timeout)
                 self._cookie_handled = True
-            except Exception:
+            except:
                 pass
 
     def _get_parsed_page_source(self) -> BeautifulSoup:

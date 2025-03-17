@@ -439,7 +439,7 @@ def get_resource_from_remote_by_scraping(
         if cookie_selector:
             try:
                 sb.cdp.click(cookie_selector, timeout=timeout)
-            except Exception:
+            except:
                 pass
 
         # Sleep for some time to avoid being blocked by the server on the next request

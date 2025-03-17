@@ -134,7 +134,7 @@ class ElsevierScraper(BaseSourceDownloadScraper):
     def _get_file_path_from_link(self, link: str) -> str | None:
         try:
             pid = link.split("pid=")[1].split("&")[0]
-        except Exception:
+        except:
             return None
 
         file_path = None

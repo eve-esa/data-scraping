@@ -193,7 +193,7 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedSubS
 
             try:
                 tags = self._driver.cdp.find_all("svg.app-entitlement__icon--full-access")
-            except Exception:
+            except:
                 tags = []
 
             articles_links = [

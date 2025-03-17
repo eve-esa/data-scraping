@@ -52,7 +52,7 @@ class OxfordAcademicScraper(BaseIterativePublisherScraper):
 
             try:
                 tags = self._driver.cdp.find_all("i.icon-availability_open")
-            except Exception:
+            except:
                 tags = []
 
             # find all the URLs to the articles where I can grab the PDF links

@@ -67,7 +67,7 @@ class WileyScraper(BasePaginationPublisherScraper):
 
             try:
                 tags = self._driver.cdp.find_all("i.icon-icon-lock_open")
-            except Exception:
+            except:
                 tags = []
 
             if not (articles_links := [

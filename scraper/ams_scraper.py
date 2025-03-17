@@ -112,11 +112,11 @@ class AMSScraper(BaseIterativePublisherScraper):
             # find all the article links in the issue by keeping only the links to the accessible articles
             try:
                 tags = self._driver.cdp.find_all("div.ico-access-open")
-            except Exception:
+            except:
                 tags = []
             try:
                 tags += self._driver.cdp.find_all("div.ico-access-free")
-            except Exception:
+            except:
                 pass
 
             pdf_links = [

@@ -118,7 +118,7 @@ class NASANTRSScraper(BaseMappedSubScraper, BaseScraper):
                     self._handle_cookie()
 
                     scraper = self._get_parsed_page_source()
-                except Exception:
+                except:
                     break
 
         return {"NASA NTRS": [
