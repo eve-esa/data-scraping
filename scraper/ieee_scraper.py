@@ -49,8 +49,6 @@ class IEEEScraper(BasePaginationPublisherScraper, BaseSourceDownloadScraper):
         Returns:
             List[Tag]: A list of Tag objects containing the tags to the PDF links. If something went wrong, an empty list.
         """
-        self._logger.info(f"Processing Landing Page {landing_page_url}")
-
         return self._scrape_pagination(
             landing_page_url,
             source_number,

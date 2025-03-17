@@ -59,25 +59,21 @@ class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedSubScraper):
             except Exception as e:
                 self._logger.error(f"Failed to process Journal {source.url}. Error: {e}")
                 break
-        try:
-            # For each tag of articles previously collected, scrape the article
-            if not (pdf_tag_list := [
-                tag
-                for tag in (
-                    self._scrape_article(BaseMappedUrlSource(
-                        url=get_scraped_url_by_bs_tag(tag, self._config_model.base_url), type=str(SourceType.ARTICLE)
-                    ))
-                    for tag in article_tag_list
-                )
-                if tag
-            ]):
-                self._save_failure(source.url)
 
-            self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
-            return pdf_tag_list
-        except Exception as e:
-            self._log_and_save_failure(source.url, f"Failed to process Journal {source.url}. Error: {e}")
-            return None
+        # For each tag of articles previously collected, scrape the article
+        pdf_tag_list = [
+            tag
+            for tag in (
+                self._scrape_article(BaseMappedUrlSource(
+                    url=get_scraped_url_by_bs_tag(tag, self._config_model.base_url), type=str(SourceType.ARTICLE)
+                ))
+                for tag in article_tag_list
+            )
+            if tag
+        ]
+
+        self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
+        return pdf_tag_list
 
     def _scrape_issue_or_collection(self, source: BaseMappedUrlSource) -> ResultSet | None:
         """
@@ -171,8 +167,6 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedSubS
         Returns:
             List[Tag]: A list of Tag objects containing the tags to the PDF links. If something went wrong, an empty list.
         """
-        self._logger.info(f"Processing Landing Page {landing_page_url}")
-
         return self._scrape_pagination(landing_page_url, source_number)
 
     def _is_valid_tag_list(self, page_tag_list: List | None) -> bool:

@@ -7,6 +7,7 @@ from model.base_mapped_models import BaseMappedUrlSource, BaseMappedPaginationCo
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
 from model.base_url_publisher_models import BaseUrlPublisherConfig
 from model.nasa_models import NASANTRSConfig, NASANTRSScraperOutput
+from model.sql_models import ScraperFailure
 from scraper.base_crawling_scraper import BaseCrawlingScraper
 from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
 from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScraper
@@ -125,6 +126,15 @@ class NASANTRSScraper(BaseMappedSubScraper, BaseScraper):
             get_scraped_url_by_bs_tag(tag, self._config_model.base_url) for tag in pdf_tags
         ]} if pdf_tags else None
 
+    def scrape_link(self, failure: ScraperFailure) -> List[str]:
+        link = failure.source
+        self._logger.info(f"Scraping URL: {link}")
+
+        scraper = self._scrape_url(link)
+        pdf_tags = scraper.find_all("a", href=lambda href: href and ".pdf" in href)
+
+        return [get_scraped_url_by_bs_tag(tag, self._config_model.base_url) for tag in pdf_tags]
+
     def post_process(self, scrape_output: NASANTRSScraperOutput) -> List[str]:
         return [link for links in scrape_output.values() for link in links]
 
@@ -144,8 +154,6 @@ class NASAEOSScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
         ]} if pdf_tags else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> List[Tag]:
-        self._logger.info(f"Processing Landing Page {landing_page_url}")
-
         return self._scrape_pagination(landing_page_url, source_number, base_zero=True)
 
     def _scrape_page(self, url: str) -> ResultSet | List[Tag] | None:
@@ -182,8 +190,6 @@ class NASAEarthDataScraper(BasePaginationPublisherScraper, BaseMappedSubScraper)
         ]} if html_tags else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> ResultSet | List[Tag] | None:
-        self._logger.info(f"Processing Landing Page {landing_page_url}")
-
         return self._scrape_pagination(landing_page_url, source_number, base_zero=True)
 
     def _scrape_page(self, url: str) -> ResultSet | List[Tag] | None:

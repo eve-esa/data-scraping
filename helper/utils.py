@@ -150,6 +150,30 @@ def run_scrapers(
     setup_workers(discovered_scrapers, config, run_scraper_process, logger_name, log_file)
 
 
+def resume_scrapers(
+    discovered_scrapers: Dict[str, Type[BaseScraper]],
+    config: Dict[str, Dict],
+    log_file: str = "logs/scraping.log",
+):
+    """
+    Resume the mentioned scrapers, so that the failed URLs can be re-scraped from scratch. Run them in separate
+    processes with configured logging.
+
+    Args:
+        discovered_scrapers (Dict[str, Type[BaseScraper]]): A dictionary of scraper names and their classes.
+        config (Dict[str, Dict]): A dictionary of scraper names and their configurations.
+        log_file (str): Path to the log file.
+    """
+    def run_resume_process(log_queue: Queue, class_type_scraper: Type[BaseScraper], config_scraper: Dict):
+        setup_worker_logging(log_queue, logger_name)
+        scraper_obj = class_type_scraper()
+        scraper_obj.set_config_model_from_dict(config_scraper)
+        scraper_obj.resume_scraping()
+
+    logger_name = __name__
+    setup_workers(discovered_scrapers, config, run_resume_process, logger_name, log_file)
+
+
 def resume_upload_scrapers(
     discovered_scrapers: Dict[str, Type[BaseScraper]],
     config: Dict[str, Dict],

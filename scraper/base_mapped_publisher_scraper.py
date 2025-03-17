@@ -4,6 +4,7 @@ from abc import abstractmethod
 from typing import List, Type, Dict, Any
 
 from model.base_mapped_models import BaseMappedConfig
+from model.sql_models import ScraperFailure
 from scraper.base_scraper import BaseScraper, BaseMappedSubScraper
 from service.adapter import ScrapeAdapter
 
@@ -57,6 +58,18 @@ class BaseMappedPublisherScraper(BaseScraper):
                 self._files_by_request[source.name] = source.config.files_by_request or self._config_model.files_by_request
 
         return links if links else None
+
+    def scrape_link(self, failure: ScraperFailure) -> List[str]:
+        links = []
+        for source in self._config_model.sources:
+            self._logger.info(f"Processing source {source.name}")
+
+            results = ScrapeAdapter(
+                source.config, self.__class__.__name__, self.mapping.get(source.scraper)
+            ).scrape_link(failure)
+            links.extend(results)
+
+        return links
 
     def post_process(self, scrape_output: Dict[str, List[str] | Dict[str, List[str]]]) -> Dict[str, List[str]]:
         """

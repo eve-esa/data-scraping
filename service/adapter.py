@@ -3,6 +3,7 @@ from seleniumbase import SB
 
 from helper.utils import get_sb_configuration
 from model.base_mapped_models import BaseMappedSourceConfig
+from model.sql_models import ScraperFailure
 from scraper.base_scraper import BaseScraper
 
 
@@ -27,6 +28,14 @@ class ScrapeAdapter:
             results = scraper.set_driver(driver).scrape()
 
         return results
+
+    def scrape_link(self, failure: ScraperFailure) -> List[str]:
+        if self.__scraper_type is None:
+            return [failure.source]
+
+        scraper = self.__scraper_type()
+        scraper.set_config_model(self.__config_model).set_logging_db_scraper(self.__logging_scraper)
+        return scraper.scrape_link(failure)
 
     def post_process(self, scrape_output: Any) -> Any:
         if self.__scraper_type is None:

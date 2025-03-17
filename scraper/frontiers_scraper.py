@@ -50,7 +50,7 @@ class FrontiersScraper(BaseUrlPublisherScraper):
             )
 
             # For each tag of articles previously collected, scrape the article
-            if not (pdf_tag_list := [
+            pdf_tag_list = [
                 tag
                 for tag in (
                     self._scrape_article(BaseUrlPublisherSource(
@@ -59,8 +59,7 @@ class FrontiersScraper(BaseUrlPublisherScraper):
                     for tag in article_tag_list
                 )
                 if tag
-            ]):
-                self._save_failure(source.url)
+            ]
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list

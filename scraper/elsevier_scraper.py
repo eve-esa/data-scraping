@@ -8,10 +8,15 @@ from model.elsevier_models import (
     ElsevierSource,
     ElsevierScrapeIssueOutput,
 )
+from model.sql_models import ScraperFailure
 from scraper.base_source_download_scraper import BaseSourceDownloadScraper
 
 
 class ElsevierScraper(BaseSourceDownloadScraper):
+    def __init__(self):
+        super().__init__()
+        self.__error_on_no_first_issue_tag = "No issue found"
+
     @property
     def config_model_type(self) -> Type[ElsevierConfig]:
         return ElsevierConfig
@@ -35,6 +40,21 @@ class ElsevierScraper(BaseSourceDownloadScraper):
                 pdf_links[source.name] = links
 
         return pdf_links if pdf_links else None
+
+    def scrape_link(self, failure: ScraperFailure) -> List[str]:
+        link = failure.source
+        self._logger.info(f"Scraping URL: {link}")
+
+        error = failure.message.lower()
+
+        if "journal" in error or self.__error_on_no_first_issue_tag in error:
+            source = ElsevierSource(url=link, name="Elsevier", type=str(SourceType.JOURNAL))
+            result = self.__scrape_journal(source)
+            return result if result is not None else []
+
+        source = ElsevierSource(url=link, name="Elsevier", type=str(SourceType.ISSUE))
+        result = self.__scrape_issue(source)
+        return result.pdf_links if result.pdf_links else []
 
     def post_process(self, scrape_output: ElsevierScraperOutput) -> List[str]:
         return [link for links in scrape_output.values() for link in links]

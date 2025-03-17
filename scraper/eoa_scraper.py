@@ -32,7 +32,7 @@ class EOAScraper(BaseScraper):
     def post_process(self, scrape_output: List[str]) -> List[str]:
         return scrape_output
 
-    def upload_to_s3(self, sources_links: List[str]) -> bool:
+    def upload_to_s3(self, sources_links: List[str]):
         download_urls = []
 
         for link in sources_links:
@@ -46,4 +46,4 @@ class EOAScraper(BaseScraper):
             # Sleep after each successful upload to avoid overwhelming the server
             time.sleep(random.uniform(2, 5))
 
-        return super().upload_to_s3(download_urls)
+        super().upload_to_s3(download_urls)

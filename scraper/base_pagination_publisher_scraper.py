@@ -2,7 +2,9 @@ from abc import abstractmethod
 from typing import List
 from bs4 import ResultSet, Tag
 
+from helper.utils import get_scraped_url_by_bs_tag
 from model.base_pagination_publisher_models import BasePaginationPublisherScrapeOutput
+from model.sql_models import ScraperFailure
 from scraper.base_scraper import BaseScraper
 
 
@@ -73,6 +75,15 @@ class BasePaginationPublisherScraper(BaseScraper):
             BasePaginationPublisherScrapeOutput | None: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.
         """
         pass
+
+    def scrape_link(self, failure: ScraperFailure) -> List[str]:
+        link = failure.source
+        self._logger.info(f"Scraping URL: {link}")
+        page_tag_list = self._scrape_page(link)
+
+        return self.post_process(
+            {"": [get_scraped_url_by_bs_tag(tag.get("href"), self._config_model.base_url) for tag in page_tag_list]}
+        )
 
     @abstractmethod
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> ResultSet | List[Tag] | None:

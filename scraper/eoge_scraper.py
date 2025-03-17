@@ -33,16 +33,10 @@ class EOGEScraper(BaseUrlPublisherScraper):
             self._scrape_url(source.url)
 
             # Click all the volume links to load all the issues
-            self._driver.execute_script("""
-                async function clickButtons() {
-                    const buttons = document.querySelectorAll('a[data-toggle="collapse"]');
-                    for (const button of buttons) {
-                        button.click();
-                        await new Promise(resolve => setTimeout(resolve, 1000));
-                    }
-                }
-                return clickButtons();
-            """)
+            buttons = self._driver.cdp.find_elements('a[data-toggle="collapse"]:not(.collapsed)')
+            for button in buttons:
+                button.click()
+                self._driver.sleep(1)
 
             # Find all PDF links using appropriate class or tag (if lambda returns True, it will be included in the list)
             issues_tag_list = self._get_parsed_page_source().find_all(
@@ -50,7 +44,7 @@ class EOGEScraper(BaseUrlPublisherScraper):
             )
 
             # For each tag of issues previously collected, scrape the issue as a collection of articles
-            if not (pdf_tag_list := [
+            pdf_tag_list = [
                 tag
                 for tags in (
                     self._scrape_issue_or_collection(BaseUrlPublisherSource(
@@ -60,8 +54,7 @@ class EOGEScraper(BaseUrlPublisherScraper):
                     for tag in issues_tag_list
                 )
                 if tags for tag in tags
-            ]):
-                self._save_failure(source.url)
+            ]
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list

@@ -30,8 +30,6 @@ class CopernicusCatalogueScraper(BasePaginationPublisherScraper):
         ]} if pdf_tags else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> List[Tag]:
-        self._logger.info(f"Processing Landing Page {landing_page_url}")
-
         return self._scrape_pagination(landing_page_url, source_number, base_zero=True)
 
     def _scrape_page(self, url: str) -> List[Tag] | None:
