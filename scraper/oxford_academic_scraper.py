@@ -65,10 +65,9 @@ class OxfordAcademicScraper(BaseIterativePublisherScraper):
                    and "/article/" in href
             ]
 
-            if not (pdf_links := [
+            pdf_links = [
                 pdf_link for pdf_link in map(lambda link: self._scrape_article(link), articles_links) if pdf_link
-            ]):
-                self._save_failure(issue_url)
+            ]
 
             self._logger.debug(f"PDF links found: {len(pdf_links)}")
             return pdf_links

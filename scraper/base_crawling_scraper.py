@@ -7,6 +7,7 @@ from scrapy.crawler import CrawlerProcess
 
 from helper.constants import DEFAULT_CRAWLING_FOLDER
 from model.base_crawling_models import BaseCrawlingConfig, BaseCrawlingScraperOutput
+from model.sql_models import ScraperFailure
 from scraper.base_scraper import BaseScraper
 from service.crawler import EveSpider
 
@@ -39,6 +40,9 @@ class BaseCrawlingScraper(BaseScraper):
         self._logger.info("Crawling process completed successfully.")
 
         return {source.name: source.url for source in self._config_model.sources}
+
+    def scrape_link(self, failure: ScraperFailure) -> List[str]:
+        pass
 
     def post_process(self, scrape_output: BaseCrawlingScraperOutput) -> List[str]:
         return list(scrape_output.values())

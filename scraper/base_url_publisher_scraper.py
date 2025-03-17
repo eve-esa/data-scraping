@@ -4,6 +4,7 @@ from bs4 import ResultSet, Tag
 
 from helper.utils import get_scraped_url_by_bs_tag
 from model.base_url_publisher_models import BaseUrlPublisherSource, SourceType
+from model.sql_models import ScraperFailure
 from scraper.base_scraper import BaseScraper
 
 
@@ -31,6 +32,32 @@ class BaseUrlPublisherScraper(BaseScraper):
                 self._logger.warning(f"No link found in {source.url}, perhaps due to anti-bot protection.")
 
         return pdf_tags if pdf_tags else None
+
+    def scrape_link(self, failure: ScraperFailure) -> List[str]:
+        link = failure.source
+        self._logger.info(f"Scraping URL: {link}")
+
+        error = failure.message.lower()
+        if "journal" in error:
+            scraped_tags = self._scrape_journal(
+                BaseUrlPublisherSource(url=link, type=str(SourceType.JOURNAL))
+            )
+        elif "issue" in error or "collection" in error:
+            scraped_tags = self._scrape_issue_or_collection(
+                BaseUrlPublisherSource(url=link, type=str(SourceType.ISSUE_OR_COLLECTION))
+            )
+        elif "article" in error:
+            scraped_tags = self._scrape_article(
+                BaseUrlPublisherSource(url=link, type=str(SourceType.ARTICLE))
+            )
+            scraped_tags = [scraped_tags] if scraped_tags is not None else []
+        else:
+            failure.message += " - issue"
+            if (scraped_tags := self.scrape_link(failure)) is None:
+                failure.message = failure.message.replace(" - issue", " - article")
+                scraped_tags = self.scrape_link(failure)
+
+        return self.post_process(scraped_tags) if scraped_tags is not None else []
 
     def post_process(self, scrape_output: ResultSet | List[Tag]) -> List[str]:
         """

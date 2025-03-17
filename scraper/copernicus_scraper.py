@@ -57,14 +57,13 @@ class CopernicusScraper(BaseIterativeWithConstraintPublisherScraper):
             # True, it will be included in the list)
             tags = scraper.find_all("a", class_="article-title", href=lambda href: href and "/articles/" in href)
 
-            if not (pdf_links := [
+            pdf_links = [
                 pdf_link
                 for pdf_link in map(
                     lambda tag: self._scrape_article(get_scraped_url_by_bs_tag(tag, journal.url), journal.url), tags
                 )
                 if pdf_link
-            ]):
-                self._save_failure(issue_url)
+            ]
 
             self._logger.debug(f"PDF links found: {len(pdf_links)}")
             return pdf_links

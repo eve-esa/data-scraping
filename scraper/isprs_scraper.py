@@ -2,6 +2,7 @@ from typing import Type, List
 
 from helper.utils import get_scraped_url_by_bs_tag
 from model.isprs_models import ISPRSConfig
+from model.sql_models import ScraperFailure
 from scraper.base_scraper import BaseScraper
 
 
@@ -36,6 +37,20 @@ class ISPRSScraper(BaseScraper):
 
         return pdf_tags if pdf_tags else None
 
+    def scrape_link(self, failure: ScraperFailure) -> List[str]:
+        link = failure.source
+        self._logger.info(f"Scraping URL: {link}")
+
+        message = failure.message.lower()
+        if "archive" in message:
+            return self.__scrape_archives([link])
+
+        if "proceedings" in message:
+            return self.__scrape_proceedings([link])
+
+        result = self.__scrape_archive_article(link)
+        return [result] if result else []
+
     def __scrape_archives(self, archive_links: List[str]) -> List[str]:
         result = []
 
@@ -52,7 +67,6 @@ class ISPRSScraper(BaseScraper):
                     self._logger.info(f"Scraping archive's article: {article_link}")
 
                     if not (pdf_link := self.__scrape_archive_article(article_link)):
-                        self._save_failure(link)
                         continue
 
                     archive_result.append(pdf_link)

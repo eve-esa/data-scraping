@@ -50,7 +50,7 @@ class EOGEScraper(BaseUrlPublisherScraper):
             )
 
             # For each tag of issues previously collected, scrape the issue as a collection of articles
-            if not (pdf_tag_list := [
+            pdf_tag_list = [
                 tag
                 for tags in (
                     self._scrape_issue_or_collection(BaseUrlPublisherSource(
@@ -60,8 +60,7 @@ class EOGEScraper(BaseUrlPublisherScraper):
                     for tag in issues_tag_list
                 )
                 if tags for tag in tags
-            ]):
-                self._save_failure(source.url)
+            ]
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
             return pdf_tag_list

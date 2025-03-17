@@ -4,6 +4,7 @@ from bs4 import Tag
 
 from helper.utils import get_scraped_url_by_bs_tag
 from model.seos_models import SeosConfig, SeosSource
+from model.sql_models import ScraperFailure
 from scraper.base_scraper import BaseScraper
 
 
@@ -30,6 +31,22 @@ class SeosScraper(BaseScraper):
             links[source.url] = self.__scrape_source(source)
 
         return links if links else None
+
+    def scrape_link(self, failure: ScraperFailure) -> List[str]:
+        link = failure.source
+        self._logger.info(f"Scraping URL: {link}")
+        folder = link.split("/")[-2]
+
+        scraper = self._scrape_url(link)
+        html_tags = scraper.find_all("a", href=lambda href: href and folder in href)
+
+        if not (html_links := list(set([
+            get_scraped_url_by_bs_tag(tag, os.path.join(self._config_model.base_url, folder))
+            for tag in html_tags
+        ]))):
+            self._save_failure(link)
+
+        return html_links
 
     def __scrape_source(self, source: SeosSource) -> List[str]:
         """
