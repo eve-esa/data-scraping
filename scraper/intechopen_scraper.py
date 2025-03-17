@@ -11,7 +11,7 @@ class IntechOpenScraper(BasePaginationPublisherScraper):
     def __init__(self):
         super().__init__()
         self.__page_size = None
-        self.__forbidden_keywords = ("accounts.google.com", "site:", "translate.google.com")
+        self.__forbidden_keywords = ("accounts.google.com", "site:", "translate.google.com", "profiles")
 
     @property
     def config_model_type(self) -> Type[BasePaginationPublisherConfig]:
@@ -35,6 +35,8 @@ class IntechOpenScraper(BasePaginationPublisherScraper):
     def _scrape_page(self, url: str) -> List[Tag] | None:
         def get_pdf_tags(paper_tag: Tag) -> List[Tag]:
             intech_open_url = get_scraped_url_by_bs_tag(paper_tag, self._config_model.base_url)
+            if ".pdf" in intech_open_url:
+                return [Tag(name="a", attrs={"href": intech_open_url})]
             try:
                 # visit the Google link
                 self._driver.cdp.open(intech_open_url)
