@@ -38,6 +38,8 @@ class BaseUrlPublisherScraper(BaseScraper):
         self._logger.info(f"Scraping URL: {link}")
 
         error = failure.message.lower()
+
+        scraped_tags = None
         if "journal" in error:
             scraped_tags = self._scrape_journal(
                 BaseUrlPublisherSource(url=link, type=str(SourceType.JOURNAL))
@@ -52,10 +54,16 @@ class BaseUrlPublisherScraper(BaseScraper):
             )
             scraped_tags = [scraped_tags] if scraped_tags is not None else []
         else:
-            failure.message += " - issue"
-            if (scraped_tags := self.scrape_link(failure)) is None:
-                failure.message = failure.message.replace(" - issue", " - article")
-                scraped_tags = self.scrape_link(failure)
+            fncs = [
+                lambda x: self._scrape_journal(x),
+                lambda x: self._scrape_issue_or_collection(x),
+                lambda x: self._scrape_article(x)
+            ]
+            types = [SourceType.JOURNAL, SourceType.ISSUE_OR_COLLECTION, SourceType.ARTICLE]
+            while fncs and scraped_tags is None:
+                fnc = fncs.pop(0)
+                t = types.pop(0)
+                scraped_tags = fnc(BaseUrlPublisherSource(url=link, type=str(t)))
 
         return self.post_process(scraped_tags) if scraped_tags is not None else []
 

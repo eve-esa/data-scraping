@@ -250,43 +250,39 @@ class BaseScraper(ABC):
         """
         Resume the scraping of the resources that failed to scrape.
         """
-        from helper.utils import is_json_serializable
+        from helper.utils import get_sb_configuration
         from scraper.base_mapped_publisher_scraper import BaseMappedPublisherScraper
 
-        failures = self._scraper_failure_repository.get_by({"scraper": self._logging_db_scraper})
+        self._logger.info(f"Resuming scraper {self.__class__.__name__}")
+
+        failures: List[ScraperFailure] = self._scraper_failure_repository.get_by({"scraper": self._logging_db_scraper})
         if not failures:
             self._logger.error(f"No failures found for scraper {self.__class__.__name__}")
             return
 
-        self._logger.info(f"Resuming scraper {self.__class__.__name__}")
         self._scraper_failure_repository.delete_by({"scraper": self._logging_db_scraper})
+        with SB(**get_sb_configuration()) as self._driver:
+            self._driver.activate_cdp_mode()
+            self._driver.cdp.maximize()
 
-        scraped = []
-        for failure in failures:
-            self._logger.info(f"Resuming scraping of {failure.source}")
-            if ".pdf" in failure.source:
-                fnc = lambda x: self.raw_upload_to_s3(x) if isinstance(
-                    self, BaseMappedPublisherScraper
-                ) else self.upload_to_s3(x)
-                fnc([failure.source])
-
-                continue
-
-            scraped.extend(self.scrape_link(failure))
+            scraped = []
+            for failure in failures:
+                self._logger.info(f"Resuming scraping of {failure.source}")
+                scraped.extend([failure.source] if ".pdf" in failure.source else self.scrape_link(failure))
 
         self._logger.debug(f"Number of sources found: {len(scraped)}")
 
-        current_output = self._scraper_output_repository.get_one_by({"scraper": self._logging_db_scraper})
+        current_output: ScraperOutput = self._scraper_output_repository.get_one_by({"scraper": self._logging_db_scraper})
         scraping_results = current_output.output_json if current_output else {}
         scraping_results["Resumed"] = scraped
 
         output = ScraperOutput(scraper=self._logging_db_scraper, output=json.dumps(scraping_results))
         self._scraper_output_repository.upsert(output, {"scraper": output.scraper}, {"output": output.output})
-        del current_output, output
+        del current_output, output, scraping_results
 
-        links = self.post_process(scraping_results)
-        self.upload_to_s3(links)
-        del scraping_results, links
+        fnc = lambda x: self.raw_upload_to_s3(x) if isinstance(self, BaseMappedPublisherScraper) else self.upload_to_s3(x)
+        fnc(scraped)
+        del scraped
 
         self._analytics_manager.build_and_store_analytics(self._logging_db_scraper)
 
