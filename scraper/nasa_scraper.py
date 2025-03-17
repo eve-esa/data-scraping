@@ -154,8 +154,6 @@ class NASAEOSScraper(BasePaginationPublisherScraper, BaseMappedSubScraper):
         ]} if pdf_tags else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> List[Tag]:
-        self._logger.info(f"Processing Landing Page {landing_page_url}")
-
         return self._scrape_pagination(landing_page_url, source_number, base_zero=True)
 
     def _scrape_page(self, url: str) -> ResultSet | List[Tag] | None:
@@ -192,8 +190,6 @@ class NASAEarthDataScraper(BasePaginationPublisherScraper, BaseMappedSubScraper)
         ]} if html_tags else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> ResultSet | List[Tag] | None:
-        self._logger.info(f"Processing Landing Page {landing_page_url}")
-
         return self._scrape_pagination(landing_page_url, source_number, base_zero=True)
 
     def _scrape_page(self, url: str) -> ResultSet | List[Tag] | None:

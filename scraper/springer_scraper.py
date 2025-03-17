@@ -167,8 +167,6 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedSubS
         Returns:
             List[Tag]: A list of Tag objects containing the tags to the PDF links. If something went wrong, an empty list.
         """
-        self._logger.info(f"Processing Landing Page {landing_page_url}")
-
         return self._scrape_pagination(landing_page_url, source_number)
 
     def _is_valid_tag_list(self, page_tag_list: List | None) -> bool:

@@ -108,8 +108,6 @@ class MDPIGoogleSearchScraper(BasePaginationPublisherScraper, BaseMappedSubScrap
         ]} if pdf_tags else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> List[Tag]:
-        self._logger.info(f"Processing Landing Page {landing_page_url}")
-
         return self._scrape_pagination(landing_page_url, source_number, base_zero=True, page_size=self.__page_size)
 
     def _scrape_page(self, url: str) -> List[Tag] | None:
