@@ -1460,7 +1460,7 @@
     },
     "IntechOpenScraper": {
         "base_url": "https://www.intechopen.com/",
-        "bucket_key": "intech_open",
+        "bucket_key": "{main_folder}/intech_open",
         "cookie_selector": "button[id=accept]",
         "sources": [
             {

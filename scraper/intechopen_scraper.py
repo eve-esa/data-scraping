@@ -11,7 +11,7 @@ class IntechOpenScraper(BasePaginationPublisherScraper):
     def __init__(self):
         super().__init__()
         self.__page_size = None
-        self.__forbidden_keywords = ("accounts.google.com", "site:", "translate.google.com", "profiles")
+        self.__forbidden_keywords = ("accounts.google.com", "site:", "translate.google.com")
 
     @property
     def config_model_type(self) -> Type[BasePaginationPublisherConfig]:
@@ -65,11 +65,23 @@ class IntechOpenScraper(BasePaginationPublisherScraper):
                 ),
             )
 
-            if not (pdf_tag_list := [tag for paper_tag in paper_tags for tag in get_pdf_tags(paper_tag)]):
-                self._save_failure(url)
+            pdf_tag_list = []
+            tags_with_profiles = []
+            for paper_tag in paper_tags:
+                if "profiles" in paper_tag.get("href"):
+                    tags_with_profiles.append(paper_tag)
+                else:
+                    pdf_tag_list.extend(get_pdf_tags(paper_tag))
 
             self._logger.debug(f"PDF links found: {len(pdf_tag_list)}")
+            if not pdf_tag_list and not tags_with_profiles:
+                self._save_failure(url)
+                return None
+
             return pdf_tag_list
         except Exception as e:
             self._log_and_save_failure(url, f"Failed to process URL {url}. Error: {e}")
             return None
+
+    def _is_valid_tag_list(self, page_tag_list: List | None) -> bool:
+        return page_tag_list is not None

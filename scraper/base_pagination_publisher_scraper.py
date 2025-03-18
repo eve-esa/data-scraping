@@ -81,6 +81,9 @@ class BasePaginationPublisherScraper(BaseScraper):
         self._logger.info(f"Scraping URL: {link}")
         page_tag_list = self._scrape_page(link)
 
+        if not self._is_valid_tag_list(page_tag_list):
+            return []
+
         return self.post_process(
             {"": [get_scraped_url_by_bs_tag(tag.get("href"), self._config_model.base_url) for tag in page_tag_list]}
         )
