@@ -1461,7 +1461,7 @@
     "IntechOpenScraper": {
         "base_url": "https://www.intechopen.com/",
         "bucket_key": "{main_folder}/intech_open",
-        "cookie_selector": "button[id=accept]",
+        "cookie_selector": "button[id=CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll]",
         "sources": [
             {
                 "landing_page_url": "https://www.google.com/search?start={start_index}&q=site%3Aintechopen.com+%22remote+sensing%22&sca_esv=61eddb219bf0e5e6&rlz=1C1YTUH_en-GBGB1086GB1086&biw=1920&bih=911&sxsrf=AHTn8zrZUppEw2vp7VhGzqCDs4vCmuCsaw%3A1741693796117&ei=ZCPQZ_bwBry2hbIPpb_GgQ0&ved=0ahUKEwj2spmA-4GMAxU8W0EAHaWfMdA4jgIQ4dUDCBA&uact=5&oq=site%3Aintechopen.com+%22remote+sensing%22&gs_lp=Egxnd3Mtd2l6LXNlcnAiJHNpdGU6aW50ZWNob3Blbi5jb20gInJlbW90ZSBzZW5zaW5nIkj-A1AAWABwAXgAkAEAmAEAoAEAqgEAuAEDyAEAmAIAoAIAmAMAiAYBkgcAoAcA&sclient=gws-wiz-serp",

@@ -37,22 +37,24 @@ class IntechOpenScraper(BasePaginationPublisherScraper):
                 return [Tag(name="a", attrs={"href": intech_open_url})]
             try:
                 # visit the Google link
-                self._driver.cdp.open(intech_open_url)
-                # get the iframe source, which is the real PDF link to download
-                pdf_url = self._get_parsed_page_source().find(
-                    "iframe", src=True, class_=lambda class_: class_ and "pdf-object" in class_
-                ).get("src")
+                scraper_ = self._scrape_url(intech_open_url)
+            except:
+                return []
+            # get the iframe source, which is the real PDF link to download, if it exists
+            if iframe := scraper_.find(
+                "iframe", src=True, class_=lambda class_: class_ and "pdf-object" in class_
+            ):
+                pdf_url = iframe.get("src")
                 # from pdf_url, get the `file` parameter of the query string
                 return [Tag(name="a", attrs={"href": parse_qs(urlparse(pdf_url).query)["file"][0]})]
-            except:
-                # check whether the visited page contains `a` tags with `class` attribute containing "chapter__title"
-                chapter_tags = self._get_parsed_page_source().find_all(
-                    "a", class_=lambda class_: class_ and "chapter__title" in class_
-                )
-                result = []
-                for chapter_tag in chapter_tags:
-                    result.extend(get_pdf_tags(Tag(name="a", attrs={"href": chapter_tag.get("href")})))
-                return result if len(result) > 0 else [Tag(name="a", attrs={"href": intech_open_url})]
+            # check whether the visited page contains `a` tags with `class` attribute containing "chapter__title"
+            chapter_tags = scraper_.find_all(
+                "a", class_=lambda class_: class_ and "chapter__title" in class_
+            )
+            result = []
+            for chapter_tag in chapter_tags:
+                result.extend(get_pdf_tags(Tag(name="a", attrs={"href": chapter_tag.get("href")})))
+            return result if len(result) > 0 else [Tag(name="a", attrs={"href": intech_open_url})]
 
         try:
             # first of all, scrape the Google Search URL

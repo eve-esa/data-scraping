@@ -85,7 +85,7 @@ class BasePaginationPublisherScraper(BaseScraper):
             return []
 
         return self.post_process(
-            {"": [get_scraped_url_by_bs_tag(tag.get("href"), self._config_model.base_url) for tag in page_tag_list]}
+            {"": [get_scraped_url_by_bs_tag(tag, self._config_model.base_url) for tag in page_tag_list]}
         )
 
     @abstractmethod
