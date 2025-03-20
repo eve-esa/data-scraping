@@ -9,30 +9,15 @@ from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper, BaseUrlP
 class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
     @property
     def config_model_type(self) -> Type[BaseUrlPublisherConfig]:
-        """
-        Return the configuration model type.
-
-        Returns:
-            Type[BaseUrlPublisherConfig]: The configuration model type
-        """
         return BaseUrlPublisherConfig
 
     def _scrape_journal(self, source: BaseUrlPublisherSource) -> List[Tag] | None:
-        """
-        Scrape all articles of a journal.
-
-        Args:
-            source (BaseUrlPublisherSource): The journal to scrape.
-
-        Returns:
-            List[Tag] | None: A list of Tag objects containing the PDF links. If no tag was found, return None.
-        """
         self._logger.info(f"Processing Journal {source.url}")
 
         try:
             self._scrape_url(source.url)
 
-            buttons = self._driver.cdp.find_elements("li.vol_li > button.volume_link")
+            buttons = self._driver.cdp.find_elements("li.vol_li > button.volume_link", timeout=0.5)
 
             issues_links = []
             for button in buttons:
@@ -61,15 +46,6 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
             return None
 
     def _scrape_issue_or_collection(self, source: BaseUrlPublisherSource) -> List[Tag] | None:
-        """
-        Scrape the issue (or collection) URL for PDF links.
-
-        Args:
-            source (BaseUrlPublisherSource): The issue / collection to scrape.
-
-        Returns:
-            List[Tag] | None: A list of Tag objects containing the tags to the PDF links, or None if no tag was found.
-        """
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
         try:
@@ -96,15 +72,6 @@ class TaylorAndFrancisScraper(BaseUrlPublisherScraper):
             return None
 
     def _scrape_article(self, source: BaseUrlPublisherSource) -> Tag | None:
-        """
-        Scrape a single article.
-
-        Args:
-            source (BaseUrlPublisherSource): The article to scrape.
-
-        Returns:
-            Tag | None: The tag containing the PDF link found in the article, or None if no tag was found.
-        """
         self._logger.info(f"Processing Article {source.url}")
 
         try:

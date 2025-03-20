@@ -35,7 +35,7 @@ class CopernicusCatalogueScraper(BasePaginationPublisherScraper):
     def _scrape_page(self, url: str) -> List[Tag] | None:
         try:
             self._scrape_url(url)
-            if not (article_tags := self._driver.cdp.find_elements("div.service-catalogue-item a")):
+            if not (article_tags := self._driver.cdp.find_elements("div.service-catalogue-item a", timeout=0.5)):
                 self._save_failure(url)
 
             html_tag_list = []
@@ -55,7 +55,7 @@ class CopernicusCatalogueScraper(BasePaginationPublisherScraper):
                 # now, check if there is a link to an external source within the article
                 try:
                     external_url = get_scraped_url_by_web_element(
-                        self._driver.cdp.find_element("a.btn-outline-primary"), self._config_model.base_url
+                        self._driver.cdp.find_element("a.btn-outline-primary", timeout=0.5), self._config_model.base_url
                     )
                     # if the external URL is the same as the article URL, skip it
                     if external_url == article_url:

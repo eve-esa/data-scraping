@@ -69,4 +69,13 @@ class BaseSourceDownloadScraper(BaseScraper, ABC):
 
     @abstractmethod
     def _get_file_path_from_link(self, link: str) -> str | None:
+        """
+        Get the file path from the provided link. This method must be implemented in the derived class.
+
+        Args:
+            link (str): The link to the file.
+
+        Returns:
+            str | None: The file path.
+        """
         pass

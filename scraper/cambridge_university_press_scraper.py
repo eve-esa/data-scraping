@@ -9,21 +9,9 @@ from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScr
 class CambridgeUniversityPressScraper(BasePaginationPublisherScraper):
     @property
     def config_model_type(self) -> Type[BasePaginationPublisherConfig]:
-        """
-        Return the configuration model type.
-
-        Returns:
-            Type[BasePaginationPublisherConfig]: The configuration model type
-        """
         return BasePaginationPublisherConfig
 
     def scrape(self) -> BasePaginationPublisherScrapeOutput | None:
-        """
-        Scrape the Cambridge University Press sources for PDF links.
-
-        Returns:
-            BasePaginationPublisherScrapeOutput: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.
-        """
         pdf_links = [
             get_scraped_url_by_bs_tag(pdf_tag, self._config_model.base_url)
             for idx, source in enumerate(self._config_model.sources)
@@ -37,15 +25,6 @@ class CambridgeUniversityPressScraper(BasePaginationPublisherScraper):
         return {"Cambridge University Press": pdf_links} if pdf_links else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> ResultSet | List[Tag]:
-        """
-        Scrape the landing page.
-
-        Args:
-            landing_page_url (str): The landing page to scrape.
-
-        Returns:
-            List[Tag]: A list of Tag objects containing the tags to the PDF links. If something went wrong, an empty list.
-        """
         self._logger.info(f"Processing Landing Page {landing_page_url}")
 
         try:
@@ -58,15 +37,6 @@ class CambridgeUniversityPressScraper(BasePaginationPublisherScraper):
             return []
 
     def _scrape_page(self, url: str) -> ResultSet | None:
-        """
-        Scrape the Cambridge University Press page of the collection from pagination for PDF links.
-
-        Args:
-            url (str): The URL to scrape.
-
-        Returns:
-            ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
-        """
         try:
             scraper = self._scrape_url(url)
 

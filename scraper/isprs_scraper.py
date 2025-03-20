@@ -37,7 +37,7 @@ class ISPRSScraper(BaseScraper):
 
         return pdf_tags if pdf_tags else None
 
-    def scrape_link(self, failure: ScraperFailure) -> List[str]:
+    def scrape_failure(self, failure: ScraperFailure) -> List[str]:
         link = failure.source
         self._logger.info(f"Scraping URL: {link}")
 
@@ -52,6 +52,15 @@ class ISPRSScraper(BaseScraper):
         return [result] if result else []
 
     def __scrape_archives(self, archive_links: List[str]) -> List[str]:
+        """
+        Scrape the archives for PDF links. The archives contain links to articles, which in turn contain the PDF links.
+
+        Args:
+            archive_links (List[str]): A list of archive links.
+
+        Returns:
+            List[str]: A list of PDF links found in the archives.
+        """
         result = []
 
         for link in archive_links:
@@ -80,6 +89,16 @@ class ISPRSScraper(BaseScraper):
         return result
 
     def __scrape_archive_article(self, article_link: str) -> str | None:
+        """
+        Scrape a single article from the archives. The article contains the PDF link. If the article does not contain a
+        PDF link, it will be saved as a failure.
+
+        Args:
+            article_link (str): The article link to scrape.
+
+        Returns:
+            str | None: The PDF link found in the article.
+        """
         try:
             scraper = self._scrape_url(article_link)
 
@@ -97,6 +116,16 @@ class ISPRSScraper(BaseScraper):
             return None
 
     def __scrape_proceedings(self, proceedings_urls: List[str]) -> List[str]:
+        """
+        Scrape the proceedings for PDF links. The proceedings contain links to articles, which in turn contain the PDF
+        links.
+
+        Args:
+            proceedings_urls (List[str]): A list of proceedings links.
+
+        Returns:
+            List[str]: A list of PDF links found in the proceedings
+        """
         result = []
 
         for url in proceedings_urls:

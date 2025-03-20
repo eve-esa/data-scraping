@@ -32,7 +32,7 @@ class SeosScraper(BaseScraper):
 
         return links if links else None
 
-    def scrape_link(self, failure: ScraperFailure) -> List[str]:
+    def scrape_failure(self, failure: ScraperFailure) -> List[str]:
         link = failure.source
         self._logger.info(f"Scraping URL: {link}")
         folder = link.split("/")[-2]

@@ -29,13 +29,13 @@ class ScrapeAdapter:
 
         return results
 
-    def scrape_link(self, failure: ScraperFailure) -> List[str]:
+    def scrape_failure(self, failure: ScraperFailure) -> List[str]:
         if self.__scraper_type is None:
             return [failure.source]
 
         scraper = self.__scraper_type()
         scraper.set_config_model(self.__config_model).set_logging_db_scraper(self.__logging_scraper)
-        return scraper.scrape_link(failure)
+        return scraper.scrape_failure(failure)
 
     def post_process(self, scrape_output: Any) -> Any:
         if self.__scraper_type is None:

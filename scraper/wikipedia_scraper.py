@@ -8,12 +8,6 @@ from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
 class WikipediaScraper(BaseUrlPublisherScraper):
     @property
     def config_model_type(self) -> Type[BaseUrlPublisherConfig]:
-        """
-        Return the configuration model type.
-
-        Returns:
-            Type[BaseUrlPublisherConfig]: The configuration model type
-        """
         return BaseUrlPublisherConfig
 
     def _scrape_journal(self, source: BaseUrlPublisherSource) -> ResultSet | List[Tag] | None:
@@ -25,7 +19,7 @@ class WikipediaScraper(BaseUrlPublisherScraper):
         try:
             self._scrape_url(source.url)
 
-            html_tag_list = self._driver.cdp.find_elements("div.mw-category-generated a")
+            html_tag_list = self._driver.cdp.find_elements("div.mw-category-generated a", timeout=0.5)
 
             if not (result := [
                 Tag(name="a", attrs={"href": tag.get_attribute("href")})

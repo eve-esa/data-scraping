@@ -10,12 +10,6 @@ from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
 class UKMetOfficeScraper(BaseUrlPublisherScraper):
     @property
     def config_model_type(self) -> Type[BaseUrlPublisherConfig]:
-        """
-        Return the configuration model type.
-
-        Returns:
-            Type[BaseUrlPublisherConfig]: The configuration model type
-        """
         return BaseUrlPublisherConfig
 
     def _scrape_journal(self, source: BaseUrlPublisherSource) -> ResultSet | List[Tag] | None:
@@ -29,7 +23,7 @@ class UKMetOfficeScraper(BaseUrlPublisherScraper):
 
             pdf_tag_list = []
 
-            page_buttons = self._driver.cdp.find_elements("a.role-button.page-link")
+            page_buttons = self._driver.cdp.find_elements("a.role-button.page-link", timeout=0.5)
             # keep only those buttons having a number as a text, and not repeating the same number
             page_buttons = {page_button.text: page_button for page_button in page_buttons if page_button.text.isdigit()}
 

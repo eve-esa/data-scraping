@@ -1,49 +1,26 @@
 import os
-from typing import Type
+from typing import Type, List
 
-from helper.utils import get_scraped_url_by_bs_tag, get_scraped_url_by_web_element
+from helper.utils import get_scraped_url_by_web_element
 from model.ams_models import AMSConfig, AMSJournal
 from model.base_iterative_publisher_models import (
     IterativePublisherScrapeJournalOutput,
     IterativePublisherScrapeVolumeOutput,
     IterativePublisherScrapeIssueOutput,
 )
+from model.sql_models import ScraperFailure
 from scraper.base_iterative_publisher_scraper import BaseIterativePublisherScraper
 
 
 class AMSScraper(BaseIterativePublisherScraper):
     @property
     def config_model_type(self) -> Type[AMSConfig]:
-        """
-        Return the configuration model type.
-
-        Returns:
-            Type[AMSConfig]: The configuration model type
-        """
         return AMSConfig
 
     def journal_identifier(self, model: AMSJournal) -> str:
-        """
-        Return the journal identifier.
-
-        Args:
-            model (AMSJournal): The configuration model.
-
-        Returns:
-            str: The journal identifier
-        """
         return model.code
 
     def _scrape_journal(self, journal: AMSJournal) -> IterativePublisherScrapeJournalOutput:
-        """
-        Scrape all volumes of a journal.
-
-        Args:
-            journal (AMSJournal): The journal to scrape.
-
-        Returns:
-            IterativePublisherScrapeJournalOutput: A dictionary containing the PDF links.
-        """
         self._logger.info(f"Processing Journal {journal.name}")
 
         volume = 1
@@ -59,16 +36,6 @@ class AMSScraper(BaseIterativePublisherScraper):
         return links
 
     def _scrape_volume(self, journal: AMSJournal, volume_num: int) -> IterativePublisherScrapeVolumeOutput:
-        """
-        Scrape all issues of a volume.
-
-        Args:
-            journal (AMSJournal): The journal to scrape.
-            volume_num (int): The volume number.
-
-        Returns:
-            IterativePublisherScrapeVolumeOutput: A dictionary containing the PDF links.
-        """
         self._logger.info(f"Processing Volume {volume_num}")
 
         issue = 1
@@ -86,17 +53,6 @@ class AMSScraper(BaseIterativePublisherScraper):
     def _scrape_issue(
         self, journal: AMSJournal, volume_num: int, issue_num: int
     ) -> IterativePublisherScrapeIssueOutput | None:
-        """
-        Scrape the issue URL for PDF links.
-
-        Args:
-            journal (AMSJournal): The journal to scrape.
-            volume_num (int): The volume number.
-            issue_num (int): The issue number.
-
-        Returns:
-            IterativePublisherScrapeIssueOutput | None: A list of PDF links found in the issue, or None if something went wrong.
-        """
         issue_url = os.path.join(
             self._config_model.base_url,
             f"view/journals/{journal.code}/{volume_num}/{issue_num}",
@@ -104,18 +60,35 @@ class AMSScraper(BaseIterativePublisherScraper):
         )
         self._logger.info(f"Processing Issue URL: {issue_url}")
 
+        return self.__scrape_url(issue_url)
+
+    def _scrape_article(self, article_url: str) -> str | None:
+        pass
+
+    def scrape_failure(self, failure: ScraperFailure) -> List[str]:
+        link = failure.source
+        self._logger.info(f"Scraping URL: {link}")
+
+        return self.__scrape_url(link) or []
+
+    def __scrape_url(self, url: str) -> IterativePublisherScrapeIssueOutput | None:
+        xml_page = os.path.split(url)[-1]
+        xml_page = xml_page.replace(".xml", "")
+        journal_code, volume_num, issue_num = xml_page.split(".")
+        issue_num = issue_num.split("-")[-1]
+
+        url_search, _ = os.path.split(url.replace(self._config_model.base_url, ""))
+
         try:
-            scraper = self._scrape_url(issue_url)
-            if "we could not find the page that you are looking for" in scraper.text:
-                raise Exception(f"Failed to load {issue_url}: page not found")
+            self._scrape_url(url)
 
             # find all the article links in the issue by keeping only the links to the accessible articles
             try:
-                tags = self._driver.cdp.find_all("div.ico-access-open")
+                tags = self._driver.cdp.find_all("div.ico-access-open", timeout=0.5)
             except:
                 tags = []
             try:
-                tags += self._driver.cdp.find_all("div.ico-access-free")
+                tags += self._driver.cdp.find_all("div.ico-access-free", timeout=0.5)
             except:
                 pass
 
@@ -127,28 +100,16 @@ class AMSScraper(BaseIterativePublisherScraper):
                 if (grandparent := tag.get_parent().get_parent())
                    and (a_tag := grandparent.query_selector("a.c-Button--link"))
                    and (href := a_tag.get_attribute("href"))
-                   and f"/view/journals/{journal.code}/{volume_num}/{issue_num}/" in href
+                   and url_search in href
                    and ".xml" in href
             ]
 
             # Now, visit each article link and find the PDF link
             if not pdf_links:
-                self._save_failure(issue_url)
+                self._save_failure(url)
 
             self._logger.debug(f"PDF links found: {len(pdf_links)}")
             return pdf_links
         except Exception as e:
-            self._log_and_save_failure(issue_url, f"Failed to process Issue {issue_num} in Volume {volume_num}. Error: {e}")
+            self._log_and_save_failure(url, f"Failed to process Issue {issue_num} in Volume {volume_num}. Error: {e}")
             return None
-
-    def _scrape_article(self, article_url: str) -> str | None:
-        """
-        Scrape a single article.
-
-        Args:
-            article_url (str): The article links to scrape.
-
-        Returns:
-            str | None: The string containing the PDF link, or None if no link was found or something went wrong.
-        """
-        pass

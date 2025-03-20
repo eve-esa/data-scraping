@@ -614,7 +614,6 @@
             {
                 "url": "https://academic.oup.com/oocc",
                 "name": "Oxford Open Climate Change",
-                "code": "oocc",
                 "start_volume": 1,
                 "end_volume": 4,
                 "start_issue": 1,

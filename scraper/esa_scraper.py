@@ -16,12 +16,6 @@ class ESAScraper(BaseMappedPublisherScraper):
 class ESAUrlScraper(BaseUrlPublisherScraper, BaseMappedSubScraper):
     @property
     def config_model_type(self) -> Type[BaseMappedUrlConfig]:
-        """
-        Return the configuration model type.
-
-        Returns:
-            Type[BaseMappedUrlConfig]: The configuration model type
-        """
         return BaseMappedUrlConfig
 
     def _scrape_journal(self, source: BaseMappedUrlSource) -> ResultSet | List[Tag] | None:

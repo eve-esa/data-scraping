@@ -22,24 +22,9 @@ class SpringerScraper(BaseMappedPublisherScraper):
 class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedSubScraper):
     @property
     def config_model_type(self) -> Type[BaseMappedUrlConfig]:
-        """
-        Return the configuration model type.
-
-        Returns:
-            Type[BaseMappedUrlConfig]: The configuration model type
-        """
         return BaseMappedUrlConfig
 
     def _scrape_journal(self, source: BaseMappedUrlSource) -> List[Tag] | None:
-        """
-        Scrape all articles of a journal.
-
-        Args:
-            source (BaseMappedUrlSource): The journal to scrape.
-
-        Returns:
-            List[Tag] | None: A list of Tag objects containing the PDF links. If no tag was found, return None.
-        """
         self._logger.info(f"Processing Journal {source.url}")
 
         # navigate through the pagination of the journal
@@ -76,15 +61,6 @@ class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedSubScraper):
         return pdf_tag_list
 
     def _scrape_issue_or_collection(self, source: BaseMappedUrlSource) -> ResultSet | None:
-        """
-        Scrape the issue (or collection) URL for PDF links.
-
-        Args:
-            source (BaseMappedUrlSource): The issue / collection to scrape.
-
-        Returns:
-            ResultSet | None: A ResultSet (i.e., list) object containing the tags to the PDF links, or None if no tag was found.
-        """
         self._logger.info(f"Processing Issue / Collection {source.url}")
 
         try:
@@ -101,15 +77,6 @@ class SpringerUrlScraper(BaseUrlPublisherScraper, BaseMappedSubScraper):
             return None
 
     def _scrape_article(self, source: BaseMappedUrlSource) -> Tag | None:
-        """
-        Scrape a single article.
-
-        Args:
-            source (BaseMappedUrlSource): The article to scrape.
-
-        Returns:
-            Tag | None: The tag containing the PDF link found in the article, or None if no tag was found.
-        """
         self._logger.info(f"Processing Article {source.url}")
 
         try:
@@ -133,21 +100,9 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedSubS
 
     @property
     def config_model_type(self) -> Type[BaseMappedPaginationConfig]:
-        """
-        Return the configuration model type.
-
-        Returns:
-            Type[BaseMappedPaginationConfig]: The configuration model type
-        """
         return BaseMappedPaginationConfig
 
     def scrape(self) -> BasePaginationPublisherScrapeOutput | None:
-        """
-        Scrape the Springer sources from Search Engine tools for PDF links.
-
-        Returns:
-            BasePaginationPublisherScrapeOutput: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.
-        """
         pdf_tags = []
         for idx, source in enumerate(self._config_model.sources):
             self.__consecutive_failures = 0
@@ -158,35 +113,17 @@ class SpringerSearchEngineScraper(BasePaginationPublisherScraper, BaseMappedSubS
         ]} if pdf_tags else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> List[Tag]:
-        """
-        Scrape the landing page.
-
-        Args:
-            landing_page_url (str): The landing page to scrape.
-
-        Returns:
-            List[Tag]: A list of Tag objects containing the tags to the PDF links. If something went wrong, an empty list.
-        """
         return self._scrape_pagination(landing_page_url, source_number)
 
     def _is_valid_tag_list(self, page_tag_list: List | None) -> bool:
         return page_tag_list is not None and self.__consecutive_failures <= self.__max_consecutive_failures
 
     def _scrape_page(self, url: str) -> List[Tag] | None:
-        """
-        Scrape the Cambridge University Press page of the collection from pagination for PDF links.
-
-        Args:
-            url (str): The URL to scrape.
-
-        Returns:
-            ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
-        """
         try:
             self._scrape_url(url)
 
             try:
-                tags = self._driver.cdp.find_all("svg.app-entitlement__icon--full-access")
+                tags = self._driver.cdp.find_all("svg.app-entitlement__icon--full-access", timeout=0.5)
             except:
                 tags = []
 

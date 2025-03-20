@@ -10,21 +10,9 @@ from scraper.base_pagination_publisher_scraper import BasePaginationPublisherScr
 class NCBIScraper(BasePaginationPublisherScraper):
     @property
     def config_model_type(self) -> Type[NCBIConfig]:
-        """
-        Return the configuration model type.
-
-        Returns:
-            Type[NCBIConfig]: The configuration model type
-        """
         return NCBIConfig
 
     def scrape(self) -> BasePaginationPublisherScrapeOutput | None:
-        """
-        Scrape the NCBI sources for PDF links.
-
-        Returns:
-            BasePaginationPublisherScrapeOutput | None: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.
-        """
         pdf_tags = []
         for idx, source in enumerate(self._config_model.sources):
             self._scrape_landing_page(source.landing_page_url, idx + 1)
@@ -35,25 +23,10 @@ class NCBIScraper(BasePaginationPublisherScraper):
         ]} if pdf_tags else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> None:
-        """
-        Scrape the landing page.
-
-        Args:
-            landing_page_url (str): The landing page to scrape.
-        """
         self._logger.info(f"Processing Landing Page {landing_page_url}")
         self._scrape_url(landing_page_url)
 
     def _scrape_page(self, url: str) -> ResultSet | None:
-        """
-        Scrape the PubMed / NCBI page of the collection from pagination for PDF links.
-
-        Args:
-            url (str): The URL to scrape.
-
-        Returns:
-            ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
-        """
         try:
             scraper = self._scrape_url(url)
 

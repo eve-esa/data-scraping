@@ -268,7 +268,7 @@ class BaseScraper(ABC):
             scraped = []
             for failure in failures:
                 self._logger.info(f"Resuming scraping of {failure.source}")
-                scraped.extend([failure.source] if ".pdf" in failure.source else self.scrape_link(failure))
+                scraped.extend([failure.source] if ".pdf" in failure.source else self.scrape_failure(failure))
 
         self._logger.debug(f"Number of sources found: {len(scraped)}")
 
@@ -299,9 +299,9 @@ class BaseScraper(ABC):
         pass
 
     @abstractmethod
-    def scrape_link(self, failure: ScraperFailure) -> List[str]:
+    def scrape_failure(self, failure: ScraperFailure) -> List[str]:
         """
-        Scrape the resources link. This method must be implemented in the derived class.
+        Scrape the failed resource. This method must be implemented in the derived class.
 
         Args:
             failure (ScraperFailure): The failure model.

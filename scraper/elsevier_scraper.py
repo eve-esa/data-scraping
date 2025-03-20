@@ -22,12 +22,6 @@ class ElsevierScraper(BaseSourceDownloadScraper):
         return ElsevierConfig
 
     def scrape(self) -> ElsevierScraperOutput | None:
-        """
-        Scrape the Elsevier website for the PDF links.
-
-        Returns:
-            ElsevierScraperOutput | None: The PDF links scraped from the website.
-        """
         pdf_links = {}
         for source in self._config_model.sources:
             if source.type == SourceType.JOURNAL:
@@ -41,7 +35,7 @@ class ElsevierScraper(BaseSourceDownloadScraper):
 
         return pdf_links if pdf_links else None
 
-    def scrape_link(self, failure: ScraperFailure) -> List[str]:
+    def scrape_failure(self, failure: ScraperFailure) -> List[str]:
         link = failure.source
         self._logger.info(f"Scraping URL: {link}")
 

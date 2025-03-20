@@ -8,12 +8,6 @@ from scraper.base_url_publisher_scraper import BaseUrlPublisherScraper
 class JAXAScraper(BaseUrlPublisherScraper):
     @property
     def config_model_type(self) -> Type[BaseUrlPublisherConfig]:
-        """
-        Return the configuration model type.
-
-        Returns:
-            Type[BaseUrlPublisherConfig]: The configuration model type
-        """
         return BaseUrlPublisherConfig
 
     def _scrape_journal(self, source: BaseUrlPublisherSource) -> ResultSet | List[Tag] | None:

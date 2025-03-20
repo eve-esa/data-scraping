@@ -4,7 +4,6 @@ from model.base_iterative_publisher_models import BaseIterativePublisherJournal,
 
 
 class OxfordAcademicJournal(BaseIterativePublisherJournal):
-    code: str
     start_volume: int
     end_volume: int
     start_issue: int

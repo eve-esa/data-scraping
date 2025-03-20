@@ -59,14 +59,14 @@ class BaseMappedPublisherScraper(BaseScraper):
 
         return links if links else None
 
-    def scrape_link(self, failure: ScraperFailure) -> List[str]:
+    def scrape_failure(self, failure: ScraperFailure) -> List[str]:
         links = []
         for source in self._config_model.sources:
             self._logger.info(f"Processing source {source.name}")
 
             results = ScrapeAdapter(
                 source.config, self.__class__.__name__, self.mapping.get(source.scraper)
-            ).scrape_link(failure)
+            ).scrape_failure(failure)
             links.extend(results)
 
         return links

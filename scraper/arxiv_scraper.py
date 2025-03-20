@@ -14,21 +14,9 @@ class ArxivScraper(BasePaginationPublisherScraper):
 
     @property
     def config_model_type(self) -> Type[ArxivConfig]:
-        """
-        Return the configuration model type.
-
-        Returns:
-            Type[ArxivConfig]: The configuration model type
-        """
         return ArxivConfig
 
     def scrape(self) -> BasePaginationPublisherScrapeOutput | None:
-        """
-        Scrape the Arxiv sources for PDF links.
-
-        Returns:
-            BasePaginationPublisherScrapeOutput | None: The output of the scraping, i.e., a dictionary containing the PDF links. Each key is the name of the source which PDF links have been found for, and the value is the list of PDF links itself.
-        """
         pdf_tags = []
         for idx, source in enumerate(self._config_model.sources):
             self.__page_size = source.page_size
@@ -39,27 +27,9 @@ class ArxivScraper(BasePaginationPublisherScraper):
         ]} if pdf_tags else None
 
     def _scrape_landing_page(self, landing_page_url: str, source_number: int) -> List[Tag]:
-        """
-        Scrape the landing page.
-
-        Args:
-            landing_page_url (str): The landing page to scrape.
-
-        Returns:
-            List[Tag]: A list of Tag objects containing the tags to the PDF links. If something went wrong, an empty list.
-        """
         return self._scrape_pagination(landing_page_url, source_number, base_zero=True, page_size=self.__page_size)
 
     def _scrape_page(self, url: str) -> ResultSet | None:
-        """
-        Scrape the Arxiv page of the collection from pagination for PDF links.
-
-        Args:
-            url (str): The URL to scrape.
-
-        Returns:
-            ResultSet | None: A ResultSet (i.e., a list) containing the tags to the PDF links. If something went wrong, return None.
-        """
         try:
             scraper = self._scrape_url(url)
 

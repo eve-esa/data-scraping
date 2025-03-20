@@ -64,6 +64,15 @@ class BasePaginationPublisherScraper(BaseScraper):
         return list(set([link for links in scrape_output.values() for link in links]))
 
     def _is_valid_tag_list(self, page_tag_list: List | None) -> bool:
+        """
+        Check if the tag list is valid.
+
+        Args:
+            page_tag_list (List | None): The tag list.
+
+        Returns:
+            bool: True if the tag list is valid, False otherwise.
+        """
         return page_tag_list is not None and len(page_tag_list) > 0
 
     @abstractmethod
@@ -76,7 +85,7 @@ class BasePaginationPublisherScraper(BaseScraper):
         """
         pass
 
-    def scrape_link(self, failure: ScraperFailure) -> List[str]:
+    def scrape_failure(self, failure: ScraperFailure) -> List[str]:
         link = failure.source
         self._logger.info(f"Scraping URL: {link}")
         page_tag_list = self._scrape_page(link)

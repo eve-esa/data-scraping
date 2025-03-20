@@ -106,9 +106,12 @@ class BaseIterativePublisherScraper(BaseScraper):
         pass
 
     @abstractmethod
-    def _scrape_article(self, *args, **kwargs) -> str | None:
+    def _scrape_article(self, article_url: str) -> str | None:
         """
-        Scrape a single article. This method must be implemented in the derived class.
+        Scrape a single article.
+
+        Args:
+            article_url (str): The article links to scrape.
 
         Returns:
             str | None: The string containing the PDF link.

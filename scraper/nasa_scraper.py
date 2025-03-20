@@ -31,12 +31,6 @@ class NASAScraper(BaseMappedPublisherScraper):
 class NASAEarthDataWikiScraper(BaseUrlPublisherScraper, BaseMappedSubScraper):
     @property
     def config_model_type(self) -> Type[BaseUrlPublisherConfig]:
-        """
-        Return the configuration model type.
-
-        Returns:
-            Type[BaseUrlPublisherConfig]: The configuration model type
-        """
         return BaseUrlPublisherConfig
 
     def _scrape_journal(self, source: BaseMappedUrlSource) -> ResultSet | List[Tag] | None:
@@ -101,7 +95,9 @@ class NASANTRSScraper(BaseMappedSubScraper, BaseScraper):
                 pdf_tags.extend(pdf_tag_list)
 
                 try:
-                    next_page_button = self._driver.cdp.find_element("button.mat-paginator-navigation-next")
+                    next_page_button = self._driver.cdp.find_element(
+                        "button.mat-paginator-navigation-next", timeout=0.5
+                    )
 
                     # if next page button has class `mat-button-disabled`, then break the loop
                     if "mat-button-disabled" in next_page_button.get_attribute("class"):
@@ -126,7 +122,7 @@ class NASANTRSScraper(BaseMappedSubScraper, BaseScraper):
             get_scraped_url_by_bs_tag(tag, self._config_model.base_url) for tag in pdf_tags
         ]} if pdf_tags else None
 
-    def scrape_link(self, failure: ScraperFailure) -> List[str]:
+    def scrape_failure(self, failure: ScraperFailure) -> List[str]:
         link = failure.source
         self._logger.info(f"Scraping URL: {link}")
 
