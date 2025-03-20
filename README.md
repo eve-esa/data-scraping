@@ -50,14 +50,17 @@ please populate all the keys in the `.env` file with the correct values.
 2. Create the docker containers by running the following command: `make up`
 3. Install the required packages using the following command: `make sync-requirements`
 
+**Additional Note**: the `make down` command can be executed to stop the docker container.
+
 ## Configuration
 The configuration file is located in the `config` folder and is named `config.json`. The configuration file contains the parameters
 to be used in the pipeline. Each main key of the JSON file represents the configuration of a different scraper.
-The name of the key is the name of the scraper and the value is a dictionary containing the Pydantic model of the scraper configuration. For more examples, please take a look to the already implemented scrapers and their configurations.
+The name of the key is the name of the scraper and the value is a dictionary containing the Pydantic model of the scraper
+configuration. For more examples, please take a look to the already implemented scrapers and their configurations.
 
 ## Usage
 
-### Testing
+### Local testing
 For the usage with testing purposes, please create a `.env` file in the root of the project as per the [Pre-requisites](#pre-requisites)
 section. Then, you can run the following command to execute the pipeline:
 ```bash
@@ -65,7 +68,14 @@ make up
 make run
 ```
 
-The command `make up` will start the docker containers and `make run` will execute the pipeline.
+The command `make up` will start the docker containers and `make run` will execute the pipeline. The docker containers
+are locally required, since a MinIO server is used to store the data and emulate a remote S3 bucket.
+Every time the pipeline is executed, the data are stored into the MinIO server. **Additional Notes**:
+- the `make up` command must be executed only once, since the docker container is started and the
+MinIO server is started
+- the `make run` command can be executed multiple times to run the pipeline.
+
+#### Command Arguments
 It is possible to specify the name(s) of the scraper(s) to be executed by adding the `--scrapers` parameter to the
 `make run` command. E.g.:
 ```bash
@@ -76,28 +86,42 @@ or
 make run args="--scrapers IOPScraper SpringerScraper"
 ```
 
-The docker containers are locally required, since a MinIO server is used to store the data and emulate a remote S3 bucket.
-Every time the pipeline is executed, the data are stored into the MinIO server.
-
-**Additional Notes**: 
-1. The `make up` command must be executed only once, since the docker container is started and the MinIO server is started.
-The `make run` command can be executed multiple times to run the pipeline.
-The `make down` command can be executed to stop the docker container.
-2. If you want to force the execution of one or more scrapers, even when they have been completed, you can add
+If you want to force the **entire execution** of one or more scrapers, even when they have been completed, you can add
 the `--force` parameter to the `make run` command. E.g.:
-   ```bash
-   make run args="--scrapers IOPScraper --force"
-   ```
+```bash
+make run args="--scrapers IOPScraper --force"
+```
+
+The parameter `--resume` can be added to the `make run` command to resume **only** the failed URLs of the last execution of
+the pipeline. This parameter can be composed with `--scrapers`, e.g.:
+```bash
+make run args="--scrapers IOPScraper --resume"
+```
+
+The parameter `--resume-upload` can be added to the `make run` command to resume **only** the failed uploads of the last
+execution of the pipeline. This parameter can be composed with `--scrapers`, e.g.:
+```bash
+make run args="--scrapers IOPScraper --resume-upload"
+```
+
+Finally, if you want to retrieve the statistics of the last execution of the pipeline, you can add the `--analytics-only`
+parameter (please, check the [Analytics: HowTo](#analytics-howto) section for more details).
+
+**Additional Note**: the `--resume` and `--resume-upload` parameters cannot be used together.
 
 ### Production
 For the usage with productive purposes, please create a `.env` file in the root of the project as per the [Pre-requisites](#pre-requisites) section. 
-Then, you can run the pipeline as described in the previous section, but with the following commands:
+Please, contact the maintainer of the project to get the correct values for the keys in the `.env` file.
+Run the `pod.sh` script to install the required packages and deploy the infrastructure in the remote Linux-based POD.
 ```bash
 sh pod.sh
+```
+
+Then, you can run the pipeline as described in the previous section, but with the following commands:
+```bash
 make runpod
 ```
-The `pod.sh` shell script is used to deploy a suitable infrastructure into the remote Linux-based POD. The `make runpod`
-command will execute the pipeline, similarly to the `make run` command for the local usage. The command `make runpod`
+The `make runpod` command will execute the pipeline, similarly to the `make run` command for the local usage. The command `make runpod`
 has the same parameters as the `make run` command.
 
 ## HowTo: add a new Scraper
