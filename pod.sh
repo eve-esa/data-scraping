@@ -20,7 +20,8 @@ apt-get update && apt-get install -y \
     default-libmysqlclient-dev \
     pkg-config \
     software-properties-common \
-    python3-apt
+    python3-apt \
+    libmagic1
 
 # Check if Python 3.10 is already installed
 if ! command -v python3.10 &> /dev/null; then

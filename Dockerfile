@@ -19,6 +19,9 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     default-libmysqlclient-dev \
     pkg-config \
+    libmagic1 \
+    python3-tk \
+    python3-dev \
     && wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
     && apt-get install ./google-chrome-stable_current_amd64.deb -y --fix-missing \
     && rm google-chrome-stable_current_amd64.deb \

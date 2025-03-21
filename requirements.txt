@@ -8,6 +8,6 @@ PyMySQL==1.1.1
 python-magic==0.4.27
 PyYAML==6.0.2
 scrapy==2.12.0
-seleniumbase==4.35.4
+seleniumbase==4.35.7
 sqlalchemy==2.0.37
 webdriver-manager==4.0.2
