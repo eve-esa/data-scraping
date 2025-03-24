@@ -80,7 +80,9 @@ class AMSScraper(BaseIterativePublisherScraper):
         url_search, _ = os.path.split(url.replace(self._config_model.base_url, ""))
 
         try:
-            self._scrape_url(url)
+            scraper = self._scrape_url(url)
+            if "we could not find the page that you are looking for" in scraper.text:
+                raise Exception(f"Failed to load {url}: page not found")
 
             # find all the article links in the issue by keeping only the links to the accessible articles
             try:
@@ -107,7 +109,6 @@ class AMSScraper(BaseIterativePublisherScraper):
             # Now, visit each article link and find the PDF link
             if not pdf_links:
                 self._save_failure(url)
-                return None
 
             self._logger.debug(f"PDF links found: {len(pdf_links)}")
             return pdf_links
