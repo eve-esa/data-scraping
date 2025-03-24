@@ -107,6 +107,7 @@ class AMSScraper(BaseIterativePublisherScraper):
             # Now, visit each article link and find the PDF link
             if not pdf_links:
                 self._save_failure(url)
+                return None
 
             self._logger.debug(f"PDF links found: {len(pdf_links)}")
             return pdf_links
