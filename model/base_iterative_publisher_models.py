@@ -13,13 +13,17 @@ class BaseIterativePublisherJournal(BaseModel):
     end_issue: int | None = 30
 
 
+class BaseIterativePublisherConfig(BaseConfig):
+    journals: List[BaseIterativePublisherJournal]
+
+
 class BaseIterativeWithConstraintPublisherJournal(BaseIterativePublisherJournal):
     consecutive_missing_volumes_threshold: int | None = 3
     consecutive_missing_issues_threshold: int | None = 3
 
 
-class BaseIterativePublisherConfig(BaseConfig):
-    journals: List[BaseIterativePublisherJournal]
+class BaseIterativeWithConstraintPublisherConfig(BaseConfig):
+    journals: List[BaseIterativeWithConstraintPublisherJournal]
 
 
 IterativePublisherScrapeOutput: TypeAlias = Dict[str, Dict[int, Dict[int, List[str]]]]

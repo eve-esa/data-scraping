@@ -90,7 +90,7 @@ class OxfordAcademicScraper(BaseIterativePublisherScraper):
         link = failure.source
         self._logger.info(f"Scraping URL: {link}")
 
-        message = failure.message
-        res = self.__scrape_issue(link) if "Issue" in message else self.__scrape_article(link)
+        message = failure.message.lower()
+        res = self.__scrape_issue(link) if "issue" in message else self.__scrape_article(link)
 
         return [res] if res else []

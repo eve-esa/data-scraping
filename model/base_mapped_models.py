@@ -4,8 +4,9 @@ from pydantic import BaseModel
 from model.base_crawling_models import BaseCrawlingConfig
 from model.base_direct_publisher_models import BaseDirectPublisherConfig
 from model.base_iterative_publisher_models import (
-    BaseIterativePublisherJournal,
     BaseIterativePublisherConfig,
+    BaseIterativePublisherJournal,
+    BaseIterativeWithConstraintPublisherConfig,
     BaseIterativeWithConstraintPublisherJournal,
 )
 from model.base_models import BaseConfig, Config
@@ -37,7 +38,7 @@ class BaseMappedIterativeWithConstraintJournal(
     pass
 
 
-class BaseMappedIterativeWithConstraintConfig(BaseConfig):
+class BaseMappedIterativeWithConstraintConfig(BaseIterativeWithConstraintPublisherConfig):
     bucket_key: str | None = None
     journals: List[BaseMappedIterativeWithConstraintJournal]
 

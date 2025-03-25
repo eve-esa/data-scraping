@@ -42,7 +42,7 @@ class BaseCrawlingScraper(BaseScraper):
         return {source.name: source.url for source in self._config_model.sources}
 
     def scrape_failure(self, failure: ScraperFailure) -> List[str]:
-        pass
+        raise NotImplementedError
 
     def post_process(self, scrape_output: BaseCrawlingScraperOutput) -> List[str]:
         return list(scrape_output.values())

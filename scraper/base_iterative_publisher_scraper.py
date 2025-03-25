@@ -74,7 +74,9 @@ class BaseIterativePublisherScraper(BaseScraper):
         self._logger.info(f"Processing Journal {journal.name}")
         return self._build_journal_links(journal)
 
-    def _scrape_volume(self, journal: BaseIterativePublisherJournal, volume_num: int) -> IterativePublisherScrapeVolumeOutput:
+    def _scrape_volume(
+        self, journal: BaseIterativePublisherJournal, volume_num: int
+    ) -> IterativePublisherScrapeVolumeOutput:
         """
         Scrape all issues of a volume. This method must be implemented in the derived class.
 
@@ -139,18 +141,16 @@ class BaseIterativeWithConstraintPublisherScraper(BaseIterativePublisherScraper,
 
         # Iterate over each volume in the specified range
         for volume_num in range(journal.start_volume, journal.end_volume + 1):
-            res = self._scrape_volume(journal, volume_num)
-            if res:
-                missing_volume_count = 0
-                links[volume_num] = res
-            else:
-                missing_volume_count += 1
-
             if missing_volume_count >= journal.consecutive_missing_volumes_threshold:
-                self._logger.warning(f"Consecutive missing volumes for Journal {journal.name}. Moving to the next journal.")
+                self._logger.warning(f"Max consecutive missing volumes for Journal {journal.name} reached. Moving to the next journal.")
                 break  # Exit loop and move to the next journal
 
-            links[volume_num] = res
+            if res := self._scrape_volume(journal, volume_num):
+                missing_volume_count = 0
+                links[volume_num] = res
+                continue
+
+            missing_volume_count += 1
 
         return links
 
@@ -162,15 +162,19 @@ class BaseIterativeWithConstraintPublisherScraper(BaseIterativePublisherScraper,
 
         # Iterate over each issue in the specified range
         for issue_num in range(journal.start_issue, journal.end_issue + 1):
-            res = self._scrape_issue(journal, volume_num, issue_num)
-            if res:
-                missing_issue_count = 0
-                links[issue_num] = res
-            else:
-                missing_issue_count += 1
-
             if missing_issue_count >= journal.consecutive_missing_issues_threshold:
-                self._logger.warning(f"Consecutive missing issues for Volume {volume_num}. Moving to the next volume.")
+                self._logger.warning(f"Max consecutive missing issues for Volume {volume_num} reached. Moving to the next volume.")
                 break  # Exit loop and move to the next volume
 
+            res = self._scrape_issue(journal, volume_num, issue_num)
+            if self._has_valid_results_from_issue(res):
+                missing_issue_count = 0
+                links[issue_num] = res
+                continue
+
+            missing_issue_count += 1
+
         return links
+
+    def _has_valid_results_from_issue(self, results: IterativePublisherScrapeIssueOutput | None) -> bool:
+        return bool(results)

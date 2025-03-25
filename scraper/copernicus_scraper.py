@@ -4,18 +4,18 @@ from urllib.parse import urlparse
 
 from helper.utils import get_scraped_url_by_bs_tag
 from model.base_iterative_publisher_models import (
-    BaseIterativeWithConstraintPublisherJournal,
     IterativePublisherScrapeIssueOutput,
+    BaseIterativeWithConstraintPublisherConfig,
+    BaseIterativeWithConstraintPublisherJournal,
 )
-from model.copernicus_models import CopernicusConfig
 from model.sql_models import ScraperFailure
 from scraper.base_iterative_publisher_scraper import BaseIterativeWithConstraintPublisherScraper
 
 
 class CopernicusScraper(BaseIterativeWithConstraintPublisherScraper):
     @property
-    def config_model_type(self) -> Type[CopernicusConfig]:
-        return CopernicusConfig
+    def config_model_type(self) -> Type[BaseIterativeWithConstraintPublisherConfig]:
+        return BaseIterativeWithConstraintPublisherConfig
 
     def journal_identifier(self, model: BaseIterativeWithConstraintPublisherJournal) -> str:
         return model.name
@@ -99,7 +99,7 @@ class CopernicusScraper(BaseIterativeWithConstraintPublisherScraper):
         link = failure.source
         self._logger.info(f"Scraping URL: {link}")
 
-        message = failure.message
-        res = self.__scrape_issue(link) if "Issue" in message else self.__scrape_article(link)
+        message = failure.message.lower()
+        res = self.__scrape_issue(link) if "issue" in message else self.__scrape_article(link)
 
         return [res] if res else []

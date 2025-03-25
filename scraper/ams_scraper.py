@@ -3,52 +3,18 @@ from typing import Type, List
 
 from helper.utils import get_scraped_url_by_web_element
 from model.ams_models import AMSConfig, AMSJournal
-from model.base_iterative_publisher_models import (
-    IterativePublisherScrapeJournalOutput,
-    IterativePublisherScrapeVolumeOutput,
-    IterativePublisherScrapeIssueOutput,
-)
+from model.base_iterative_publisher_models import IterativePublisherScrapeIssueOutput
 from model.sql_models import ScraperFailure
-from scraper.base_iterative_publisher_scraper import BaseIterativePublisherScraper
+from scraper.base_iterative_publisher_scraper import BaseIterativeWithConstraintPublisherScraper
 
 
-class AMSScraper(BaseIterativePublisherScraper):
+class AMSScraper(BaseIterativeWithConstraintPublisherScraper):
     @property
     def config_model_type(self) -> Type[AMSConfig]:
         return AMSConfig
 
     def journal_identifier(self, model: AMSJournal) -> str:
         return model.code
-
-    def _scrape_journal(self, journal: AMSJournal) -> IterativePublisherScrapeJournalOutput:
-        self._logger.info(f"Processing Journal {journal.name}")
-
-        volume = 1
-
-        links = {}
-        while True:
-            if not (res := self._scrape_volume(journal, volume)):
-                break
-
-            links[volume] = res
-            volume += 1  # Move to next volume
-
-        return links
-
-    def _scrape_volume(self, journal: AMSJournal, volume_num: int) -> IterativePublisherScrapeVolumeOutput:
-        self._logger.info(f"Processing Volume {volume_num}")
-
-        issue = 1
-        links = {}
-        while True:
-            res = self._scrape_issue(journal, volume_num, issue)
-            if res is None:
-                break
-            if len(res) > 0:
-                links[issue] = res
-            issue += 1  # Move to next issue
-
-        return links
 
     def _scrape_issue(
         self, journal: AMSJournal, volume_num: int, issue_num: int
@@ -71,6 +37,9 @@ class AMSScraper(BaseIterativePublisherScraper):
 
         return self.__scrape_url(link) or []
 
+    def _has_valid_results_from_issue(self, results: IterativePublisherScrapeIssueOutput | None) -> bool:
+        return results is not None
+
     def __scrape_url(self, url: str) -> IterativePublisherScrapeIssueOutput | None:
         xml_page = os.path.split(url)[-1]
         xml_page = xml_page.replace(".xml", "")
@@ -79,20 +48,20 @@ class AMSScraper(BaseIterativePublisherScraper):
 
         url_search, _ = os.path.split(url.replace(self._config_model.base_url, ""))
 
+        selectors = ["div.ico-access-open", "div.ico-access-free", "div.ico-access-authorized"]
+        tags = []
+
         try:
             scraper = self._scrape_url(url)
             if "we could not find the page that you are looking for" in scraper.text:
                 raise Exception(f"Failed to load {url}: page not found")
 
             # find all the article links in the issue by keeping only the links to the accessible articles
-            try:
-                tags = self._driver.cdp.find_all("div.ico-access-open", timeout=0.5)
-            except:
-                tags = []
-            try:
-                tags += self._driver.cdp.find_all("div.ico-access-free", timeout=0.5)
-            except:
-                pass
+            for selector in selectors:
+                try:
+                    tags += self._driver.cdp.find_all(selector, timeout=0.5)
+                except:
+                    pass
 
             pdf_links = [
                 get_scraped_url_by_web_element(
