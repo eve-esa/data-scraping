@@ -318,54 +318,9 @@
     "AMSScraper": {
         "bucket_key": "{main_folder}/ams",
         "base_url": "https://journals.ametsoc.org",
-        "journals": [
+        "sources": [
             {
-                "name": "Artificial Intelligence for the Earth Systems",
-                "code": "aies"
-            },
-            {
-                "name": "Bulletin of the American Meteorological Society",
-                "code": "bams"
-            },
-            {
-                "name": "Earth Interactions",
-                "code": "eint"
-            },
-            {
-                "name": "Journal of Applied Meteorology and Climatology",
-                "code": "apme"
-            },
-            {
-                "name": "Journal of Atmospheric and Oceanic Technology",
-                "code": "atot"
-            },
-            {
-                "name": "Journal of the Atmospheric Sciences",
-                "code": "atsc"
-            },
-            {
-                "name": "Journal of Climate",
-                "code": "clim"
-            },
-            {
-                "name": "Journal of Hydrometeorology",
-                "code": "hydr"
-            },
-            {
-                "name": "Journal of Physical Oceanography",
-                "code": "phoc"
-            },
-            {
-                "name": "Monthly Weather Review",
-                "code": "mwre"
-            },
-            {
-                "name": "Weather and Forecasting",
-                "code": "wefo"
-            },
-            {
-                "name": "Weather, Climate, and Society",
-                "code": "wcas"
+                "landing_page_url": "https://journals.ametsoc.org/browse?access=user&pageSize={page_size}&page={page_number}&sort=datedescending&t=ARTICLES"
             }
         ]
     },

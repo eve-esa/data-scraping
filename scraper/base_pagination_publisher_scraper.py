@@ -36,9 +36,12 @@ class BasePaginationPublisherScraper(BaseScraper):
             # parse the query with parameters
             # they are enclosed in curly braces, must be replaced with the actual values
             # "page_number", "source_number" and "start_index" are reserved keywords
-            page_url = base_url.format(**(
-                kwargs | {"page_number": page_number, "source_number": source_number, "start_index": start_index}
-            ))
+            page_url = base_url.format(**(kwargs | {
+                "page_number": page_number,
+                "source_number": source_number,
+                "start_index": start_index,
+                "page_size": page_size
+            }))
 
             self._logger.info(f"Processing Page {page_url}")
 
