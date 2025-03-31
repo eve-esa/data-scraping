@@ -112,3 +112,16 @@ class S3Storage:
         except Exception as e:
             self.logger.error(f"Failed to move folder {source_prefix} to {destination_prefix}. Error: {e}")
             return False
+
+    def get(self, bucket_key: str) -> bytes:
+        """
+        Retrieve an object from S3.
+
+        Args:
+            bucket_key (str): The key of the object to retrieve.
+
+        Returns:
+            The content of the object as bytes.
+        """
+        response = self.client.get_object(Bucket=self.bucket_name, Key=bucket_key)
+        return response["Body"].read()

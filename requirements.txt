@@ -3,7 +3,9 @@ boto3==1.35.90
 colorlog==6.9.0
 fake-useragent==2.0.3
 filetype==1.2.0
+pdfplumber==0.11.6
 pydantic==2.10.4
+PyMuPDF==1.25.4
 PyMySQL==1.1.1
 python-magic==0.4.27
 PyYAML==6.0.2

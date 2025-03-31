@@ -12,16 +12,22 @@ class BaseRepository(ABC):
         self._logger = setup_logger(self.__class__.__name__)
         self._database_manager = DatabaseManager()
 
-    def before_insert(self, record: Dict, keys_to_purge: List | None = None) -> Dict:
+    def before_insert(self, record: BaseModel, keys_to_purge: List | None = None) -> Dict:
+        record_dict = record.model_dump()
+        record_dict = {
+            (k if not isinstance(v, dict) else f"{k}_id"): v if not isinstance(v, dict) else v["id"]
+            for k, v in record_dict.items()
+        }
+
         if not keys_to_purge:
             keys_to_purge = ["id"]
         elif "id" not in keys_to_purge:
             keys_to_purge.append("id")
 
         for key in keys_to_purge:
-            del record[key]
+            del record_dict[key]
 
-        return record
+        return record_dict
 
     def insert(self, record: BaseModel, keys_to_purge: List | None = None) -> int:
         """
@@ -34,7 +40,7 @@ class BaseRepository(ABC):
         Returns:
             ID of the appended record
         """
-        record_dict = self.before_insert(record.model_dump(), keys_to_purge)
+        record_dict = self.before_insert(record, keys_to_purge)
         return self._database_manager.insert_record(self.table_name, record_dict)
 
     def upsert(
@@ -62,7 +68,7 @@ class BaseRepository(ABC):
         Returns:
             ID of the appended record
         """
-        record_dict = self.before_insert(record.model_dump(), keys_to_purge)
+        record_dict = self.before_insert(record, keys_to_purge)
         update_dict = update_dict or record_dict
 
         existing_records = self._database_manager.search_records(
