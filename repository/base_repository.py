@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List, Dict, Any, Type
 
 from helper.logger import setup_logger
-from model.sql_models import BaseModel, DatabaseFieldDefinition
+from model.sql_models import BaseModel, DatabaseFieldDefinition, DatabaseRelationDefinition
 from service.database_manager import DatabaseManager
 
 
@@ -199,6 +199,10 @@ class BaseRepository(ABC):
     @property
     def model_fields_definition(self) -> Dict[str, DatabaseFieldDefinition]:
         return self.model_type.def_types()
+
+    @property
+    def model_relations_definition(self) -> List[DatabaseRelationDefinition]:
+        return self.model_type.def_relations()
 
     @property
     def table_name(self) -> str:

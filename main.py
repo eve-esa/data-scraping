@@ -12,6 +12,13 @@ def parse_arguments():
     parser = ArgumentParser()
 
     parser.add_argument(
+        "-d",
+        "--database-only",
+        action="store_true",
+        help="Initialize the database only.",
+    )
+
+    parser.add_argument(
         '-s',
         "--scrapers",
         default=[],
@@ -47,6 +54,12 @@ def parse_arguments():
 
 
 def main(args):
+    init_db()
+
+    if args.database_only:
+        print("Database initialized.")
+        return
+
     scrapers = discover_scrapers()
     if args.scrapers:
         scrapers = {name: scrapers[name] for name in args.scrapers if name in scrapers}
@@ -86,6 +99,4 @@ def main(args):
 
 if __name__ == "__main__":
     load_dotenv()
-    init_db()
-
     main(parse_arguments())

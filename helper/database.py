@@ -27,7 +27,16 @@ def init_db():
 
     database_manager = DatabaseManager()
 
+    # create tables
     for repository_type in discovered_repositories.values():
         repository = repository_type()
         table = repository.table_name
         database_manager.create_table(table, repository.model_fields_definition)
+
+    # create relations
+    for repository_type in discovered_repositories.values():
+        repository = repository_type()
+        table = repository.table_name
+
+        for relation in repository.model_relations_definition:
+            database_manager.create_relation(table, relation)

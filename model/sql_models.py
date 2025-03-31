@@ -1,9 +1,9 @@
 import json
 from abc import ABC, abstractmethod
-from typing import Dict, Any
+from typing import Dict, Any, List
 from pydantic import BaseModel as PydanticBaseModel, Field, field_validator
 from datetime import datetime
-from sqlalchemy import String, Text, Boolean
+from sqlalchemy import String, Text, Boolean, Integer
 from sqlalchemy.dialects.mysql import LONGTEXT
 
 
@@ -20,6 +20,12 @@ class DatabaseFieldDefinition(PydanticBaseModel):
         return v
 
 
+class DatabaseRelationDefinition(PydanticBaseModel):
+    column_name: str
+    referenced_table: str
+    referenced_column: str
+
+
 class BaseModel(PydanticBaseModel, ABC):
     id: int | None = None
     last_access_at: str | None = Field(default=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
@@ -27,6 +33,11 @@ class BaseModel(PydanticBaseModel, ABC):
     @classmethod
     @abstractmethod
     def def_types(cls) -> Dict[str, DatabaseFieldDefinition]:
+        pass
+
+    @classmethod
+    @abstractmethod
+    def def_relations(cls) -> List[DatabaseRelationDefinition]:
         pass
 
     @classmethod
@@ -59,6 +70,10 @@ class UploadedResource(BaseModel):
         }
 
     @classmethod
+    def def_relations(cls) -> List[DatabaseRelationDefinition]:
+        return []
+
+    @classmethod
     def table_name(cls) -> str:
         return "uploaded_resources"
 
@@ -80,6 +95,10 @@ class ScraperOutput(BaseModel):
         }
 
     @classmethod
+    def def_relations(cls) -> List[DatabaseRelationDefinition]:
+        return []
+
+    @classmethod
     def table_name(cls) -> str:
         return "scraper_outputs"
 
@@ -97,6 +116,10 @@ class ScraperFailure(BaseModel):
             "message": DatabaseFieldDefinition(type=Text, default=None),
             "last_access_at": DatabaseFieldDefinition(type=String(length=255), nullable=False),
         }
+
+    @classmethod
+    def def_relations(cls) -> List[DatabaseRelationDefinition]:
+        return []
 
     @classmethod
     def table_name(cls) -> str:
@@ -122,5 +145,40 @@ class ScraperAnalytics(BaseModel):
         }
 
     @classmethod
+    def def_relations(cls) -> List[DatabaseRelationDefinition]:
+        return []
+
+    @classmethod
     def table_name(cls) -> str:
         return "scraper_analytics"
+
+
+class UploadedResourceMetadata(BaseModel):
+    uploaded_resource: UploadedResource
+    metadata: str | None = None
+
+    @property
+    def metadata_json(self) -> Dict:
+        return json.loads(self.metadata)
+
+    @classmethod
+    def def_types(cls) -> Dict[str, DatabaseFieldDefinition]:
+        return {
+            "uploaded_resource_id": DatabaseFieldDefinition(type=Integer, nullable=False),
+            "metadata": DatabaseFieldDefinition(type=LONGTEXT, nullable=True),
+            "last_access_at": DatabaseFieldDefinition(type=String(length=255), nullable=False),
+        }
+
+    @classmethod
+    def def_relations(cls) -> List[DatabaseRelationDefinition]:
+        return [
+            DatabaseRelationDefinition(
+                column_name="uploaded_resource_id",
+                referenced_table=UploadedResource.table_name(),
+                referenced_column="id",
+            )
+        ]
+
+    @classmethod
+    def table_name(cls) -> str:
+        return "uploaded_resources_metadata"

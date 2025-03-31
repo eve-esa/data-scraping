@@ -2,14 +2,13 @@ from contextlib import contextmanager
 import os
 import time
 from typing import List, Dict, Any
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, inspect
+from sqlalchemy import create_engine, MetaData, Table, Column, Integer, inspect, ForeignKeyConstraint, text
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import or_
 
 from helper.singleton import singleton
-from model.sql_models import DatabaseFieldDefinition
-
+from model.sql_models import DatabaseFieldDefinition, DatabaseRelationDefinition
 
 Base = declarative_base()
 
@@ -94,7 +93,7 @@ class DatabaseManager:
             columns: Dictionary with the column definitions
         """
         table_columns = [
-            Column('id', Integer, primary_key=True, autoincrement=True)
+            Column("id", Integer, primary_key=True, autoincrement=True)
         ]
 
         for col_name, col_def in columns.items():
@@ -105,6 +104,34 @@ class DatabaseManager:
         metadata = MetaData()
         Table(table_name, metadata, *table_columns)
         metadata.create_all(self.engine)
+
+    def create_relation(self, table_name: str, relation: DatabaseRelationDefinition) -> None:
+        """
+        Create a relation between two tables
+
+        Args:
+            table_name: Name of the table
+            relation: Relation definition
+        """
+        inspector = inspect(self.engine)
+        foreign_keys = inspector.get_foreign_keys(table_name)
+
+        for fk in foreign_keys:
+            if (
+                    fk["constrained_columns"] == [relation.column_name] and
+                    fk["referred_table"] == relation.referenced_table and
+                    fk["referred_columns"] == [relation.referenced_column]
+            ):
+                return
+
+        with self.engine.begin() as conn:
+            conn.execute(text(f"""
+                ALTER TABLE {table_name}
+                ADD CONSTRAINT fk_{table_name}_{relation.column_name}
+                FOREIGN KEY ({relation.column_name})
+                REFERENCES {relation.referenced_table}({relation.referenced_column})
+                ON DELETE CASCADE
+            """))
 
     def get_table_info(self, table_name: str) -> List[Dict[str, str]]:
         """
