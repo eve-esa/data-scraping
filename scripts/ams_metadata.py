@@ -9,6 +9,7 @@ from model.sql_models import UploadedResource, UploadedResourceMetadata
 from repository.uploaded_resource_metadata_repository import UploadedResourceMetadataRepository
 from repository.uploaded_resource_repository import UploadedResourceRepository
 from service.storage import S3Storage
+from tqdm import tqdm
 
 
 load_dotenv()
@@ -108,7 +109,7 @@ res = {
     "no-cc-by": 0,
 }
 resources = UploadedResourceRepository().get_by(conditions={"scraper": "AMSScraper"})
-for resource in resources:
+for resource in tqdm(resources):
     metadata_ = process_uploaded_resource(resource)
 
     if metadata_ is None:
