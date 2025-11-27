@@ -1,5 +1,5 @@
-# data-pipeline
-Code for the main ETL pipeline to be utilized to collect, scrape and transform training data.
+# Eve Data Scraping
+Code for the main ETL pipeline to be utilized to collect and scrape data.
 
 ## Pre-requisites
 For the local usage, please create a virtual environment in the `venv` folder by running the following command:
