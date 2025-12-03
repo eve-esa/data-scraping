@@ -1,0 +1,49 @@
+site_name: Data Scraping
+site_url: https://example.com
+theme:
+  font:
+    text: Arial
+    code: The Sans
+  name: material
+  custom_dir: overrides
+  logo: assets/esa_logo.svg
+  favicon: assets/esa_favicon.ico
+  palette:
+      primary: custom
+extra_css:
+  - stylesheets/extra.css
+nav:
+    - Home: index.md
+    - Getting Started: getting_started.md
+    - Scrapers: scrapers.md
+    - Model: model.md
+    - Examples: examples.md
+
+extra:
+  social:
+    - icon: fontawesome/solid/globe
+      link: https://eve.philab.esa.int/
+      name: Project Page
+    - icon: fontawesome/brands/github
+      link: https://github.com/eve-esa/eve-evaluation
+      name: GitHub
+    - icon: custom/huggingface
+      link: https://huggingface.co/eve-esa
+      name: Hugging Face
+  generator: false
+
+copyright: Implemented by <a href="https://picampus-school.com/" target="_blank">Pi School</a>, <a href="https://www.imperative.space/" target="_blank">Imperative Space</a>
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+            show_root_heading: true
+            show_root_full_path: false
+            members_order: source
+            show_signature_annotations: true
+            docstring_style: google
+            docstring_options:
+              ignore_init_summary: false
+              trim_doctest_flags: true
