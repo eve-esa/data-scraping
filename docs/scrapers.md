@@ -190,7 +190,7 @@ class NewJournalScraper(BaseIterativePublisherScraper):
 
 ### 4. Add Configuration to config.json
 
-Add your scraper's configuration to `config/config.json` (you can find more examples [here](/examples#configuration-examples)):
+Add your scraper's configuration to `config/config.json` (you can find more examples [here](examples#configuration-examples)):
 
 ```json
 {
