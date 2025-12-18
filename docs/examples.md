@@ -13,12 +13,13 @@ make run args="--scrapers IOPScraper"
 ```
 
 **What happens:**
-1. The pipeline loads configuration from `config/config.json`
-2. IOPScraper is initialized with its configuration
-3. The scraper navigates to configured URLs
-4. PDF links are extracted and downloaded
-5. Files are uploaded to MinIO/S3
-6. Results are logged to the database
+
+  1. The pipeline loads configuration from `config/config.json`
+  2. IOPScraper is initialized with its configuration
+  3. The scraper navigates to configured URLs
+  4. PDF links are extracted and downloaded
+  5. Files are uploaded to MinIO/S3
+  6. Results are logged to the database
 
 ### Running Multiple Scrapers
 
@@ -51,9 +52,10 @@ make run args="--scrapers IOPScraper --force"
 ```
 
 **Use cases:**
-- Testing after code changes
-- Collecting new content from the same source
-- Recovering from incomplete runs
+
+  - Testing after code changes
+  - Collecting new content from the same source
+  - Recovering from incomplete runs
 
 ### Resume Failed URLs
 
@@ -64,14 +66,16 @@ make run args="--scrapers IOPScraper --resume"
 ```
 
 **When to use:**
-- Network errors occurred during scraping
-- Some pages were temporarily unavailable
-- Timeout errors on specific URLs
+
+  - Network errors occurred during scraping
+  - Some pages were temporarily unavailable
+  - Timeout errors on specific URLs
 
 **What it does:**
-- Queries `scraper_failure` table for failed URLs
-- Re-attempts only those URLs
-- Updates success/failure status
+
+  - Queries `scraper_failure` table for failed URLs
+  - Re-attempts only those URLs
+  - Updates success/failure status
 
 ### Resume Failed Uploads
 
@@ -82,9 +86,10 @@ make run args="--scrapers IOPScraper --resume-upload"
 ```
 
 **When to use:**
-- S3/MinIO connection issues occurred
-- Upload timeouts for large files
-- Storage quota was exceeded
+
+  - S3/MinIO connection issues occurred
+  - Upload timeouts for large files
+  - Storage quota was exceeded
 
 **Important:** Cannot combine `--resume` and `--resume-upload` in one command.
 
@@ -99,10 +104,11 @@ make run args="--analytics-only"
 ```
 
 **Output includes:**
-- URLs scraped
-- Content successfully retrieved
-- Files uploaded to storage
-- Failure counts
+
+  - URLs scraped
+  - Content successfully retrieved
+  - Files uploaded to storage
+  - Failure counts
 
 ### View Specific Scraper Statistics
 
@@ -135,9 +141,10 @@ The analytics JSON contains:
 ```
 
 **Metrics explained:**
-- **scraped**: URLs processed by the scraper
-- **content_retrieved**: Resources whose content was successfully downloaded
-- **uploaded**: Resources successfully uploaded to S3
+
+  - **scraped**: URLs processed by the scraper
+  - **content_retrieved**: Resources whose content was successfully downloaded
+  - **uploaded**: Resources successfully uploaded to S3
 
 ## Configuration Examples
 
@@ -186,9 +193,10 @@ For journals with volume/issue structure:
 ```
 
 **Parameters:**
-- `start_volume/end_volume`: Volume range to scrape
-- `start_issue/end_issue`: Issue range per volume
-- `consecutive_missing_*_threshold`: Stop after N consecutive missing volumes/issues
+
+  - `start_volume/end_volume`: Volume range to scrape
+  - `start_issue/end_issue`: Issue range per volume
+  - `consecutive_missing_*_threshold`: Stop after N consecutive missing volumes/issues
 
 ### Pagination Configuration
 
@@ -211,9 +219,10 @@ For search results with pagination:
 ```
 
 **Parameters:**
-- `{page_number}`: Placeholder for page number (auto-incremented)
-- `page_size`: Results per page
-- `max_allowed_papers`: Maximum papers to collect
+
+  - `{page_number}`: Placeholder for page number (auto-incremented)
+  - `page_size`: Results per page
+  - `max_allowed_papers`: Maximum papers to collect
 
 ### Multi-Source Configuration
 

@@ -62,17 +62,20 @@ INTERACTING_PROXY_PASSWORD=<password>
 #### Configuration Notes
 
 **MinIO for Local Development**:
-- The MinIO server emulates a remote S3 bucket for local testing
-- The `AWS_URL` key must be set to the URL of the MinIO server
-- For production, remove the `AWS_URL` from the configuration to use real AWS S3
+
+  - The MinIO server emulates a remote S3 bucket for local testing
+  - The `AWS_URL` key must be set to the URL of the MinIO server
+  - For production, remove the `AWS_URL` from the configuration to use real AWS S3
 
 **Browser Settings**:
-- `HEADLESS_BROWSER=true`: Run browser without GUI (recommended for servers)
-- `XVFB_MODE=true`: Use virtual frame buffer (required for headless Linux servers)
+
+  - `HEADLESS_BROWSER=true`: Run browser without GUI (recommended for servers)
+  - `XVFB_MODE=true`: Use virtual frame buffer (required for headless Linux servers)
 
 **Proxy Settings** (optional):
-- Required only for accessing restricted content
-- Contact the project maintainer for proxy credentials
+
+  - Required only for accessing restricted content
+  - Contact the project maintainer for proxy credentials
 
 ### 3. Installation
 
@@ -97,9 +100,10 @@ docker ps
 ```
 
 You should see containers for:
-- MinIO (S3-compatible storage)
-- MySQL (database)
-- The scraping application
+
+  - MinIO (S3-compatible storage)
+  - MySQL (database)
+  - The scraping application
 
 ## Running the Pipeline
 
@@ -112,10 +116,11 @@ make run
 ```
 
 The pipeline will:
-1. Connect to MinIO and MySQL
-2. Execute all scrapers defined in `config/config.json`
-3. Store scraped data in MinIO
-4. Track progress in MySQL database
+
+  1. Connect to MinIO and MySQL
+  2. Execute all scrapers defined in `config/config.json`
+  3. Store scraped data in MinIO
+  4. Track progress in MySQL database
 
 ### Running Specific Scrapers
 
@@ -207,9 +212,10 @@ sh pod.sh
 ```
 
 This script will:
-- Install required packages
-- Set up the environment
-- Configure the infrastructure
+
+  - Install required packages
+  - Set up the environment
+  - Configure the infrastructure
 
 ### 3. Run in Production
 
@@ -248,11 +254,12 @@ Scrapers are configured in `config/config.json`. Each scraper has its own config
 ```
 
 Key configuration parameters:
-- `bucket_key`: S3 path where data will be stored
-- `base_url`: Base URL of the website (optional)
-- `cookie_selector`: CSS selector for cookie banner (optional)
-- `files_by_request`: Whether to retrieve files via HTTP request vs scraping (default: `true`)
-- `sources`: List of URLs or configurations to scrape
+
+  - `bucket_key`: S3 path where data will be stored
+  - `base_url`: Base URL of the website (optional)
+  - `cookie_selector`: CSS selector for cookie banner (optional)
+  - `files_by_request`: Whether to retrieve files via HTTP request vs scraping (default: `true`)
+  - `sources`: List of URLs or configurations to scrape
 
 For detailed configuration examples, see the [Scrapers](scrapers.md) documentation.
 
@@ -300,8 +307,9 @@ docker logs <mysql-container-id>
 ### MinIO Access Issues
 
 Access MinIO console at `http://localhost:9100` with credentials from `.env`:
-- Username: `minio`
-- Password: `minio1234`
+
+  - Username: `minio`
+  - Password: `minio1234`
 
 ### Browser/Selenium Issues
 

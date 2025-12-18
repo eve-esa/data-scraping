@@ -56,6 +56,7 @@ class ElsevierScraper(BaseSourceDownloadScraper):
     def __scrape_journal(self, source: ElsevierSource) -> List[str] | None:
         """
         Scrape the journal for the issues. The logic is as follows:
+        
         - Get the first issue link from the journal page, i.e., the newest issue.
         - Scrape the issue and get the next issue URL. If the issue was scraped successfully, add the issue URL to the
             list of journal links.
@@ -100,6 +101,7 @@ class ElsevierScraper(BaseSourceDownloadScraper):
     def __scrape_issue(self, source: ElsevierSource) -> ElsevierScrapeIssueOutput:
         """
         Scrape the issue for the PDFs. The logic is as follows:
+        
         - Find the next issue URL, i.e., the URL of the previous issue, if it exists.
         - Check if there are any PDFs to download. If not, try with the next issue.
         - Download the PDFs in a zip file and wait for the download to complete.

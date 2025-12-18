@@ -212,14 +212,16 @@ Add your scraper's configuration to `config/config.json` (you can find more exam
 #### Configuration Keys
 
 **Required:**
-- `bucket_key`: S3 storage path (use `{main_folder}` placeholder)
+
+  - `bucket_key`: S3 storage path (use `{main_folder}` placeholder)
 
 **Optional:**
-- `base_url`: Base URL of the website
-- `cookie_selector`: CSS selector for cookie banner acceptance button
-- `files_by_request`: Whether to download files via HTTP (default: `true`) or scrape them
-- `request_with_proxy`: Use proxy for requests (default: `false`)
-- `sources`: List of sources to scrape (structure depends on your model)
+
+  - `base_url`: Base URL of the website
+  - `cookie_selector`: CSS selector for cookie banner acceptance button
+  - `files_by_request`: Whether to download files via HTTP (default: `true`) or scrape them
+  - `request_with_proxy`: Use proxy for requests (default: `false`)
+  - `sources`: List of sources to scrape (structure depends on your model)
 
 ### 5. Test Your Scraper
 
